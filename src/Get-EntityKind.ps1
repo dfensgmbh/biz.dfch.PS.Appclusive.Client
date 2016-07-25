@@ -238,6 +238,16 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[switch] $ListAvailable = $false
 	,
+    # Returns all Connectors which provide this Interface
+    [Parameter(Mandatory = $false)]
+    [Alias('Providers')]
+    [switch] $ListProviders = $false
+    ,
+    # Returns all Connectors which require this Interface
+	[Parameter(Mandatory = $false)]
+    [Alias('Consumers')]
+    [switch] $ListConsumers = $false
+    ,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
@@ -390,10 +400,26 @@ Process
 		{
 			$Response = $Response.$Select;
 		}
-		if($PSBoundParameters.ContainsKey('DefaultValue') -And !$Response)
-		{
-			$Response = $DefaultValue;
-		}
+
+        if (!$Response)
+        {
+		    if($PSBoundParameters.ContainsKey('DefaultValue'))
+		    {
+			    $Response = $DefaultValue;
+		    }
+        }
+        else
+        {
+            if ($PSBoundParameters.ContainsKey('ListProviders'))
+            {
+                $Response = Get-Connector -svc $svc -EntityKindId $Response.Id -Provide;
+            }
+            elseif ($PSBoundParameters.ContainsKey('ListConsumers'))
+            {
+                $Response = Get-Connector -svc $svc -EntityKindId $Response.Id -Require;
+            }
+        }
+
 		if($ValueOnly -And $ConvertFromJson)
 		{
 			$ResponseTemp = New-Object System.Collections.ArrayList;

@@ -136,7 +136,6 @@ Begin
 
 Process 
 {
-
     # Default test variable for checking function response codes.
     [Boolean] $fReturn = $false;
     # Return values are always and only returned via OutputParameter.
@@ -144,9 +143,6 @@ Process
 	
     try 
     {
-	    # Parameter validation
-	    # N/A
-	
 	    if($PSCmdlet.ParameterSetName -eq 'list') 
 	    {
 		    if($Select -And 'object' -ne $As) 
@@ -219,13 +215,13 @@ Process
             }
             else
             {
-                if (!!$ListProviders)
+                if ($PSBoundParameters.ContainsKey('ListProviders'))
                 {
-                    Write-Host "Providers";
+                    $Response = Get-Connector -svc $svc -InterfaceId $Response.Id -Provide;
                 }
-                elseif (!!$ListConsumers)
+                elseif ($PSBoundParameters.ContainsKey('ListConsumers'))
                 {
-                    Write-Host "Consumers";
+                    $Response = Get-Connector -svc $svc -InterfaceId $Response.Id -Require;
                 }
             }
 

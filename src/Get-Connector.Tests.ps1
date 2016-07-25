@@ -66,8 +66,6 @@ Describe -Tags "Get-Connector" "Get-Connector" {
             return $entityKind;
         }
 
-		# Context wide constants
-		# N/A
 	    It "Get-ConnectorWithoutId-ShouldReturnList" -Test {
 			# Arrange
             $interface = CreateInterface | Select;
@@ -99,8 +97,6 @@ Describe -Tags "Get-Connector" "Get-Connector" {
             $list.Count | Should BeGreaterThan 1;
 		}
 
-		# Context wide constants
-		# N/A
 	    It "Get-ConnectorWithId-ShouldReturnEntity" -Test {
 
 			# Arrange
@@ -133,5 +129,157 @@ Describe -Tags "Get-Connector" "Get-Connector" {
 			$entity.Multiplicity | Should Be $connector.Multiplicity;
 			$entity.ConnectionType | Should Be 1;
 		}
-	}
+	
+        It "Get-ConnectorWithEntityKindId-ShouldReturnList" -Test {
+            # Arrange
+            $interface = CreateInterface | Select;
+            $interfaceb = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $InterfaceId = $interface.Id;
+            $entityKindId = $entityKind.Id;
+            $Multiplicity = 15;
+            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+            
+			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Provide `
+                            -CreateIfNotExist;
+                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $interfaceb.Id `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+			# Act
+            $list = Get-Connector -svc $svc -EntityKindId $entityKindId;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 3;
+        }
+
+        It "Get-ConnectorWithInterfaceId-ShouldReturnList" -Test {
+            # Arrange
+            $interface = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $InterfaceId = $interface.Id;
+            $entityKindId = $entityKind.Id;
+            $Multiplicity = 15;
+            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+            
+			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindB.Id `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Provide `
+                            -CreateIfNotExist;
+                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+			# Act
+            $list = Get-Connector -svc $svc -InterfaceId $InterfaceId;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 3;
+        }
+
+        It "Get-ConnectorWithInterfaceIdAndRequire-ShouldReturnList" -Test {
+            # Arrange
+            $interface = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $InterfaceId = $interface.Id;
+            $entityKindId = $entityKind.Id;
+            $Multiplicity = 15;
+            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+            
+			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindB.Id `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Provide `
+                            -CreateIfNotExist;
+                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+			# Act
+            $list = Get-Connector -svc $svc -InterfaceId $InterfaceId -Require;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 2;
+        }
+
+        It "Get-ConnectorWithInterfaceIdAndProvide-ShouldReturnList" -Test {
+            # Arrange
+            $interface = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $InterfaceId = $interface.Id;
+            $entityKindId = $entityKind.Id;
+            $Multiplicity = 15;
+            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+            
+			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindB.Id `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Provide `
+                            -CreateIfNotExist;
+                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            -EntityKindId $entityKindId `
+                            -Description $Description `
+                            -Multiplicity $Multiplicity `
+                            -Require `
+                            -CreateIfNotExist;
+			# Act
+            $list = Get-Connector -svc $svc -InterfaceId $InterfaceId -Provide;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 1;
+        }
+    }
 }
