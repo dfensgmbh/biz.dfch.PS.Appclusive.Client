@@ -330,20 +330,28 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
             $InterfaceId = $interface.Id;
             $EntityKindId = $entityKind.Id;
             $Multiplicity = 15;
-            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+            			
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $EntityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Provide `
                             -CreateIfNotExist;
             
-			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+			Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $EntityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Require `
                             -CreateIfNotExist;
-                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $EntityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
@@ -368,20 +376,28 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
             $InterfaceId = $interface.Id;
             $EntityKindId = $entityKind.Id;
             $Multiplicity = 15;
-            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+            			
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $entityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Require `
                             -CreateIfNotExist;
             
-			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $interfaceB.Id `
+			Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $interfaceB.Id `
                             -EntityKindId $EntityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Provide `
                             -CreateIfNotExist;
-                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $entityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
@@ -528,15 +544,15 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyNDEwNTYzOFowIwYJKoZIhvcNAQkEMRYEFAQh8dCrcSCRLDbTIjiH41ZsWPfm
+# MDcyNDIyMzYxNlowIwYJKoZIhvcNAQkEMRYEFAQh8dCrcSCRLDbTIjiH41ZsWPfm
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCbYNThN7ogSMZ0Vyu6
-# P6Q3f2hGEKkZyL6e06UE/H/qzVyvH6B1Bu7TIoGdjk1gUY95hPlLlhTjS8lJ7yv1
-# wZip5+LYhQ9DPJwRTJJPwo4ss6itwuAuAsuMkOmoh3AFJDJ5XfdW7Vhvc5qewYUm
-# TAPZnh9WCoexH5CpMwHiZu6CrtgZtDZJgpgElyMIN0ktS30+lnrspj6pxwCVtM/9
-# 3e90nYGAgRtQUcHnjd9jf6NIpAwIgb1Ag1myThrbtDLEGLk3OOm9t+7fnXA+6zX0
-# A94uZT3//P/A51Odql6Hljc0SRhpttAuxJibDmVosMiR3YbJtmT9Lb/MFQa7Wbfk
-# 5aWO
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQB0Riv+7g2ogxptZxqw
+# mRdoYwbIm/K2pA1+u+Tc2VlITC1L/fZMuPymiE1tHiYvxWXHhL/JTRHrauSKvtQ6
+# ddQ/hCMBqshDwloYkkcru7TM5BOuOF4o6akhprGPp3Nvl0ZT2UGrZSncbz/Xo0Ut
+# l5ImOuPLR3ejyQhZsfURM5MoYdMmyyjh65hgmuy0UN33rww5RfiMBiPmheQlguqk
+# UAG4TLKwz2R8N+4y7ZR7198DgjCq2/IgBY8nCmJpsrqZFOa7YnV6WqwT+PSRhRsa
+# sqvOuGllCM4TWZMMVG1izvCsTPjWPBnd35GIQV1UVcsRJm+EqA+CxrXty0jD9T5h
+# 20xc
 # SIG # End signature block

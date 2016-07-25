@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>biz.dfch.PS.Appclusive.Client</id>
-    <version>4.2.0</version>
+    <version>4.2.1</version>
     <title>biz.dfch.PS.Appclusive.Client</title>
     <authors>d-fens GmbH</authors>
     <owners>Ronald Rink</owners>
@@ -27,36 +27,12 @@ Third party (and Microsoft) DLLs are not part of this Apache 2.0 licensed projec
 See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detailed description on how to use the Cmdlets in this module.
 </description>
     <summary>This Microsoft PowerShell module contains Cmdlets to perform various base actions and utilties/convenience functions with the our open-source based automation framework "Appclusive".</summary>
-    <releaseNotes>20160724
+    <releaseNotes>20160725
 # BUGFIXES
-
-Get-Tenant
-
-* changed OData action from entity based to entity set action
-
-Format-Exception
-
-* fixed error in json extraction
-
-# FEATURES
-
-Enter-Server
-
-* added MergeOption to be settable in module configuration file
-  * default is `AppendOnly` which is also the DataServiceContext default
 
 Set-SessionTenant
 
-* updated cmdlet to read endpoints from Services instead of hard coded in cmdlet
-* added more examples
-* improved error handling
-* changed input parameter to be native guid and removed unnecessary ValidateScript validation
-* renamed id switch and added aliases for compatibility
-* added Clear switch to remove any set tenant id
-
-Get-SessionTenant
-
-* added Cmdlet to support display of currently set tenant id
+* fixed wrong id assignment
 
 * installation base path is '$env:ProgramFiles\WindowsPowerShell\Modules' and can be manually set as input parameter</releaseNotes>
     <copyright>(c) 2015-2016 d-fens GmbH</copyright>
