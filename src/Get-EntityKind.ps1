@@ -248,6 +248,16 @@ PARAM
     [Alias('Consumers')]
     [switch] $ListConsumers = $false
     ,
+    # Returns all Connectors which provide this Interface
+    [Parameter(Mandatory = $false, ParameterSetName = 'ProvideInterface')]
+    [Alias('Provide')]
+    [long] $ProvideInterface
+    ,
+    # Returns all Connectors which require this Interface
+	[Parameter(Mandatory = $false, ParameterSetName = 'RequireInterface')]
+    [Alias('Require')]
+    [long] $RequireInterface
+    ,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
@@ -337,6 +347,14 @@ Process
 			}
 		}
 	}
+    elseif($PSCmdlet.ParameterSetName -eq 'RequireInterface') 
+	{
+        $Response = $svc.Core.InvokeEntitySetActionWithListResult("EntityKinds", "RequireInterface", [biz.dfch.CS.Appclusive.Api.Core.EntityKind], @{"InterfaceId"=$RequireInterface});
+	}
+    elseif($PSCmdlet.ParameterSetName -eq 'ProvideInterface') 
+	{
+        $Response = $svc.Core.InvokeEntitySetActionWithListResult("EntityKinds", "ProvideInterface", [biz.dfch.CS.Appclusive.Api.Core.EntityKind], @{"InterfaceId"=$ProvideInterface});
+	} 
 	else 
 	{
 		$Exp = @();

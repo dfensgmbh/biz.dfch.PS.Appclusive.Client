@@ -272,6 +272,9 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
         $entityPrefix = "GetEntityKindConnector";
         $entitySetName = "EntityKinds";
 	
+        $REQUIRE = 2L;
+        $PROVIDE = 1L;
+
         AfterAll {
             $svc = Enter-ApcServer;
             $entities = $svc.Core.Connectors.AddQueryOption('$filter', "startswith(Name, 'GetEntityKindConnector')") | Select;
@@ -318,99 +321,122 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
 
             return $entityKind;
         }
+
+        function CreateConnector([long]$interfaceId, [long]$entityKindId, [long]$connectionType) 
+        {
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $Multiplicity = 42;
+            			
+            if ($connectionType -eq $REQUIRE)
+            {
+                return Set-Connector -svc $svc `
+                                -Name $Name `
+                                -InterfaceId $interfaceId `
+                                -EntityKindId $entityKindId `
+                                -Description $Description `
+                                -Multiplicity $Multiplicity `
+                                -Require `
+                                -CreateIfNotExist;
+            }
+            else
+            {
+                return Set-Connector -svc $svc `
+                                -Name $Name `
+                                -InterfaceId $interfaceId `
+                                -EntityKindId $entityKindId `
+                                -Description $Description `
+                                -Multiplicity $Multiplicity `
+                                -Provide `
+                                -CreateIfNotExist;
+            }
+        }
         
-        It "Get-EntityKindsWithRequires-ShouldReturnList" -Test {
+        It "Get-EntityKindWithConsumers-ShouldReturnListOfConnectors" -Test {
             # Arrange
             $interface = CreateInterface | Select;
             $entityKind = CreateEntityKind | Select;
             $interfaceB = CreateInterface | Select;
+                        			
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;
 
-			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
-			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
-            $InterfaceId = $interface.Id;
-            $EntityKindId = $entityKind.Id;
-            $Multiplicity = 15;
-            			
-            Set-Connector -svc $svc `
-                            -Name $Name `
-                            -InterfaceId $InterfaceId `
-                            -EntityKindId $EntityKindId `
-                            -Description $Description `
-                            -Multiplicity $Multiplicity `
-                            -Provide `
-                            -CreateIfNotExist;
-            
-			Set-Connector -svc $svc `
-                            -Name $Name `
-                            -InterfaceId $InterfaceId `
-                            -EntityKindId $EntityKindId `
-                            -Description $Description `
-                            -Multiplicity $Multiplicity `
-                            -Require `
-                            -CreateIfNotExist;
-                            
-            Set-Connector -svc $svc `
-                            -Name $Name `
-                            -InterfaceId $InterfaceId `
-                            -EntityKindId $EntityKindId `
-                            -Description $Description `
-                            -Multiplicity $Multiplicity `
-                            -Require `
-                            -CreateIfNotExist;
 			# Act
-            $list = Get-EntityKind -svc $svc -Id $EntityKindId -Consumers;
+            $list = Get-EntityKind -svc $svc -Id $entityKind.Id -Consumers;
 
 			# Assert
             $list | Should Not Be $null;
             $list.Count | Should Be 2;
+            
+            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Connector]
         }
 
-        It "Get-EntityKindsWithProvides-ShouldReturnList" -Test {
+        It "Get-EntityKindWithProviders-ShouldReturnListOfConnectors" -Test {
             # Arrange
             $interface = CreateInterface | Select;
             $entityKind = CreateEntityKind | Select;
             $interfaceB = CreateInterface | Select;
+                        			
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;
 
-			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
-			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
-            $InterfaceId = $interface.Id;
-            $EntityKindId = $entityKind.Id;
-            $Multiplicity = 15;
-            			
-            Set-Connector -svc $svc `
-                            -Name $Name `
-                            -InterfaceId $InterfaceId `
-                            -EntityKindId $entityKindId `
-                            -Description $Description `
-                            -Multiplicity $Multiplicity `
-                            -Require `
-                            -CreateIfNotExist;
-            
-			Set-Connector -svc $svc `
-                            -Name $Name `
-                            -InterfaceId $interfaceB.Id `
-                            -EntityKindId $EntityKindId `
-                            -Description $Description `
-                            -Multiplicity $Multiplicity `
-                            -Provide `
-                            -CreateIfNotExist;
-                            
-            Set-Connector -svc $svc `
-                            -Name $Name `
-                            -InterfaceId $InterfaceId `
-                            -EntityKindId $entityKindId `
-                            -Description $Description `
-                            -Multiplicity $Multiplicity `
-                            -Require `
-                            -CreateIfNotExist;
 			# Act
-            $list = Get-EntityKind -svc $svc -Id $EntityKindId -Providers;
+            $list = Get-EntityKind -svc $svc -Id $entityKind.Id -Providers;
 
 			# Assert
             $list | Should Not Be $null;
             $list.Count | Should Be 1;
+
+            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Connector] 
         }
 
+        It "Get-EntityKindByRequiresInterfaceId-ShouldReturnList" -Test {        
+            # Arrange
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
+
+			# Act
+            $list = Get-EntityKind -svc $svc -ProvideInterface $interface.Id;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 2;
+            
+            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.EntityKind]
+        }
+
+        It "Get-EnttiyKindByProvidesInterfaceId-ShouldReturnList" -test {
+        # Arrange
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
+
+			# Act
+            $list = Get-EntityKind -svc $svc -RequireInterface $interface.Id;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 1;
+            
+            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.EntityKind];
+
+            $list[0].Id | Should Be $entityKind.Id;
+        }
     }
 }
 
