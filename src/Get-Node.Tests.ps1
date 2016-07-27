@@ -16,6 +16,14 @@ Describe -Tags "Get-Node" "Get-Node" {
 	
 	. "$here\$sut"
 	. "$here\Get-User.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\Get-Job.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Set-Connector.ps1"
+	. "$here\Get-Connector.ps1"
+	. "$here\Set-Interface.ps1"
+	. "$here\Get-Interface.ps1"
+	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
 	$svc = Enter-ApcServer;
@@ -168,10 +176,7 @@ Describe -Tags "Get-Node" "Get-Node" {
 			$User = 'User-that-does-not-exist';
 			
 			# Act
-			$result = Get-Node -svc $svc -CreatedBy $User;
-
-			# Assert
-		   	$result | Should Be $null;
+			{ $result = Get-Node -svc $svc -CreatedBy $User; } | Should Throw;
 		}
 		
 		It "Get-NodeByCreatedBy-ShouldReturnListWithEntities" -Test {
@@ -212,6 +217,145 @@ Describe -Tags "Get-Node" "Get-Node" {
 		   	$result.GetType().Name | Should Be 'Job';
 		}
 	}
+
+
+    $entityPrefix = "GetNodeConnector";
+    $entitySetName = "Nodes";
+    $usedEntitySets = @("Connectors", "Interfaces", "Nodes", "EntityKinds");
+    $REQUIRE = 2L;
+    $PROVIDE = 1L;
+    Context "Get-Node-Connector" {	
+        AfterAll {
+            $svc = Enter-ApcServer;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-Entity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+        
+        function CreateInterface()
+        {
+            $Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+
+			return Set-Interface -svc $svc -Name $Name -Description $Description -CreateIfNotExist;
+        }
+
+        function CreateEntityKind() 
+        {
+            $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
+            $entityKind.Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+            $entityKind.Version = "{0}-Version-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+            
+            $svc.Core.AddToEntityKinds($entityKind);
+            $svc.Core.SaveChanges();
+
+            return $entityKind;
+        }
+
+        function CreateConnector([long]$interfaceId, [long]$entityKindId, [long]$connectionType) 
+        {
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $Multiplicity = 42;
+            			
+            if ($connectionType -eq $REQUIRE)
+            {
+                return Set-Connector -svc $svc `
+                                -Name $Name `
+                                -InterfaceId $interfaceId `
+                                -EntityKindId $entityKindId `
+                                -Description $Description `
+                                -Multiplicity $Multiplicity `
+                                -Require `
+                                -CreateIfNotExist;
+            }
+            else
+            {
+                return Set-Connector -svc $svc `
+                                -Name $Name `
+                                -InterfaceId $interfaceId `
+                                -EntityKindId $entityKindId `
+                                -Description $Description `
+                                -Multiplicity $Multiplicity `
+                                -Provide `
+                                -CreateIfNotExist;
+            }
+        }
+        
+        function CreateNode([long]$entityKindId)
+        {
+            $Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            
+            $node = Set-Node -Name $Name `
+                                -Description $Description `
+                                -EntityKindId $entityKindId `
+                                -CreateIfNotExist `
+                                -svc $svc;
+            
+            return $node;
+        }
+
+        It "Get-NodeProvideInterfaceId-ShouldReturnList" -Test {        
+            # Arrange
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
+
+            CreateNode $entityKind.Id;
+            CreateNode $entityKind.Id;
+            CreateNode $entityKindB.Id;
+
+			# Act
+            $list = Get-Node -svc $svc -ProvideInterface $interface.Id;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 3;
+            
+            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node]
+        }
+
+        It "Get-NodeRequireInterfaceId-ShouldReturnList" -test {
+            # Arrange
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
+            CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
+            
+            CreateNode $entityKind.Id;
+            CreateNode $entityKind.Id;
+            CreateNode $entityKindB.Id;
+
+			# Act
+            $list = Get-Node -svc $svc -RequireInterface $interfaceB.Id;
+
+			# Assert
+            $list | Should Not Be $null;
+            $list.Count | Should Be 2;
+            
+            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node];
+        }
+    }
 }
 
 #

@@ -392,7 +392,7 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
             $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Connector] 
         }
 
-        It "Get-EntityKindByRequiresInterfaceId-ShouldReturnList" -Test {        
+        It "Get-EntityKindByProvideInterfaceId-ShouldReturnList" -Test {        
             # Arrange
             $interface = CreateInterface | Select;
             $interfaceB = CreateInterface | Select;
@@ -414,7 +414,7 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
             $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.EntityKind]
         }
 
-        It "Get-EnttiyKindByProvidesInterfaceId-ShouldReturnList" -test {
+        It "Get-EntityKindByRequireInterfaceId-ShouldReturnList" -test {
         # Arrange
             $interface = CreateInterface | Select;
             $interfaceB = CreateInterface | Select;
