@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>biz.dfch.PS.Appclusive.Client</id>
-    <version>4.2.1</version>
+    <version>4.3.0</version>
     <title>biz.dfch.PS.Appclusive.Client</title>
     <authors>d-fens GmbH</authors>
     <owners>Ronald Rink</owners>
@@ -27,12 +27,12 @@ Third party (and Microsoft) DLLs are not part of this Apache 2.0 licensed projec
 See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detailed description on how to use the Cmdlets in this module.
 </description>
     <summary>This Microsoft PowerShell module contains Cmdlets to perform various base actions and utilties/convenience functions with the our open-source based automation framework "Appclusive".</summary>
-    <releaseNotes>20160725
-# BUGFIXES
+    <releaseNotes>20160726
+# NOTES
 
-Set-SessionTenant
+Appclusive API
 
-* fixed wrong id assignment
+* updated API to 3.5.0
 
 * installation base path is '$env:ProgramFiles\WindowsPowerShell\Modules' and can be manually set as input parameter</releaseNotes>
     <copyright>(c) 2015-2016 d-fens GmbH</copyright>
@@ -101,10 +101,10 @@ Set-SessionTenant
     <file src="..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll" target="tools\Microsoft.Data.OData.dll" />
     <file src="..\packages\Microsoft.Data.Services.Client.5.6.4\lib\net40\Microsoft.Data.Services.Client.dll" target="tools\Microsoft.Data.Services.Client.dll" />
     <file src="..\packages\System.Spatial.5.6.4\lib\net40\System.Spatial.dll" target="tools\System.Spatial.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Api.3.4.1\lib\biz.dfch.CS.Appclusive.Api.dll" target="tools\biz.dfch.CS.Appclusive.Api.dll" />
-	<file src="..\packages\biz.dfch.CS.Appclusive.Public.3.4.0\lib\biz.dfch.CS.Appclusive.Public.dll" target="tools\biz.dfch.CS.Appclusive.Public.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.4.0\lib\Newtonsoft.Json.dll" target="tools\Newtonsoft.Json.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.4.0\lib\System.Net.Http.Formatting.dll" target="tools\System.Net.Http.Formatting.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.4.0\lib\System.Web.Http.dll" target="tools\System.Web.Http.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Api.3.5.0\lib\biz.dfch.CS.Appclusive.Api.dll" target="tools\biz.dfch.CS.Appclusive.Api.dll" />
+	<file src="..\packages\biz.dfch.CS.Appclusive.Public.3.5.0\lib\biz.dfch.CS.Appclusive.Public.dll" target="tools\biz.dfch.CS.Appclusive.Public.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.5.0\lib\Newtonsoft.Json.dll" target="tools\Newtonsoft.Json.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.5.0\lib\System.Net.Http.Formatting.dll" target="tools\System.Net.Http.Formatting.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.5.0\lib\System.Web.Http.dll" target="tools\System.Web.Http.dll" />
   </files>
 </package>

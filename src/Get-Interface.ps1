@@ -91,6 +91,11 @@ PARAM
     [Alias('Consumers')]
     [switch] $ListConsumers = $false
     ,
+    # Returns all Connectors which require this Interface
+	[Parameter(Mandatory = $false)]
+    [Alias('Consumers')]
+    [switch] $ExpandNodes = $false
+    ,
 	# Specifies the return format of the search
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty', 'object')]
 	[Parameter(Mandatory = $false)]
