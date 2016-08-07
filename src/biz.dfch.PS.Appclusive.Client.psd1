@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.4.1.20160728'
+ModuleVersion = '4.5.0.20160807'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
