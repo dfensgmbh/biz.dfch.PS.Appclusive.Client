@@ -30,6 +30,7 @@ See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detail
     <releaseNotes>20160807
 # Feature 
 * Added Connectors and Interfaces CMDlets
+	</releaseNotes>
     <copyright>(c) 2015-2016 d-fens GmbH</copyright>
     <language>en-US</language>
     <tags>dfch PowerShell Appclusive Automation OData</tags>
