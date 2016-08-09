@@ -1,4 +1,3 @@
-Import-Module biz.dfch.PS.Appclusive.Client;
 $svc = Enter-Appclusive LAB3;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -44,7 +43,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
             }
         }
 		
-		It "Acl-CreateAndDeleteAcl" -Test {
+		It "CreateAndDeleteAcl" -Test {
 		
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
@@ -61,13 +60,12 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			
 			#get Id of the acl
 			$aclId = $acl.Id;
-			Write-Host $aclId;
 			
 			#ACT - delete acl
 			Delete-Acl -svc $svc -aclId $aclId;
 		}
 		
-		It "Acl-UpdateNameDescripton" -Test {
+		It "Acl-UpdateNameAndDescripton" -Test {
 			
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
@@ -91,71 +89,48 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
 		
-		<#
-		It "Acl-DeleteWithoutAttachedAce-ThrewException" -Test {
-			try {
-				# Arrange Create Acl
-				$aclName = "Test Acl";
-				$aclDescription = "TestNode used in Test";		
-				$acl = CreateAcl -aclName $aclName -aclDescription $aclDescription;	
+		It "DeleteAclThatIsReferencedOnAce" -Test {
+			
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName = $entityPrefix + "Ace";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
+			
+			#ACT Create Ace
+			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId | select;
+			
+			#get the Id of the ace
+			$aceId = $ace.Id;
+			
+			try
+			{
+				#get the acl
+				$query = "Id eq {0}" -f $aclId;
+				$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
 				
-				# Act Create Acl
-				$svc.Core.AddToAcls($acl);
-				$result = $svc.core.SaveChanges();
-				
-				# Assert Create Acl
-				$result.StatusCode | Should be 201;
-				$acl.Id | Should Not Be 0;
-				
-				# Arrange Create Ace
-				$aceName = "Test Ace"
-				$aceDescription = "Ace used in tests"
-				$aceAclId = $acl.Id;
-				$aceAction = "ALLOW";
-				
-				$ace = CreateAce -aceName $aceName -aceDescription $aceDescription -aceAclId $aceAclId -aceAction $aceAction;	
-				
-				# Act Create Ace
-				$svc.Core.AddToAces($ace);
-				$result = $svc.core.SaveChanges();
-				
-				# Assert Create Ace
-				$result.StatusCode | Should be 201;
-				$ace.Id | Should Not Be 0;
-				
-				# Arrange Delete
+				#ACT Delete acl
 				$svc.Core.DeleteObject($acl);
-				
-				# Delete threw exception
-				try {
-					$result = $svc.Core.SaveChanges();
-					$result.StatusCode | Should Be 204;
-				}
-				catch {
-					$threwException = $true;
-				}
-				
-				# Assert
-				$threwException | Should Be $true;
-			} 
-			finally {
-				# Relogin and bind objects
-				$svc = Enter-ApcServer;
-				$svc.Core.AttachTo('Acls', $acl);
-				$svc.Core.AttachTo('Aces', $ace);
-
-				#Cleanup	
-				$svc.Core.DeleteObject($ace);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				#Cleanup
-				$svc.Core.DeleteObject($acl);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
+				{ $result = $svc.Core.SaveChanges(); } | Should Throw;	
+			}
+			
+			catch 
+			{
+				$threwException = $true;
 			}
 		}
-		
+		<#
 		It "Acl-GetAcesOfAcl" {
 			try {
 				# Create Acl for Ace tests
