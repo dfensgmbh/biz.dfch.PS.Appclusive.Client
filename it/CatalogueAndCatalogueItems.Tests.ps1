@@ -1,5 +1,3 @@
-Import-Module biz.dfch.PS.Appclusive.Client;
-#$svc = Enter-ApcServer;
 $svc = Enter-Appclusive LAB3;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path;
@@ -26,7 +24,6 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
 			$svc = Enter-Appclusive LAB3;
-			#$svc = Enter-ApcServer;
 		}
 		
 		AfterAll {
