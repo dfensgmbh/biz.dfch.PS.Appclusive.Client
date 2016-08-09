@@ -1,15 +1,97 @@
-function CreateAcl($aclName, $aclDescription) 
-{
+function Create-Acl {
+	Param
+	(
+		$svc
+		,
+		$aclName
+		,
+		$entityId
+	)
+	
 	$acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
-	$acl.Name = $aclName; #"required-contains-name-of-resource"
-	$acl.Description = $aclDescription; #"required-contains-id-to-resource"
-	$acl.Created = [System.DateTimeOffset]::Now;
-	$acl.Modified = $acl.Created;
-	$acl.CreatedBy = $ENV:USERNAME;
-	$acl.ModifiedBy = $acl.CreatedBy;
+	$acl.Name = $aclName;
+	$acl.Description = $aclDescr;
+	$acl.EntityId = $nodeId;
+	$acl.EntityKindId = 1;
 	$acl.Tid = "11111111-1111-1111-1111-111111111111";
-	$acl.Id = 0;
+	$svc.Core.AddToAcls($acl);
+	$result = $svc.Core.SaveChanges();
+	
+	#get ACL
+	$query = "Name eq '{0}' and EntityId eq {1}" -f $aclName, $nodeId;
+	$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+				
+	#ASSERT	
+	$result.StatusCode | Should be 201;
+	$acl | Should Not Be $null;
+	$acl.Id | Should Not Be 0;
+	
 	return $acl;
+}
+
+function Delete-Acl {
+	Param
+	(
+		$svc
+		,
+		$aclId
+	)
+	
+	#get the acl
+	$query = "Id eq {0}" -f $aclId;
+	$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	
+	#delete the acl
+	$svc.Core.DeleteObject($acl);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted acl
+	$query = "Id eq {0}" -f $aclId;
+	$deletedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT acl is deleted
+	$deletedAcl | Should Be $null;
+	$result.StatusCode | Should Be 204;
+}
+
+function Update-Acl {
+	Param
+	(
+		$svc
+		,
+		$aclId
+		,
+		$newAclName
+		,
+		$newAclDescription
+	)
+	
+	#get the Acl 
+	$query = "Id eq {0}" -f $aclId;
+	$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	$aclName = $acl.Name; #get old name
+	$aclDescription = $acl.Description; #get old desription
+	
+	#Set new name and description for the acl
+	$acl.Name = $newAclName;
+	$acl.Description = $newAclDescription;
+	
+	#save changes
+	$svc.Core.UpdateObject($acl)
+	$result = $svc.core.SaveChanges();	
+				
+	#get the updated Acl 
+	$query = "Id eq {0}" -f $aclId;
+	$updatedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	$updatedAcl.Name | Should Be $newAclName;
+	$updatedAcl.Name | Should Not Be $aclName;
+	$updatedAcl.Description | Should Be $newAclDescription;
+	$updatedAcl.Description | Should Not Be $aclDescription;
+	$updatedAcl.Id | Should Be $aclId;
+	
+	return $updatedAcl;
 }
 
 function CreateAce($aceName, $aceDescription, $aceAclId, $aceAction) 

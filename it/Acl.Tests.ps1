@@ -1,3 +1,6 @@
+Import-Module biz.dfch.PS.Appclusive.Client;
+$svc = Enter-Appclusive LAB3;
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -10,9 +13,12 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 
 Describe -Tags "Acl.Tests" "Acl.Tests" {
 
-	Mock Export-ModuleMember { return $null; }
-	
+	Mock Export-ModuleMember { return $null; }	
 	. "$here\$sut"
+	. "$here\DeleteNode.ps1"
+	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Nodes", "Acls", "Aces");
 	
 	Context "#CLOUDTCL-1871-AclTests" {
 		
@@ -20,67 +26,72 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive LAB3;
 		}
 		
+		AfterEach {
+            $svc = Enter-Appclusive LAB3;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
 		It "Acl-CreateAndDeleteAcl" -Test {
-			try {
-				# Arrange
-				$aclName = "Test Acl";
-				$aclDescription = "TestAcl used in Test";		
-				$acl = CreateAcl -aclName $aclName -aclDescription $aclDescription;	
-				
-				# Act
-				$svc.Core.AddToAcls($acl);
-				$result = $svc.core.SaveChanges();
-				
-				# Assert	
-				$result.StatusCode | Should be 201;
-				$acl.Id | Should Not Be 0;
-			} 
-			finally {
-				#Cleanup
-				$svc.Core.DeleteObject($acl);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
+		
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
+			Write-Host $aclId;
+			
+			#ACT - delete acl
+			Delete-Acl -svc $svc -aclId $aclId;
 		}
 		
 		It "Acl-UpdateNameDescripton" -Test {
-			try {
-				# Create Acl
-				$aclName = "Test Acl";
-				$aclDescription = "TestNode used in Test";		
-				$acl = CreateAcl -aclName $aclName -aclDescription $aclDescription;	
-				$svc.Core.AddToAcls($acl);
-				$result = $svc.core.SaveChanges();
-				$result.StatusCode | Should be 201;
-				$acl.Id | Should Not Be 0;
-				
-				# Arrange
-				$aclSetName	= "Updated";
-				$aclSetDescription = "Updated";
-				$acl.Name = $aclSetName;
-				$acl.Description = $aclSetDescription;
+			
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$newAclName = $aclName + "Updated";
+			$newAclDescription = "Updated Description";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
 								
-				# Act
-				$svc.Core.UpdateObject($acl)
-				$result = $svc.core.SaveChanges();	
-				
-				# Assert
-				$result.StatusCode | Should Be 204;
-				$aclCheck = $svc.Core.Acls.AddQueryOption('$filter', ("Id eq {0}" -f $acl.Id));
-				$aclCheck.Name | Should Be $aclSetName;
-				$aclCheck.Description | Should Be $aclSetDescription;
-			} 
-			finally {
-				#Cleanup
-				$svc.Core.DeleteObject($acl);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
+			#ACT update acl
+			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
-		}
 		
+		<#
 		It "Acl-DeleteWithoutAttachedAce-ThrewException" -Test {
 			try {
 				# Arrange Create Acl
@@ -387,7 +398,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 				$result = $svc.Core.SaveChanges();
 				$result.StatusCode | Should Be 204;
 			}
-		}
+		} #>
 	}
 }
 
