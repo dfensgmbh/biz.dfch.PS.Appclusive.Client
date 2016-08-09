@@ -94,20 +94,42 @@ function Update-Acl {
 	return $updatedAcl;
 }
 
-function CreateAce($aceName, $aceDescription, $aceAclId, $aceAction) 
-{
+function Create-Ace{
+	Param
+	(
+		$svc
+		,
+		$aceName
+		,
+		$aclId
+	)
+	
 	$ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
 	$ace.Name = $aceName;
-	$ace.Description = $aceDescription;
-	$ace.AclId = $aceAclId;
-	$ace.Trustee = $ENV:USERNAME;
-	$ace.Action = $aceAction;
-	$ace.Created = [System.DateTimeOffset]::Now;
-	$ace.Modified = $ace.Created;
-	$ace.CreatedBy = $ENV:USERNAME;
-	$ace.ModifiedBy = $ace.CreatedBy;
+	$ace.Description = "Test Ace";
+	$ace.AclId = $aclId;
 	$ace.Tid = "11111111-1111-1111-1111-111111111111";
-	$ace.Id = 0;
+	$username = $ENV:USERNAME;
+	$query = "Name eq '{0}'" -f $username;
+	$user = $svc.Core.Users.AddQueryOption('$filter', $query) | select;
+	$userId = $user.Id;
+	$ace.TrusteeId = $userId;
+	$ace.TrusteeType = 1; #1 for users
+	$ace.Type = 2;
+	$ace.PermissionId = 2;
+	
+	#create ace
+	$svc.Core.AddToAces($ace);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the ace
+	$query = "Name eq '{0}' and AclId eq {1}" -f $aceName, $aclId;
+	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT new ace
+	$result.StatusCode | Should Be 201;
+	$ace | Should Not Be $null;
+	
 	return $ace;
 }
 
