@@ -42,7 +42,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
                 }
             }
         }
-		<#
+		
 		It "CreateAndDeleteAcl" -Test {
 		
 			#ARRANGE
@@ -88,7 +88,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			#ACT update acl
 			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
-		#>
+		
 		It "DeleteAclThatIsReferencedOnAce" -Test {
 			
 			#ARRANGE
@@ -146,18 +146,15 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			$nodeId = $newNode.Id;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
-			
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId;
+						
 			#get Id of the acl
 			$aclId = $acl.Id;
 			
 			#ACT Create 2 Aces that reference the Acl
 			$ace1 = Create-Ace -svc $svc -aceName $aceName1 -aclId $aclId | select;
 			$ace2 = Create-Ace -svc $svc -aceName $aceName2 -aclId $aclId | select;
-
-			#ACT Get Ace and load Aces
-			$query = "Id eq {0}" -f $aclId;
-			$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+			
 			$acesOfAcl = $svc.Core.LoadProperty($acl, 'Aces') | Select;
 			
 			#ASSERT
@@ -166,62 +163,60 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			}
 		}
 	
-	<#
+	
 	Context "#CLOUDTCL-1872-AceTests" {
+		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
-			
-			# Create Acl for Ace tests
-			$aclName = "Test Acl for Ace tests";
-			$aclDescription = "TestNode used in Test";		
-			$acl = CreateAcl -aclName $aclName -aclDescription $aclDescription;	
-			$svc.Core.AddToAcls($acl);
-			$result = $svc.core.SaveChanges();
-			$result.StatusCode | Should be 201;
-			$acl.Id | Should Not Be 0;
-			
-			$result = $null;
+			$svc = Enter-Appclusive LAB3;
 		}
 		
 		AfterEach {
-			# Cleanup Acl
-			$svc = Enter-ApcServer;
-			$svc.Core.AttachTo('Acls', $acl);
-			$svc.Core.DeleteObject($acl);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-		}
+            $svc = Enter-Appclusive LAB3;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
 		It "Ace-CreateAndDeleteAce" -Test {
-			try {
-				# Arrange
-				$aceName = "Test Ace"
-				$aceDescription = "Ace used in tests"
-				$aceAclId = $acl.Id;
-				$aceAction = "ALLOW";
-				
-				$ace = CreateAce -aceName $aceName -aceDescription $aceDescription -aceAclId $aceAclId -aceAction $aceAction;	
-				
-				# Act
-				$svc.Core.AddToAces($ace);
-				$result = $svc.core.SaveChanges();
-				
-				# Assert
-				$result.StatusCode | Should be 201;
-				$ace.Id | Should Not Be 0;
-				
-			} 			
-			Finally {
-				#Cleanup	
-				$svc.Core.DeleteObject($ace);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName = $entityPrefix + "Ace";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
+			
+			#ACT Create Ace
+			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId | select;
+			
+			#get the Id of the ace
+			$aceId = $ace.Id;
+			
+			#ACT Delete Ace
+			Delete-Ace -svc $svc -aceId $aceId;
 			}
 		}
-		
+		<#
 		It "Ace-UpdateNameDescription" -Test {
 			try {
 				# Arrange Create
