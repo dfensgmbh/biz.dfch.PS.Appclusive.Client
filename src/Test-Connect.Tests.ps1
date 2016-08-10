@@ -10,221 +10,33 @@ function Stop-Pester($message = "Unrepresentative, because no entities existing.
 }
 
 
-Describe -Tags "Get-Node" "Get-Node" {
+Describe -Tags "Test-Connect" "Test-Connect" {
 
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
 	. "$here\Get-User.ps1"
 	. "$here\Set-Node.ps1"
+	. "$here\Get-Node.ps1"
 	. "$here\Get-Job.ps1"
 	. "$here\Get-EntityKind.ps1"
 	. "$here\Set-Connector.ps1"
 	. "$here\Get-Connector.ps1"
 	. "$here\Set-Interface.ps1"
 	. "$here\Get-Interface.ps1"
+	. "$here\Test-Connect.ps1"
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
 	$svc = Enter-ApcServer;
 
-	Context "Get-Node" {
-	
-		# Context wide constants
-		# N/A
-		
-		It "Warmup" -Test {
-			$true | Should Be $true;
-		}
-
-		It "Get-NodeListAvailable-ShouldReturnList" -Test {
-			# Arrange
-			# N/A
-			
-			# Act
-			$result = Get-Node -svc $svc -ListAvailable;
-			if ( $result.Count -eq 0 )
-			{
-				Stop-Pester
-			}
-
-			# Assert
-			$result | Should Not Be $null;
-			$result -is [Array] | Should Be $true;
-			0 -lt $result.Count | Should Be $true;
-		}
-
-		It "Get-NodeListAvailableSelectName-ShouldReturnListWithNamesOnly" -Test {
-			# Arrange
-			# N/A
-			
-			# Act
-			$result = Get-Node -svc $svc -ListAvailable -Select Name;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result -is [Array] | Should Be $true;
-			0 -lt $result.Count | Should Be $true;
-			$result[0].Name | Should Not Be $null;
-			$result[0].Id | Should Be $null;
-		}
-
-		It "Get-Node-ShouldReturnFirstEntity" -Test {
-			# Arrange
-			$ShowFirst = 1;
-			
-			# Act
-			$result = Get-Node -svc $svc -First $ShowFirst;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result -is [biz.dfch.CS.Appclusive.Api.Core.Node] | Should Be $true;
-		}
-		
-		It "Get-Node-ShouldReturnFirstEntityById" -Test {
-			# Arrange
-			$ShowFirst = 1;
-			
-			# Act
-			$resultFirst = Get-Node -svc $svc -First $ShowFirst;
-			$Id = $resultFirst.Id;
-			$result = Get-Node -Id $Id -svc $svc;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result | Should Be $resultFirst;
-			$result -is [biz.dfch.CS.Appclusive.Api.Core.Node] | Should Be $true;
-		}
-		
-		It "Get-Node-ShouldReturnFiveEntities" -Test {
-			# Arrange
-			$ShowFirst = 5;
-			
-			# Act
-			$result = Get-Node -svc $svc -First $ShowFirst;
-
-			# Assert
-			$result | Should Not Be $null;
-			$ShowFirst -eq $result.Count | Should Be $true;
-			$result[0] -is [biz.dfch.CS.Appclusive.Api.Core.Node] | Should Be $true;
-		}
-
-		It "Get-NodeThatDoesNotExist-ShouldReturnNull" -Test {
-			# Arrange
-			$NodeName = 'Node-that-does-not-exist';
-			
-			# Act
-			$result = Get-Node -svc $svc -Name $NodeName;
-
-			# Assert
-			$result | Should Be $null;
-		}
-		
-		It "Get-NodeThatDoesNotExist-ShouldReturnDefaultValue" -Test {
-			# Arrange
-			$NodeName = 'Node-that-does-not-exist';
-			$DefaultValue = 'MyDefaultValue';
-			
-			# Act
-			$result = Get-Node -svc $svc -Name $NodeName -DefaultValue $DefaultValue;
-
-			# Assert
-			$result | Should Be $DefaultValue;
-		}
-		
-		It "Get-Node-ShouldReturnXML" -Test {
-			# Arrange
-			$ShowFirst = 1;
-			
-			# Act
-			$result = Get-Node -svc $svc -First $ShowFirst -As xml;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result.Substring(0,5) | Should Be '<?xml';
-		}
-		
-		It "Get-Node-ShouldReturnJSON" -Test {
-			# Arrange
-			$ShowFirst = 1;
-			
-			# Act
-			$result = Get-Node -svc $svc -First $ShowFirst -As json;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result.Substring(0, 1) | Should Be '{';
-			$result.Substring($result.Length -1, 1) | Should Be '}';
-		}
-		
-		It "Get-Node-WithInvalidId-ShouldReturnException" -Test {
-			# Act
-			try 
-			{
-				$result = Get-Node -Id 'myNode';
-				'throw exception' | Should Be $true;
-			} 
-			catch
-			{
-				# Assert
-			   	$result | Should Be $null;
-			}
-		}
-		
-		It "Get-NodeByCreatedByThatDoesNotExist-ShouldReturnNull" -Test {
-			# Arrange
-			$User = 'User-that-does-not-exist';
-			
-			# Act
-			{ $result = Get-Node -svc $svc -CreatedBy $User; } | Should Throw;
-		}
-		
-		It "Get-NodeByCreatedBy-ShouldReturnListWithEntities" -Test {
-			# Arrange
-			$User = 'SYSTEM';
-			
-			# Act
-			$result = Get-Node -svc $svc -CreatedBy $User;
-
-			# Assert
-		   	$result | Should Not Be $null;
-			0 -lt $result.Count | Should Be $true;
-		}
-		
-		It "Get-NodeByModifiedBy-ShouldReturnListWithEntities" -Test {
-			# Arrange
-			$User = 'SYSTEM';
-			
-			# Act
-			$result = Get-Node -svc $svc -ModifiedBy $User;
-
-			# Assert
-		   	$result | Should Not Be $null;
-			0 -lt $result.Count | Should Be $true;
-		}
-		
-		
-		It "Get-NodeExpandJob-ShouldReturnJob" -Test {
-			# Arrange
-			$ShowFirst = 1;
-			
-			# Act
-			$resultFirst = Get-Node -svc $svc -First $ShowFirst;
-			$result = Get-Node -svc $svc -Id $resultFirst.Id -ExpandJob;
-
-			# Assert
-		   	$result | Should Not Be $null;
-		   	$result.GetType().Name | Should Be 'Job';
-		}
-	}
-
-
-    $entityPrefix = "GetNodeConnector";
+    $entityPrefix = "TestConnect";
     $entitySetName = "Nodes";
     $usedEntitySets = @("Connectors", "Interfaces", "Nodes", "EntityKinds");
     $REQUIRE = 2L;
     $PROVIDE = 1L;
-    Context "Get-Node-Connector" {	
+    Context "Test-Connect" {
+    	
         AfterAll {
             $svc = Enter-ApcServer;
             $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
@@ -304,56 +116,90 @@ Describe -Tags "Get-Node" "Get-Node" {
             return $node;
         }
 
-        It "Get-NodeProvideInterfaceId-ShouldReturnList" -Test {        
+        It "Test-Connect-ReturnsTrueForConnectableEntityKind" -Test {        
             # Arrange
-            $interface = CreateInterface | Select;
-            $interfaceB = CreateInterface | Select;
             $entityKind = CreateEntityKind | Select;
             $entityKindB = CreateEntityKind | Select;
 
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+
             CreateConnector $interface.Id $entityKind.Id $PROVIDE;
-            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
-            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
-            CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
-
-            CreateNode $entityKind.Id;
-            CreateNode $entityKind.Id;
-            CreateNode $entityKindB.Id;
-
+            CreateConnector $interface.Id $entityKindB.Id $REQUIRE;
+            			
+            CreateConnector $interfaceB.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interfaceB.Id $entityKindB.Id $REQUIRE;	
+            
 			# Act
-            $list = Get-Node -svc $svc -ProvideInterface $interface.Id;
+            $canConnect = Test-Connect -svc $svc -EntityKindId $entityKindB.Id -ParentEntityKindId $entityKind.Id;
 
 			# Assert
-            $list | Should Not Be $null;
-            $list.Count | Should Be 3;
-            
-            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node]
+            $canConnect | Should Be $true;
         }
-
-        It "Get-NodeRequireInterfaceId-ShouldReturnList" -test {
+        
+        It "Test-Connect-ReturnsFalseForNotConnectableEntityKind" -Test {        
             # Arrange
-            $interface = CreateInterface | Select;
-            $interfaceB = CreateInterface | Select;
             $entityKind = CreateEntityKind | Select;
             $entityKindB = CreateEntityKind | Select;
 
-            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
-            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
-            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
-            CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
-            
-            CreateNode $entityKind.Id;
-            CreateNode $entityKind.Id;
-            CreateNode $entityKindB.Id;
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
 
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKindB.Id $REQUIRE;
+            			
+            CreateConnector $interfaceB.Id $entityKindB.Id $REQUIRE;	
+            
 			# Act
-            $list = Get-Node -svc $svc -RequireInterface $interfaceB.Id;
+            $canConnect = Test-Connect -svc $svc -EntityKindId $entityKindB.Id -ParentEntityKindId $entityKind.Id;
 
 			# Assert
-            $list | Should Not Be $null;
-            $list.Count | Should Be 2;
+            $canConnect | Should Be $false;
+        }
+        
+        It "Test-Connect-ReturnsTrueForConnectableNode" -Test {        
+            # Arrange
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKindB.Id $REQUIRE;
+            			
+            CreateConnector $interfaceB.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interfaceB.Id $entityKindB.Id $REQUIRE;	
             
-            $list[0] | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node];
+            $node = CreateNode $entityKind.Id | Select;
+
+			# Act
+            $canConnect = Test-Connect -svc $svc -EntityKindId $entityKindB.Id -ParentNodeId $node.Id;
+
+			# Assert
+            $canConnect | Should Be $true;
+        }
+        
+        It "Test-Connect-ReturnsFalseForNotConnectableNode" -Test {        
+            # Arrange
+            $entityKind = CreateEntityKind | Select;
+            $entityKindB = CreateEntityKind | Select;
+
+            $interface = CreateInterface | Select;
+            $interfaceB = CreateInterface | Select;
+
+            CreateConnector $interface.Id $entityKind.Id $PROVIDE;
+            CreateConnector $interface.Id $entityKindB.Id $REQUIRE;
+            			
+            CreateConnector $interfaceB.Id $entityKindB.Id $REQUIRE;	
+            
+            $node = CreateNode $entityKind.Id;
+
+			# Act
+            $canConnect = Test-Connect -svc $svc -EntityKindId $entityKindB.Id -ParentNodeId $node.Id;
+
+			# Assert
+            $canConnect | Should Be $false;
         }
     }
 }
@@ -488,15 +334,15 @@ Describe -Tags "Get-Node" "Get-Node" {
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyODEyMDYwNVowIwYJKoZIhvcNAQkEMRYEFH1a3B3xfcLzVAdTD6XNkTPJ0aKa
+# MDcyNjEzMDAwOVowIwYJKoZIhvcNAQkEMRYEFH1a3B3xfcLzVAdTD6XNkTPJ0aKa
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBt+F80gDTQU6wWuSlR
-# v7g9EylU1oc5GV+RW/R0FeKL9wLhIlaQ6vqP9pH4KJVVC4vl6cCxU61NB4YqxA9S
-# zNTF/HBReRJTPGHtBapuW4VDJwYTsaa6h9EyFRYeYB0LMR2QdUfizm2768xdfwkH
-# ujrSkoHYBNt9hV3ZwL7jvd7ByH4DgvrAC6Nd8U98bxxjFptnl9hGWw3PSQSQ7Np1
-# Pk+xIA/isirJLKg3etMXAwnqF5evsOjY+MiZ8wRYHGEv+XrF0ME4cS54cWMVKCX7
-# ZAo+dxOHId0aBPekKZdaxLuBvVACtd8V9Lyoi9LEoKM0Ayju8Bn0TQ/kTUjerJIp
-# 9Atx
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQA+TCFbmS/Xi5CElAq2
+# pWh/M4yxzSIxbTb0cU+Xy5h1kGN92TzBXVwUkFwi6gi+kCfr1dyL/69rIWTRpkn9
+# YFz0Gvp5RkXEbT4cBIert8wsvGtCCvHgjMgUohgDx80C0wPGp3jou5JIcb/TLF8a
+# Bv9+FLEnjgJ69KegWjyGeZ9lXHLfbnbSWv9RSSZ5JP0UjH/FIgNavI7+JinDnKnR
+# ngapzZagvU8+KftU+MLUvdUVjtfwzmWO2bFb3Sr25BrIZ5WaAkqvXUfHENKMmBv1
+# Dm87jw3jmPVhUkQ/zUAsniMl/M26oE3CVhtpStXWEVF6SR9PcmB82h2JkxmFLJ7S
+# v/xH
 # SIG # End signature block

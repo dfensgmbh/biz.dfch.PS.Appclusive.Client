@@ -66,11 +66,12 @@ Process
 	{ 
 		$Exp += ("(Id eq {0})" -f $Id);
 	}
+    $r = @();
 
 	$FilterExpression = [String]::Join(' and ', $Exp);
 
-	$interface = $svc.Core.$entitySetName.AddQueryOption('$filter',$FilterExpression).AddQueryOption('$top', 1);
-    Remove-Entity -svc $svc -Id $interface.Id -EntitySetName $entitySetName -Confirm:$false;
+	$entity = $svc.Core.$entitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', 1) | Select;
+    Remove-Entity -svc $svc -Id ($entity.Id) -EntitySetName $entitySetName -Confirm:$false;
 
 	$OutputParameter = Format-ResultAs $r $As
 	$fReturn = $true;

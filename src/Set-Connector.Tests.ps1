@@ -67,7 +67,7 @@ Describe -Tags "Set-Interface" "Set-Interface" {
 
 		# Context wide constants
 		# N/A
-	    It "Set-ConnectorWithCreateIfNotExist-ShouldReturnNewEntity" -Test {
+	    It "Set-ConnectorWithCreateIfNotExistRequire-ShouldReturnNewEntity" -Test {
 			# Arrange
             $interface = CreateInterface | Select;
             $entityKind = CreateEntityKind | Select;
@@ -79,7 +79,9 @@ Describe -Tags "Set-Interface" "Set-Interface" {
             $Multiplicity = 15;
 
 			# Act
-			$result = Set-Connector -svc $svc `                                    -Name $Name `                                    -InterfaceId $InterfaceId `
+			$result = Set-Connector -svc $svc `
+                                    -Name $Name `
+                                    -InterfaceId $InterfaceId `
                                     -EntityKindId $entityKindId `
                                     -Description $Description `
                                     -Multiplicity $Multiplicity `
@@ -95,6 +97,40 @@ Describe -Tags "Set-Interface" "Set-Interface" {
 			$result.Description | Should Be $Description;
 			$result.Multiplicity | Should Be $Multiplicity;
 			$result.ConnectionType | Should Be 2;
+		}
+
+		# Context wide constants
+		# N/A
+	    It "Set-ConnectorWithCreateIfNotExistProvide-ShouldReturnNewEntity" -Test {
+			# Arrange
+            $interface = CreateInterface | Select;
+            $entityKind = CreateEntityKind | Select;
+
+			$Name = "{0}-Name-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+            $InterfaceId = $interface.Id;
+            $entityKindId = $entityKind.Id;
+            $Multiplicity = 10;
+
+			# Act
+			$result = Set-Connector -svc $svc `
+                                    -Name $Name `
+                                    -InterfaceId $InterfaceId `
+                                    -EntityKindId $entityKindId `
+                                    -Description $Description `
+                                    -Multiplicity $Multiplicity `
+                                    -Provide `
+                                    -CreateIfNotExist;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.Id | Should Not Be 0;
+			$result.Name | Should Be $Name;
+			$result.InterfaceId | Should Be $InterfaceId;
+			$result.EntityKindId | Should Be $EntityKindId;
+			$result.Description | Should Be $Description;
+			$result.Multiplicity | Should Be $Multiplicity;
+			$result.ConnectionType | Should Be 1;
 		}
 	}
 }

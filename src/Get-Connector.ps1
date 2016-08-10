@@ -38,11 +38,19 @@ See module manifest for dependencies and further requirements.
 PARAM 
 (
 	# Specifies the Key property of the entity.
-	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Id')]
-	[string] $Id
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Id')]
+	[long] $Id
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'EntityKindId')]
+	[long] $EntityKindId
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'InterfaceId')]
+	[long] $InterfaceId
 	,
 	# Specifies the order of the returned entites. You can specify more than one property (e.g. Key and Name).
-	[ValidateSet('Id', 'Name')]
+	[ValidateSet('Id', 'Name', 'EntityKindId', 'InterfaceId')]
 	[Parameter(Mandatory = $false, Position = 1)]
 	[string[]] $OrderBy = @('Id','Name')
 	,
@@ -75,7 +83,15 @@ PARAM
 	# Specifies to return all existing entities
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[switch] $ListAvailable = $false
-    ,
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $false)]
+	[switch] $Require = $false
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $false)]
+	[switch] $Provide = $false
+	,
 	# Specifies the return format of the search
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty', 'object')]
 	[Parameter(Mandatory = $false)]
@@ -164,6 +180,23 @@ Process
 		    { 
 			    $Exp += ("(Id eq {0})" -f $Id);
 		    }
+		    if($EntityKindId) 
+		    { 
+			    $Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+		    }
+		    if($InterfaceId) 
+		    { 
+			    $Exp += ("(InterfaceId eq {0})" -f $InterfaceId);
+		    }
+		    if(!!$Require) 
+		    { 
+			    $Exp += ("(ConnectionType eq 2)");
+		    }
+		    if(!!$Provide) 
+		    { 
+			    $Exp += ("(ConnectionType eq 1)");
+		    }
+
 
 		    $FilterExpression = [String]::Join(' and ', $Exp);
 
