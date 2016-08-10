@@ -1,5 +1,3 @@
-#Requires -modules 'biz.dfch.PS.Appclusive.Client'
-
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path;
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".");
 
@@ -16,7 +14,9 @@ Describe -Tags "Message.Tests" "Message.Tests" {
 		# Context wide constants
 		
 		BeforeEach {
-			# N/A
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
 		}
 
 		It "CreatingMessage-Succeeds" -Test {
