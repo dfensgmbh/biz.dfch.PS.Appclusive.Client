@@ -92,6 +92,15 @@ See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detail
 	<file src="Set-SessionTenant.ps1" target="tools\Set-SessionTenant.ps1" />
 	<file src="Get-SessionTenant.ps1" target="tools\Get-SessionTenant.ps1" />
 	<file src="Get-Version.ps1" target="tools\Get-Version.ps1" />
+	<file src="New-Connector.ps1" target="tools\New-Connector.ps1" />
+	<file src="Set-Connector.ps1" target="tools\Set-Connector.ps1" />
+	<file src="Get-Connector.ps1" target="tools\Get-Connector.ps1" />
+	<file src="Remove-Connector.ps1" target="tools\Remove-Connector.ps1" />	
+	<file src="New-Interface.ps1" target="tools\New-Interface.ps1" />
+	<file src="Set-Interface.ps1" target="tools\Set-Interface.ps1" />
+	<file src="Get-Interface.ps1" target="tools\Get-Interface.ps1" />
+	<file src="Remove-Interface.ps1" target="tools\Remove-Interface.ps1" />		
+	<file src="Test-Connect.ps1" target="tools\Test-Connect.ps1" />		
 	<file src="Format-Exception.ps1" target="tools\Format-Exception.ps1" />
     <file src="..\packages\Microsoft.Data.Edm.5.6.4\lib\net40\Microsoft.Data.Edm.dll" target="tools\Microsoft.Data.Edm.dll" />
     <file src="..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll" target="tools\Microsoft.Data.OData.dll" />
