@@ -89,7 +89,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
 		
-		It "DeleteAclThatIsReferencedOnAce" -Test {
+		It "Acl-DeleteAclThatIsReferencedOnAce" -Test {
 			
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
@@ -246,65 +246,61 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			$updatedAce = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
 
 		}
-		<#
-		It "Ace-CreateAceWithoutAclReferenz-ThrewException" -Test {
-			# Arrange
-			$aceName = "Test Ace"
-			$aceDescription = "Ace used in tests"
-			$aceAction = "ALLOW";
+		
+		It "Ace-CreateAceWithoutAclReferenceShouldThrowException" -Test {
+			#ARRANGE ace without Acl Id 
+			$aceName = $entityPrefix + "Ace";
+			$ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
+			$ace.Name = $aceName;
+			$ace.Description = "Test Ace";
+			#$ace.AclId will get no assigned value
+			$ace.Tid = "11111111-1111-1111-1111-111111111111";
+			$username = $ENV:USERNAME;
+			$query = "Name eq '{0}'" -f $username;
+			$user = $svc.Core.Users.AddQueryOption('$filter', $query) | select;
+			$userId = $user.Id;
+			$ace.TrusteeId = $userId;
+			$ace.TrusteeType = 1; #1 for users
+			$ace.Type = 2;
+			$ace.PermissionId = 2;
 			
-			$ace = CreateAce -aceName $aceName -aceDescription $aceDescription -aceAction $aceAction;
-			$svc.Core.AddToAces($ace);
+			#ACT try to create the ace
+			try 
+			{
+				$svc.Core.AddToAces($ace);
+				$svc.Core.SaveChanges();
+			} 
 			
-			try {
-				$result = $svc.core.SaveChanges();
-			} catch {
-				$threwException = $true;
+			catch 
+			{
+				$(Format-ApcException) | Should Not Be $null;
 			}
-			
-			# Assert
-			$threwException | Should Be $true;		
 		}
 		
 		It "Ace-CreateTwoAcesToOneAcl" {
-			try {
-				# Arrange
-				$aceName1 = "Test Ace One"
-				$aceDescription1 = "Ace used in tests (one)"
-				$aceName2 = "Test Ace Two"
-				$aceDescription1 = "Ace used in tests (two)"
-				$aceAclId = $acl.Id;
-				$aceAction = "ALLOW";
-				
-				$ace1 = CreateAce -aceName $aceName1 -aceDescription $aceDescription1 -aceAclId $aceAclId -aceAction $aceAction;	
-				$ace2 = CreateAce -aceName $aceName2 -aceDescription $aceDescription2 -aceAclId $aceAclId -aceAction $aceAction;	
-				
-				# Act
-				$svc.Core.AddToAces($ace1);
-				$result1 = $svc.core.SaveChanges();
-				$svc.Core.AddToAces($ace2);
-				$result2 = $svc.core.SaveChanges();
-				
-				# Assert
-				$result1.StatusCode | Should be 201;
-				$ace1.Id | Should Not Be 0;
-				$result2.StatusCode | Should be 201;
-				$ace2.Id | Should Not Be 0;
-				$ace1.Id | Should Not Be $ace2.Id;
-				
-			} 			
-			Finally {
-				#Cleanup	
-				$svc.Core.DeleteObject($ace1);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($ace2);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName1 = $entityPrefix + "Ace1";
+			$aceName2 = $entityPrefix + "Ace2";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId;
+						
+			#get Id of the acl
+			$aclId = $acl.Id;
+			
+			#ACT Create 2 Aces that reference the Acl
+			$ace1 = Create-Ace -svc $svc -aceName $aceName1 -aclId $aclId | select;
+			$ace2 = Create-Ace -svc $svc -aceName $aceName2 -aclId $aclId | select;
 		}
-		
+		<#
 		It "Ace-GetAclOfAce" -Test {
 			try {
 				# Arrange Create Ace
