@@ -284,7 +284,6 @@ Describe -Tags "Format-Exception" "Format-Exception" {
 			$result[0] | Should BeOfType [System.Management.Automation.ExtendedTypeSystemException];
 			$result[1].GetType().FullName | Should Be "System.Data.Services.Client.DataServiceQueryException";
 			$result[2].GetType().FullName | Should Be "System.Data.Services.Client.DataServiceClientException";
-			Write-Host ($result | Out-String);
 		}
 	}
 
