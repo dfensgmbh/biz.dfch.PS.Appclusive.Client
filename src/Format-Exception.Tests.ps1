@@ -1,4 +1,4 @@
-#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; RequiredVersion = '1.1.1.20160710' }
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 #Requires -Modules @{ ModuleName = 'biz.dfch.PS.Appclusive.Client'; ModuleVersion = "4.5.0" }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
