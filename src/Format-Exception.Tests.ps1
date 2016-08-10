@@ -1,5 +1,5 @@
 #Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; RequiredVersion = '1.1.1.20160710' }
-#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Appclusive.Client'; RequiredVersion = '3.0.0.20160715' }
+#Requires -Modules 'biz.dfch.PS.Appclusive.Client'
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
