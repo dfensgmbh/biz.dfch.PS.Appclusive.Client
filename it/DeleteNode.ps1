@@ -27,8 +27,8 @@ function Create-Node {
 	$newNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT node
-	$newNode | Should Not Be $null;
-	$newNode.Id | Should Not Be $null;
+	$bin = $newNode | Should Not Be $null;
+	$bin = $newNode.Id | Should Not Be $null;
 	
 	return $newNode;
 }
@@ -54,5 +54,5 @@ function Delete-Node {
 	$deletedNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT that catalogue is deleted
-	$deletedNode | Should Be $null;
+	$bin = $deletedNode | Should Be $null;
 }
