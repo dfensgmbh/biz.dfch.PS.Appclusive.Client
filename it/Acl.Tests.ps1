@@ -17,7 +17,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 	. "$here\DeleteNode.ps1"
 	
 	$entityPrefix = "TestItem-";
-	$usedEntitySets = @("Nodes", "Acls", "Aces");
+	$usedEntitySets = @("Nodes", "Aces", "Acls");
 	
 	Context "#CLOUDTCL-1871-AclTests" {
 		
@@ -42,7 +42,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
                 }
             }
         }
-		
+		<#
 		It "CreateAndDeleteAcl" -Test {
 		
 			#ARRANGE
@@ -88,7 +88,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			#ACT update acl
 			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
-		
+		#>
 		It "DeleteAclThatIsReferencedOnAce" -Test {
 			
 			#ARRANGE
@@ -116,7 +116,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			
 			try
 			{
-				#get the acl
+				#ARRANGE get the acl
 				$query = "Id eq {0}" -f $aclId;
 				$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
 				
@@ -130,64 +130,43 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 				$threwException = $true;
 			}
 		}
-		<#
+		
 		It "Acl-GetAcesOfAcl" {
-			try {
-				# Create Acl for Ace tests
-				$aclName = "Test Acl for Ace tests";
-				$aclDescription = "TestNode used in Test";		
-				$acl = CreateAcl -aclName $aclName -aclDescription $aclDescription;	
-				$svc.Core.AddToAcls($acl);
-				$result = $svc.core.SaveChanges();
-				$result.StatusCode | Should be 201;
-				$acl.Id | Should Not Be 0;
 			
-				# Arrange Create Ace
-				$aceName1 = "Test Ace One"
-				$aceDescription1 = "Ace used in tests (one)"
-				$aceName2 = "Test Ace Two"
-				$aceDescription1 = "Ace used in tests (two)"
-				$aceAclId = $acl.Id;
-				$aceAction = "ALLOW";
-				
-				$ace1 = CreateAce -aceName $aceName1 -aceDescription $aceDescription1 -aceAclId $aceAclId -aceAction $aceAction;	
-				$ace2 = CreateAce -aceName $aceName2 -aceDescription $aceDescription2 -aceAclId $aceAclId -aceAction $aceAction;	
-				
-				# Act Create Ace
-				$svc.Core.AddToAces($ace1);
-				$result1 = $svc.core.SaveChanges();
-				$svc.Core.AddToAces($ace2);
-				$result2 = $svc.core.SaveChanges();
-				
-				# Assert Create Ace
-				$result1.StatusCode | Should be 201;
-				$ace1.Id | Should Not Be 0;
-				$result2.StatusCode | Should be 201;
-				$ace2.Id | Should Not Be 0;
-				$ace1.Id | Should Not Be $ace2.Id;
-				
-				#Act Select Ace of Acl
-				$acesOfAcl = $svc.Core.LoadProperty($acl, 'Aces') | Select
-				$acesOfAcl.Id -contains $ace1.Id | Should be $True;
-				$acesOfAcl.Id -contains $ace2.Id | Should be $True;
-			} 			
-			Finally {
-				#Cleanup	
-				$svc.Core.DeleteObject($ace1);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($ace2);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($acl);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName1 = $entityPrefix + "Ace1";
+			$aceName2 = $entityPrefix + "Ace2";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
+			
+			#ACT Create 2 Aces that reference the Acl
+			$ace1 = Create-Ace -svc $svc -aceName $aceName1 -aclId $aclId | select;
+			$ace2 = Create-Ace -svc $svc -aceName $aceName2 -aclId $aclId | select;
+
+			#ACT Get Ace and load Aces
+			$query = "Id eq {0}" -f $aclId;
+			$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+			$acesOfAcl = $svc.Core.LoadProperty($acl, 'Aces') | Select;
+			
+			#ASSERT
+			$acesOfAcl.Id -contains $ace1.Id | Should be $True;
+			$acesOfAcl.Id -contains $ace2.Id | Should be $True;
 			}
 		}
-	}
 	
+	<#
 	Context "#CLOUDTCL-1872-AceTests" {
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
@@ -373,8 +352,8 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 				$result = $svc.Core.SaveChanges();
 				$result.StatusCode | Should Be 204;
 			}
-		} #>
-	}
+		} 
+	}#>
 }
 
 #
