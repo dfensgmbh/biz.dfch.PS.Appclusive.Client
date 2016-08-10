@@ -1,3 +1,4 @@
+#includes tests for test cases CLOUDTCL-1871 and CLOUDTCL-1872
 $svc = Enter-Appclusive LAB3;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -43,7 +44,7 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
             }
         }
 		
-		It "CreateAndDeleteAcl" -Test {
+		It "Acl-CreateAndDelete" -Test {
 		
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
@@ -122,17 +123,16 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 				
 				#ACT Delete acl
 				$svc.Core.DeleteObject($acl);
-				{ $result = $svc.Core.SaveChanges(); } | Should Throw;	
+				$result = $svc.Core.SaveChanges();
 			}
 			
 			catch 
 			{
-				$threwException = $true;
+				$(Format-ApcException) | Should Not Be $null;
 			}
 		}
 		
 		It "Acl-GetAcesOfAcl" {
-			
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
 			$aclName = $entityPrefix + "Acl";
@@ -300,38 +300,39 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			$ace1 = Create-Ace -svc $svc -aceName $aceName1 -aclId $aclId | select;
 			$ace2 = Create-Ace -svc $svc -aceName $aceName2 -aclId $aclId | select;
 		}
-		<#
+		
 		It "Ace-GetAclOfAce" -Test {
-			try {
-				# Arrange Create Ace
-				$aceName = "Test Ace"
-				$aceDescription = "Ace used in tests"
-				$aceAclId = $acl.Id;
-				$aceAction = "ALLOW";
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName = $entityPrefix + "Ace";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
+			
+			#ACT Create Ace
+			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId | select;
+			
+			#get the Id of the ace
+			$aceId = $ace.Id;
+			$aceAclId = $ace.AclId;
 				
-				$ace = CreateAce -aceName $aceName -aceDescription $aceDescription -aceAclId $aceAclId -aceAction $aceAction;	
+			#get the Acl of the ace
+			$query = "Id eq {0}" -f $aceAclId;
+			$loadedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
 				
-				# Act Create Ace
-				$svc.Core.AddToAces($ace);
-				$result = $svc.core.SaveChanges();
-				
-				# Assert Create Ace
-				$result.StatusCode | Should be 201;
-				$ace.Id | Should Not Be 0;
-				
-				# Act Load Acl of Ace
-				$aclOfAce = $svc.Core.LoadProperty($ace, 'Acl') | Select;
-				
-				#Assert Acl of Ace
-				$aclOfAce.Id | Should Be $acl.Id;
-			} 			
-			Finally {
-				#Cleanup	
-				$svc.Core.DeleteObject($ace);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
-		} #>
+			#it should be the same as the one we created before
+			$acl | Should Be $loadedAcl;
+		}
 	}
 }
 
