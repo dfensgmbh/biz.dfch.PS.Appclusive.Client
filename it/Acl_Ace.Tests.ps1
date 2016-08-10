@@ -15,7 +15,6 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 
 	Mock Export-ModuleMember { return $null; }	
 	. "$here\$sut"
-	. "$here\DeleteNode.ps1"
 	
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes", "Aces", "Acls");
@@ -51,7 +50,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aclName = $entityPrefix + "Acl";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -75,7 +74,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$newAclDescription = "Updated Description";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -98,7 +97,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName = $entityPrefix + "Ace";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -140,7 +139,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName2 = $entityPrefix + "Ace2";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -195,7 +194,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName = $entityPrefix + "Ace";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -225,7 +224,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$newAceDescription = "Updated Description";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -285,7 +284,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName2 = $entityPrefix + "Ace2";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -308,7 +307,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName = $entityPrefix + "Ace";
 			
 			#ACT create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
