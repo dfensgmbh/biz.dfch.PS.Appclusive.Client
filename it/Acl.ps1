@@ -14,19 +14,21 @@ function Create-Acl {
 	$acl.EntityId = $nodeId;
 	$acl.EntityKindId = 1;
 	$acl.Tid = "11111111-1111-1111-1111-111111111111";
+	
+	#add it to acls
 	$svc.Core.AddToAcls($acl);
 	$result = $svc.Core.SaveChanges();
 	
 	#get ACL
 	$query = "Name eq '{0}' and EntityId eq {1}" -f $aclName, $nodeId;
-	$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	$loadedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
 				
 	#ASSERT	
-	$result.StatusCode | Should be 201;
-	$acl | Should Not Be $null;
-	$acl.Id | Should Not Be 0;
-	
-	return $acl;
+	$bin = $result.StatusCode | Should be 201;
+	$bin = $loadedAcl | Should Not Be $null;
+	$bin = $loadedAcl.Id | Should Not Be 0;
+		
+	return [biz.dfch.CS.Appclusive.Api.Core.Acl]$loadedAcl;
 }
 
 function Delete-Acl {
@@ -50,8 +52,8 @@ function Delete-Acl {
 	$deletedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT acl is deleted
-	$deletedAcl | Should Be $null;
-	$result.StatusCode | Should Be 204;
+	$bin = $deletedAcl | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
 }
 
 function Update-Acl {
@@ -85,11 +87,11 @@ function Update-Acl {
 	$updatedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT - update
-	$updatedAcl.Name | Should Be $newAclName;
-	$updatedAcl.Name | Should Not Be $aclName;
-	$updatedAcl.Description | Should Be $newAclDescription;
-	$updatedAcl.Description | Should Not Be $aclDescription;
-	$updatedAcl.Id | Should Be $aclId;
+	$bin = $updatedAcl.Name | Should Be $newAclName;
+	$bin = $updatedAcl.Name | Should Not Be $aclName;
+	$bin = $updatedAcl.Description | Should Be $newAclDescription;
+	$bin = $updatedAcl.Description | Should Not Be $aclDescription;
+	$bin = $updatedAcl.Id | Should Be $aclId;
 	
 	return $updatedAcl;
 }
@@ -127,10 +129,37 @@ function Create-Ace{
 	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT new ace
-	$result.StatusCode | Should Be 201;
-	$ace | Should Not Be $null;
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $ace | Should Not Be $null;
+	$bin = $ace.Id | Should Not Be $null;
+	$bin = $ace.AclId | Should Be $aclId;
 	
 	return $ace;
+}
+
+function Delete-Ace{
+	Param
+	(
+		$svc
+		,
+		$aceId
+	)
+	
+	#get the ace
+	$query = "Id eq {0}" -f $aceId;
+	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#delete the ace
+	$svc.Core.DeleteObject($acl);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted ace
+	$query = "Id eq {0}" -f $aceId;
+	$deletedAce = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT ace is deleted
+	$bin = $deletedAce | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
 }
 
 
