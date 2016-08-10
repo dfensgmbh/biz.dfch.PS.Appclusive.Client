@@ -93,7 +93,7 @@ PARAM
     ,
     # Returns all Connectors which require this Interface
 	[Parameter(Mandatory = $false)]
-    [Alias('Consumers')]
+    [Alias('Nodes')]
     [switch] $ExpandNodes = $false
     ,
 	# Specifies the return format of the search

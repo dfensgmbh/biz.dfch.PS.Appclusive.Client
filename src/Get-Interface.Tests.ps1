@@ -7,6 +7,7 @@ Describe -Tags "Get-Interface" "Get-Interface" {
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
+	. "$here\Get-Job.ps1"
 	. "$here\Set-Connector.ps1"
 	. "$here\Get-Connector.ps1"
 	. "$here\Set-Interface.ps1"
@@ -164,8 +165,6 @@ Describe -Tags "Get-Interface" "Get-Interface" {
                             -CreateIfNotExist;
 			# Act
             $list = Get-Interface -svc $svc -Id $InterfaceId -Consumers;
-
-            
 
 			# Assert
             $list | Should Not Be $null;

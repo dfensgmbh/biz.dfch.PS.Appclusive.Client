@@ -8,6 +8,7 @@ Describe -Tags "Set-Interface" "Set-Interface" {
 	
 	. "$here\$sut"
 	. "$here\Set-Interface.ps1"
+	. "$here\Get-Job.ps1"
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
 	

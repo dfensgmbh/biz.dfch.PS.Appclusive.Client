@@ -7,6 +7,7 @@ Describe -Tags "Get-Connector" "Get-Connector" {
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
+	. "$here\Get-Job.ps1"
 	. "$here\Set-Interface.ps1"
 	. "$here\Set-Connector.ps1"
 	. "$here\Get-Connector.ps1"

@@ -131,8 +131,15 @@ Process
 
 	$svc.Core.UpdateObject($interface);
 	$r = $svc.Core.SaveChanges();
+	
+	$r = $interface | Select @{ Name="JobUri"; Expression={$_.Name.Replace('http://','https://').Replace('JobResponses','Jobs')} }, @{ Name="JobId"; Expression={$_.Id} };
 
-	$r = $interface;
+	if ( !$Async )
+	{
+		$r = Get-Job -Id $r.JobId -svc $svc -ExpandInterface;
+		# DFTODO retry handling
+	}
+	
 	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
 }

@@ -7,6 +7,7 @@ Describe -Tags "Set-Interface" "Set-Interface" {
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
+	. "$here\Get-Job.ps1"
 	. "$here\Set-Connector.ps1"
 	. "$here\Set-Interface.ps1"
 	. "$here\Remove-Entity.ps1"

@@ -142,8 +142,15 @@ Process
     
 	$svc.Core.UpdateObject($entity);
 	$r = $svc.Core.SaveChanges();
+	
+	$r = $entity | Select @{ Name="JobUri"; Expression={$_.Name.Replace('http://','https://').Replace('JobResponses','Jobs')} }, @{ Name="JobId"; Expression={$_.Id} };
 
-	$r = $entity;
+	if ( !$Async )
+	{
+		$r = Get-Job -Id $r.JobId -svc $svc -ExpandConnector;
+		# DFTODO retry handling
+	}
+
 	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
 }
