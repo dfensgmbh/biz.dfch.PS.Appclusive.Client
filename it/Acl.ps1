@@ -11,7 +11,7 @@ function Create-Acl {
 	$acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
 	$acl.Name = $aclName;
 	$acl.Description = $aclDescr;
-	$acl.EntityId = $nodeId;
+	$acl.EntityId = $entityId;
 	$acl.EntityKindId = 1;
 	$acl.Tid = "11111111-1111-1111-1111-111111111111";
 	
@@ -28,7 +28,7 @@ function Create-Acl {
 	$bin = $loadedAcl | Should Not Be $null;
 	$bin = $loadedAcl.Id | Should Not Be 0;
 		
-	return [biz.dfch.CS.Appclusive.Api.Core.Acl]$loadedAcl;
+	return $loadedAcl;
 }
 
 function Delete-Acl {
@@ -160,6 +160,46 @@ function Delete-Ace{
 	#ASSERT ace is deleted
 	$bin = $deletedAce | Should Be $null;
 	$bin = $result.StatusCode | Should Be 204;
+}
+
+function Update-Ace {
+	Param
+	(
+		$svc
+		,
+		$aceId
+		,
+		$newAceName
+		,
+		$newAceDescription
+	)
+	
+	#get the Ace
+	$query = "Id eq {0}" -f $aceId;
+	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	$aceName = $ace.Name; #get old name
+	$aceDescription = $ace.Description; #get old desription
+	
+	#Set new name and description for the acl
+	$ace.Name = $newAceName;
+	$ace.Description = $newAceDescription;
+	
+	#save changes
+	$svc.Core.UpdateObject($ace)
+	$result = $svc.core.SaveChanges();	
+				
+	#get the updated Acl 
+	$query = "Id eq {0}" -f $aceId;
+	$updatedAce = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	$bin = $updatedAce.Name | Should Be $newAceName;
+	$bin = $updatedAce.Name | Should Not Be $aceName;
+	$bin = $updatedAce.Description | Should Be $newAceDescription;
+	$bin = $updatedAce.Description | Should Not Be $aceDescription;
+	$bin = $updatedAce.Id | Should Be $aceId;
+	
+	return $updatedAce;
 }
 
 

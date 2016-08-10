@@ -160,8 +160,8 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			#ASSERT
 			$acesOfAcl.Id -contains $ace1.Id | Should be $True;
 			$acesOfAcl.Id -contains $ace2.Id | Should be $True;
-			}
 		}
+	}
 	
 	
 	Context "#CLOUDTCL-1872-AceTests" {
@@ -214,51 +214,39 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 			
 			#ACT Delete Ace
 			Delete-Ace -svc $svc -aceId $aceId;
-			}
-		}
-		<#
-		It "Ace-UpdateNameDescription" -Test {
-			try {
-				# Arrange Create
-				$aceName = "Test Ace"
-				$aceDescription = "Ace used in tests"
-				$aceAclId = $acl.Id;
-				$aceAction = "ALLOW";
-				
-				$ace = CreateAce -aceName $aceName -aceDescription $aceDescription -aceAclId $aceAclId -aceAction $aceAction;	
-				
-				# Act Create
-				$svc.Core.AddToAces($ace);
-				$result = $svc.core.SaveChanges();
-				
-				# Assert Create
-				$result.StatusCode | Should be 201;
-				$ace.Id | Should Not Be 0;
-				
-				# Arrange Update
-				$aceSetName = "Updated"
-				$aceSetDescription = "Ace used in tests (updated)"
-				$ace.Name = $aceSetName;
-				$ace.Description = $aceSetDescription;
-								
-				# Act
-				$svc.Core.UpdateObject($ace)
-				$result = $svc.core.SaveChanges();	
-				
-				# Assert
-				$result.StatusCode | Should Be 204;
-				$aceCheck = $svc.Core.Aces.AddQueryOption('$filter', ("Id eq {0}" -f $ace.Id));
-				$aceCheck.Name | Should Be $aceSetName;
-				$aceCheck.Description | Should Be $aceSetDescription;
-			} 			
-			Finally {
-				#Cleanup	
-				$svc.Core.DeleteObject($ace);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
 		}
 		
+		It "Ace-UpdateNameDescription" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "newtestnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName = $entityPrefix + "Ace";
+			$newAceName = $aclName + "Updated";
+			$newAceDescription = "Updated Description";
+			
+			#ACT create node
+			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			
+			#get Id of the acl
+			$aclId = $acl.Id;
+			
+			#ACT Create Ace
+			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId | select;
+			
+			#get the Id of the ace
+			$aceId = $ace.Id;
+			
+			#ACT Update Name & Description of Ace
+			$updatedAce = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
+
+		}
+		<#
 		It "Ace-CreateAceWithoutAclReferenz-ThrewException" -Test {
 			# Arrange
 			$aceName = "Test Ace"
@@ -347,8 +335,8 @@ Describe -Tags "Acl.Tests" "Acl.Tests" {
 				$result = $svc.Core.SaveChanges();
 				$result.StatusCode | Should Be 204;
 			}
-		} 
-	}#>
+		} #>
+	}
 }
 
 #
