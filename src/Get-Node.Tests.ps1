@@ -312,8 +312,6 @@ Describe -Tags "Get-Node" "Get-Node" {
             $entityKindB = CreateEntityKind | Select;
 
             CreateConnector $interface.Id $entityKind.Id $PROVIDE;
-            CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
-            CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		
             CreateConnector $interface.Id $entityKindB.Id $PROVIDE;
 
             CreateNode $entityKind.Id;
@@ -337,6 +335,9 @@ Describe -Tags "Get-Node" "Get-Node" {
             $entityKind = CreateEntityKind | Select;
             $entityKindB = CreateEntityKind | Select;
 
+			CreateConnector $interface.Id 29 $PROVIDE;
+			CreateConnector $interfaceB.Id 29 $PROVIDE;
+			
             CreateConnector $interface.Id $entityKind.Id $PROVIDE;
             CreateConnector $interface.Id $entityKind.Id $REQUIRE;		
             CreateConnector $interfaceB.Id $entityKind.Id $REQUIRE;		

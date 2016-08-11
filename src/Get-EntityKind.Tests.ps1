@@ -8,6 +8,7 @@ Describe -Tags "Get-EntityKind" "Get-EntityKind" {
 	
 	. "$here\$sut"
 	. "$here\Get-User.ps1"
+	. "$here\Get-Job.ps1"
 	. "$here\Set-Connector.ps1"
 	. "$here\Get-Connector.ps1"
 	. "$here\Set-Interface.ps1"
