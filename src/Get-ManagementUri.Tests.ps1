@@ -1,4 +1,3 @@
-
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -17,7 +16,14 @@ Describe -Tags "Get-ManagementUri" "Get-ManagementUri" {
 		# Context wide constants
 		# N/A
 		
-		It "Warmup" -Test {
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-ApcServer;
+		}
+		
+		<#It "Warmup" -Test {
 			$true | Should Be $true;
 		}
 
@@ -186,16 +192,16 @@ Describe -Tags "Get-ManagementUri" "Get-ManagementUri" {
 		   	$result | Should Not Be $null;
 			$result -is [Array] | Should Be $true;
 			0 -lt $result.Count | Should Be $true;
-		}
+		} #>
 		
 		It "Get-ManagementUriExpandManagementCredential-ShouldReturnManagementCredential" -Test {
 			# Arrange
 			. "$here\Get-ManagementCredential.ps1"
 			Mock Get-ManagementCredential { return New-Object biz.dfch.CS.Appclusive.Api.Core.ManagementCredential };
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-ManagementUri -svc $svc -First $ShowFirst;
+			$resultFirst = Get-ManagementUri -svc $svc -First $showFirst;
 			$result = Get-ManagementUri -svc $svc -Id $resultFirst.Id -ExpandManagementCredential;
 
 			# Assert
