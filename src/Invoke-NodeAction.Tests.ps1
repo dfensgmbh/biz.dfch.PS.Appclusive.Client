@@ -9,7 +9,7 @@ function Stop-Pester($message = "Unrepresentative, because no entities exists.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Invoke-NodeAction" "Invoke-NodeAction" {
+Describe -Tags "Invoke-NodeAction" {
 
 	Mock Export-ModuleMember { return $null; }
 	

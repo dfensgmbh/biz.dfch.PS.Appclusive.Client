@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-Interface" "Get-Interface" {
+Describe -Tags "Get-Interface" {
 
 	Mock Export-ModuleMember { return $null; }
 	
