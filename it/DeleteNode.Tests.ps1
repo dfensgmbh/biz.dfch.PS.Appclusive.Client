@@ -1,5 +1,4 @@
-Import-Module biz.dfch.PS.Appclusive.Client;
-$svc = Enter-Appclusive LAB3;
+$svc = Enter-Appclusive;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path;
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".");
@@ -24,7 +23,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-Appclusive LAB3;
+			$svc = Enter-Appclusive;
 		}
 		
 		AfterEach {
@@ -45,34 +44,31 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 		It "DeleteNodeWithChildNode" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
+			$childName = $entityPrefix + "newtestnode-Child";
 			
-			#create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
 			
-			#create subordinate Node
-			#ARRANGE
-			$childName = $entityPrefix + "newtestnode-Child";
-			$childDescr = "this is a test subordinate Node";
-			
 			#ACT create child Node
-			$childNode = New-Object biz.dfch.CS.Appclusive.Api.Core.Node;
-			$childNode.Name = $childName;
-			$childNode.Description = $childDescr;
-			$childNode.ParentId = $nodeId; #it gets the id of the 1st node as parent Node
-			$childNode.EntityKindId = 1;
-			$childNode.Parameters = '{}';
-			$svc.Core.AddToNodes($childNode);
-			$result = $svc.Core.SaveChanges();
+			$newChildNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId 1 | select;
 			
-			#get child Node
-			$query = "Name eq '{0}' and ParentId eq {1}" -f $childName, $nodeId;
+			#get Id of the child Node
+			$childNodeId = $newChildNode.Id;
+			
+			#get parent & child Node
+			$query = "Id eq {0}" -f $nodeId;
+			$parentNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
+			
+			$query = "Id eq {0}" -f $childNodeId;
 			$childNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
-			#$childNode = Get-ApcNode -Name $childName -ParentId $nodeId | select;
+
 			
-			#ASSERT child Node
+			#ASSERT parent & child Node creation
+			$parentNode | Should Not Be $null;
+			$parentNode.Id | Should Not Be $null;
 			$childNode | Should Not Be $null;
 			$childNode.Id | Should Not Be $null;
 			$childNode.ParentId | Should Be $nodeId;
@@ -80,34 +76,41 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$childId = $childNode.Id;
 			
 			try
-			{ 
-				#Push-ApcChangeTracker;
+			{
 				#get the parent node
 				$query = "Id eq {0}" -f $nodeId;
-				$node = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
-				$svc.Core.DeleteObject($node);
+				$parentNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
+				$svc.Core.DeleteObject($parentNode);
 				#remove Node, but it's supposed to fail as we have Children
-				{ $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
-				# { $svc.Core.SaveChanges(); } | Should Throw;
-				Write-Host "Parent not deleted";
+				$svc.Core.SaveChanges(); # } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			}
 			catch
 			{
-				Write-Host $(Format-ApcException)
+				$(Format-ApcException) | Should Not Be $null;
+				$_.Exception.Message | Should Not Be $null;
+				$_.FullyQualifiedErrorId | Should Not Be $null;
 			}
 			finally 
 			{
-				#Pop-ApcChangeTracker;
-				$svc = Enter-Appclusive LAB3;
+				$svc = Enter-Appclusive;
 				
-				#delete childNode
-				Delete-Node -svc $svc -nodeId $childId;
-				#delete Node
-				Delete-Node -svc $svc -nodeId $nodeId;
+				#get the child node
+				$childNode = Get-ApcNode -Id $childId | select;
+	
+				#delete the child node first
+				$svc.Core.DeleteObject($childNode);
+				$result = $svc.Core.SaveChanges();
+				
+				#get the parent node
+				$parentNode = Get-ApcNode -Id $nodeId | select;
+	
+				#delete the parent node
+				$svc.Core.DeleteObject($parentNode);
+				$result = $svc.Core.SaveChanges();
 			}
 			
 		}
-		
+		<#
 		It "DeleteNodeCheckAttatchedEntitiesDeletion" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
@@ -237,7 +240,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$entityBag | Should Be $null;
 			
 			
-		}
+		}#>
 		
 
 		
