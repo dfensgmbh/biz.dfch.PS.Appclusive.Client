@@ -22,13 +22,6 @@ Describe -Tags "Get-ManagementUri" "Get-ManagementUri" {
 		# Context wide constants
 		# N/A
 		
-		BeforeEach {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
-		}
-		
 		It "Warmup" -Test {
 			$true | Should Be $true;
 		}
