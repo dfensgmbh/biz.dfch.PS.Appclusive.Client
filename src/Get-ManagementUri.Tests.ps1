@@ -10,12 +10,12 @@ Describe -Tags "Get-ManagementUri" {
 	. "$here\Format-ResultAs.ps1"
 	
 	BeforeEach {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-		
-			$svc = Enter-ApcServer;
-		}
+		$moduleName = 'biz.dfch.PS.Appclusive.Client';
+		Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+		Import-Module $moduleName;
+	
+		$svc = Enter-ApcServer;
+	}
 	
 	Context "Get-ManagementUri" {
 	
