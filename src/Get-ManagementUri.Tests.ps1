@@ -1,7 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe "Get-ManagementUri" {
+Describe -Tags "Get-ManagementUri" {
 
 	Mock Export-ModuleMember { return $null; }
 	
