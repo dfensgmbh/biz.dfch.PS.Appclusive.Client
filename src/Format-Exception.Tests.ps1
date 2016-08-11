@@ -17,7 +17,6 @@ Describe -Tags "Format-Exception" "Format-Exception" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
 		}
 
 	Mock Export-ModuleMember { return $null; }
@@ -29,8 +28,6 @@ Describe -Tags "Format-Exception" "Format-Exception" {
 	
 		# Context wide constants
 		# N/A
-		
-		
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
