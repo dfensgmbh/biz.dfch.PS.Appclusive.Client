@@ -9,8 +9,14 @@ Describe -Tags "Get-ManagementUri" "Get-ManagementUri" {
 	. "$here\Get-User.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
-	$svc = Enter-ApcServer;
-
+	BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+		
+			$svc = Enter-ApcServer;
+		}
+	
 	Context "Get-ManagementUri" {
 	
 		# Context wide constants
@@ -23,7 +29,7 @@ Describe -Tags "Get-ManagementUri" "Get-ManagementUri" {
 			$svc = Enter-ApcServer;
 		}
 		
-		<#It "Warmup" -Test {
+		It "Warmup" -Test {
 			$true | Should Be $true;
 		}
 
@@ -192,7 +198,7 @@ Describe -Tags "Get-ManagementUri" "Get-ManagementUri" {
 		   	$result | Should Not Be $null;
 			$result -is [Array] | Should Be $true;
 			0 -lt $result.Count | Should Be $true;
-		} #>
+		} 
 		
 		It "Get-ManagementUriExpandManagementCredential-ShouldReturnManagementCredential" -Test {
 			# Arrange
