@@ -1,3 +1,4 @@
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -163,15 +164,15 @@ Describe -Tags "Get-Job" "Get-Job" {
 			}
 		}
 		
-		It "Get-JobByCreatedByThatDoesNotExist-ShouldReturnNull" -Test {
+		It "Get-JobByCreatedByThatDoesNotExist-ShouldThrowContractException" -Test {
 			# Arrange
 			$User = 'User-that-does-not-exist';
 			
 			# Act
-			$result = Get-Job -svc $svc -CreatedBy $User;
+			{ Get-Job -svc $svc -CreatedBy $User; } | Should ThrowErrorId "Contract";
 
 			# Assert
-		   	$result | Should Be $null;
+		   	# N/A
 		}
 		
 		It "Get-JobByCreatedBy-ShouldReturnListWithEntities" -Test {

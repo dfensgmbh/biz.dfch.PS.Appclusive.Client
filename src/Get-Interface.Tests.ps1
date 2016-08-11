@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-Interface" "Get-Interface" {
+Describe -Tags "Get-Interface" {
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -144,20 +144,28 @@ Describe -Tags "Get-Interface" "Get-Interface" {
             $InterfaceId = $interface.Id;
             $EntityKindId = $entityKind.Id;
             $Multiplicity = 15;
-            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+            			
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $EntityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Require `
                             -CreateIfNotExist;
             
-			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+			Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $entityKindB.Id `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Provide `
                             -CreateIfNotExist;
-                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $EntityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
@@ -182,20 +190,28 @@ Describe -Tags "Get-Interface" "Get-Interface" {
             $InterfaceId = $interface.Id;
             $entityKindId = $entityKind.Id;
             $Multiplicity = 15;
-            			            Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+            			
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $entityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Require `
                             -CreateIfNotExist;
             
-			Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+			Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $entityKindB.Id `
                             -Description $Description `
                             -Multiplicity $Multiplicity `
                             -Provide `
                             -CreateIfNotExist;
-                                        Set-Connector -svc $svc `                            -Name $Name `                            -InterfaceId $InterfaceId `
+                            
+            Set-Connector -svc $svc `
+                            -Name $Name `
+                            -InterfaceId $InterfaceId `
                             -EntityKindId $entityKindId `
                             -Description $Description `
                             -Multiplicity $Multiplicity `

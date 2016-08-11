@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-EntityKind" "Get-EntityKind" {
+Describe -Tags "Get-EntityKind" {
 
 	Mock Export-ModuleMember { return $null; }
 	
