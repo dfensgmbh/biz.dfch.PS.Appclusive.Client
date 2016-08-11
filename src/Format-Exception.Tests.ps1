@@ -1,5 +1,4 @@
 #Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
-#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Appclusive.Client'; ModuleVersion = "4.5.0" }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -14,6 +13,13 @@ function Stop-Pester($message = "Fatal. Cannot continue.")
 
 Describe -Tags "Format-Exception" "Format-Exception" {
 
+	BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-ApcServer;
+		}
+
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
@@ -23,6 +29,8 @@ Describe -Tags "Format-Exception" "Format-Exception" {
 	
 		# Context wide constants
 		# N/A
+		
+		
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
