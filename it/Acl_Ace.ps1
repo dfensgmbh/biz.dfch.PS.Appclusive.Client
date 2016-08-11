@@ -5,15 +5,21 @@ function Create-Acl {
 		,
 		$aclName
 		,
+		$aclDescr = "Test Acl"
+		,
 		$entityId
+		,
+		$entityKindId = 1
+		,
+		$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM
 	)
 	
 	$acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
 	$acl.Name = $aclName;
 	$acl.Description = $aclDescr;
 	$acl.EntityId = $entityId;
-	$acl.EntityKindId = 1;
-	$acl.Tid = "11111111-1111-1111-1111-111111111111";
+	$acl.EntityKindId = $EntityKindId;
+	$acl.Tid = $tenantId;
 	
 	#add it to acls
 	$svc.Core.AddToAcls($acl);
@@ -27,6 +33,9 @@ function Create-Acl {
 	$bin = $result.StatusCode | Should be 201;
 	$bin = $loadedAcl | Should Not Be $null;
 	$bin = $loadedAcl.Id | Should Not Be 0;
+	$bin = $loadedAcl.EntityId | Should Be $entityId;
+	$bin = $loadedAcl.EntityKindId | Should Be $EntityKindId;
+	$bin = $loadedAcl.Tid | Should Be $tenantId;
 		
 	return $loadedAcl;
 }
@@ -103,22 +112,30 @@ function Create-Ace{
 		,
 		$aceName
 		,
+		$aceDescription = "Test Ace"
+		,
 		$aclId
+		,
+		$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM
+		,
+		$trusteeId = (Get-ApcUser -Name $ENV:USERNAME).Id
+		,
+		$trusteeType = [biz.dfch.CS.Appclusive.Public.Security.TrusteeTypeEnum]::User.value__ #1 for users
+		,
+		$type = [biz.dfch.CS.Appclusive.Public.Security.AceTypeEnum]::ALLOW
+		,
+		$permissionId = ($svc.core.Permissions | select -first 1).Id
 	)
 	
 	$ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
 	$ace.Name = $aceName;
-	$ace.Description = "Test Ace";
+	$ace.Description = $aceDescription;
 	$ace.AclId = $aclId;
-	$ace.Tid = "11111111-1111-1111-1111-111111111111";
-	$username = $ENV:USERNAME;
-	$query = "Name eq '{0}'" -f $username;
-	$user = $svc.Core.Users.AddQueryOption('$filter', $query) | select;
-	$userId = $user.Id;
-	$ace.TrusteeId = $userId;
-	$ace.TrusteeType = 1; #1 for users
-	$ace.Type = 2;
-	$ace.PermissionId = 2;
+	$ace.Tid = $tenantId;
+	$ace.TrusteeId = $trusteeId;
+	$ace.TrusteeType = $trusteeType;
+	$ace.Type = $type;
+	$ace.PermissionId = $permissionId;
 	
 	#create ace
 	$svc.Core.AddToAces($ace);
@@ -126,15 +143,20 @@ function Create-Ace{
 	
 	#get the ace
 	$query = "Name eq '{0}' and AclId eq {1}" -f $aceName, $aclId;
-	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	$loadedAce = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT new ace
 	$bin = $result.StatusCode | Should Be 201;
-	$bin = $ace | Should Not Be $null;
-	$bin = $ace.Id | Should Not Be $null;
-	$bin = $ace.AclId | Should Be $aclId;
+	$bin = $loadedAce | Should Not Be $null;
+	$bin = $loadedAce.Id | Should Not Be $null;
+	$bin = $loadedAce.AclId | Should Be $aclId;
+	$bin = $loadedAce.Tid | Should Be $tenantId;
+	$bin = $loadedAce.TrusteeId | Should Be $trusteeId;
+	$bin = $loadedAce.TrusteeType | Should Be $trusteeType;
+	$bin = $loadedAce.Type | Should Be $type;
+	$bin = $loadedAce.PermissionId | Should Be $permissionId;
 	
-	return $ace;
+	return $loadedAce;
 }
 
 function Delete-Ace{

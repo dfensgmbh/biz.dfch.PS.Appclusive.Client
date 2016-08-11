@@ -1,5 +1,5 @@
 #includes tests for test cases CLOUDTCL-1871 and CLOUDTCL-1872
-$svc = Enter-Appclusive LAB3;
+$svc = Enter-Appclusive;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -25,11 +25,11 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-Appclusive LAB3;
+			$svc = Enter-Appclusive;
 		}
 		
 		AfterEach {
-            $svc = Enter-Appclusive LAB3;
+            $svc = Enter-Appclusive;
             $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
             foreach ($entitySet in $usedEntitySets)
@@ -52,11 +52,12 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and entityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
 			
 			#get Id of the acl
 			$aclId = $acl.Id;
@@ -76,11 +77,12 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
 			
 			#get Id of the acl
 			$aclId = $acl.Id;
@@ -99,11 +101,12 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
 			
 			#get Id of the acl
 			$aclId = $acl.Id;
@@ -141,11 +144,12 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId;
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
 						
 			#get Id of the acl
 			$aclId = $acl.Id;
@@ -169,11 +173,11 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-Appclusive LAB3;
+			$svc = Enter-Appclusive;
 		}
 		
 		AfterEach {
-            $svc = Enter-Appclusive LAB3;
+            $svc = Enter-Appclusive;
             $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
             foreach ($entitySet in $usedEntitySets)
@@ -196,12 +200,13 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
-			
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
+				
 			#get Id of the acl
 			$aclId = $acl.Id;
 			
@@ -226,12 +231,13 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
-			
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
+				
 			#get Id of the acl
 			$aclId = $acl.Id;
 			
@@ -243,36 +249,23 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			
 			#ACT Update Name & Description of Ace
 			$updatedAce = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
-
 		}
 		
 		It "Ace-CreateAceWithoutAclReferenceShouldThrowException" -Test {
 			#ARRANGE ace without Acl Id 
 			$aceName = $entityPrefix + "Ace";
-			$ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
-			$ace.Name = $aceName;
-			$ace.Description = "Test Ace";
-			#$ace.AclId will get no assigned value
-			$ace.Tid = "11111111-1111-1111-1111-111111111111";
-			$username = $ENV:USERNAME;
-			$query = "Name eq '{0}'" -f $username;
-			$user = $svc.Core.Users.AddQueryOption('$filter', $query) | select;
-			$userId = $user.Id;
-			$ace.TrusteeId = $userId;
-			$ace.TrusteeType = 1; #1 for users
-			$ace.Type = 2;
-			$ace.PermissionId = 2;
 			
 			#ACT try to create the ace
 			try 
 			{
-				$svc.Core.AddToAces($ace);
-				$svc.Core.SaveChanges();
+				$ace = Create-Ace -svc $svc -aceName $aceName -aclId "" | select;
 			} 
 			
 			catch 
 			{
 				$(Format-ApcException) | Should Not Be $null;
+				$_.Exception.Message | Should Not Be $null;
+				$_.FullyQualifiedErrorId | Should Not Be $null;
 			}
 		}
 		
@@ -286,12 +279,13 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId;
-						
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
+			
 			#get Id of the acl
 			$aclId = $acl.Id;
 			
@@ -309,11 +303,12 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
-			#get Id of the node
+			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId | select;
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
 			
 			#get Id of the acl
 			$aclId = $acl.Id;
