@@ -46,7 +46,6 @@ Describe -Tags "Get-SessionTenant.Tests" "Get-SessionTenant.Tests" {
 			$result = Get-SessionTenant -svc $svc;
 			
 			# Assert
-			Write-Host ($result | Out-String);
 			$result | Should Be $null;
 		}
 		
