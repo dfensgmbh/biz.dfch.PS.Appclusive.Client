@@ -102,92 +102,50 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 		
 		It "DeleteNodeCheckAttatchedEntitiesDeletion" -Test {
 			#ARRANGE
-			$nodeName = $entityPrefix + "newtestnode";
-			$extName = $entityPrefix + "external-test-node";
+			$nodeName = $entityPrefix + "node";
+			$extName = $entityPrefix + "externalnode";
+			$aclName = $entityPrefix + "Acl";
+			$aceName = $entityPrefix + "Ace";
+			$entityBagName = $entityPrefix + "entityBag";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -svc $svc| select;
 			
-			#get Id of the node
+			#get Id and entityKindId of the node
 			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#get the job of the node
 			$job = Get-ApcNode -Id $nodeId -ExpandJob | select;
 			$jobId = [int] $job.Id;
 			
 			#create external node
-			$extNode = New-ApcExternalNode -Name $extName -NodeId $nodeId ;
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
+			#Write-Host ($extNode2 | out-string);
 			
-			
-			
-			<#
-			
-			$extNode = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNode;
-			$extNode.Name = $extName;
-			$extNode.ExternalId = "509f27d7-4380-42fa-ac6d-0731c8f2111c";
-			$extNode.ExternalType = "Cimi";
-			$extNode.NodeId = $nodeId;
-			$svc.Core.AddToExternalNodes($extNode);
-			$result = $svc.Core.SaveChanges();
-			<#
-			$result.StatusCode | Should Be 201;
-			#get the externa Node
-			$query = "Name eq '{0}' and NodeId eq {1}" -f $extName, $nodeId;
-			$extNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $query) | select;
+			#ASSERT external Node
 			$extNode | Should Not Be $null;
+			#get id of external node
 			$extNodeId = $extNode.Id;
 			
-			#create ACL
-			$aclName = $entityPrefix + "newTestAcl";
-			$aclDescr = "Test Acl";
-			$acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
-			$acl.Name = $aclName;
-			$acl.Description = $aclDescr;
-			$acl.EntityId = $nodeId;
-			$acl.EntityKindId = 1;
-			$acl.Tid = "11111111-1111-1111-1111-111111111111";
-			$svc.Core.AddToAcls($acl);
-			$result = $svc.Core.SaveChanges();
+			#ACT create acl
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
 			
-			#get ACL
-			$query = "Name eq '{0}' and EntityId eq {1}" -f $aclName, $nodeId;
-			$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
-			$acl | Should Not Be $null;
+			#get Id of the acl
 			$aclId = $acl.Id;
 			
-			#create ACE
-			$aceName = $entityPrefix + "newTestAce";
-			$aceDescr = "Test Ace";
-			$ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
-			$ace.Name = $aceName;
-			$ace.Description = $aceDescr;
-			$ace.AclId = $aclId;
-			$ace.Tid = "11111111-1111-1111-1111-111111111111";
-			$username = $ENV:USERNAME;
-			$query = "Name eq '{0}'" -f $username;
-			$user = $svc.Core.Users.AddQueryOption('$filter', $query) | select;
-			$userId = $user.Id;
-			$ace.TrusteeId = $userId;
-			$ace.TrusteeType = 1; #1 for users
-			$ace.Type = 2;
-			$ace.PermissionId = 2;
-			$svc.Core.AddToAces($ace);
-			$result = $svc.Core.SaveChanges();
+			#ACT Create Ace
+			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId | select;
 			
-			#get ACE
-			$query = "Name eq '{0}' and AclId eq {1}" -f $aceName, $aclId;
-			$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
-			$ace | Should Not Be $null;
+			#get the Id of the ace
 			$aceId = $ace.Id;
-						
+			
 			#create EntityBag
-			$entityBagName = $entityPrefix + "newTestEntityBag";
 			$entityBag = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityBag;
 			$entityBag.Name = $entityBagName;
 			$entityBag.EntityId = $nodeId;
-			$entityBag.EntityKindId = 1;
-			$entityBag.Tid = "11111111-1111-1111-1111-111111111111";
-			$entityBag.Value = 20;
+			$entityBag.EntityKindId = $nodeEntityKindId;
+			$entityBag.Value = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::EntityBag.value__;
 			$svc.Core.AddToEntityBags($entityBag);
 			$result = $svc.Core.SaveChanges();
 			
@@ -198,15 +156,13 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$entityBagId = $entityBag.Id;
 			
 			#ACT delete Node
-			$query = "Id eq {0}" -f $nodeId;
-			$node = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
+			$node = Get-ApcNode -Id $nodeId -svc $svc | select;
 			$svc.Core.DeleteObject($node);
 			$result = $svc.Core.SaveChanges();
 			
 			#ASSERT
 			#check that node is deleted
-			$query = "Id eq {0}" -f $nodeId;
-			$node = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
+			$node = Get-ApcNode -Id $nodeId -svc $svc | select;
 			$node | Should Be $null;
 			
 			#check that Job is deleted
@@ -233,7 +189,6 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$query = "Id eq {0}" -f $entityBagId;
 			$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $query) | select;
 			$entityBag | Should Be $null;
-			#>
 			
 		}
 		
