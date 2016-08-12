@@ -1,7 +1,4 @@
-$svc = Enter-Appclusive;
-
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path;
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".");
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 {
@@ -13,7 +10,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-	. "$here\$sut"
+	. "$here\Acl_Ace.ps1"
 
     $entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes", "ExternalNodes", "Acls", "Aces", "EntityBags");
@@ -43,28 +40,24 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 		
 		It "DeleteNodeWithChildNode" -Test {
 			#ARRANGE
-			$nodeName = $entityPrefix + "newtestnode";
-			$childName = $entityPrefix + "newtestnode-Child";
+			$nodeName = $entityPrefix + "node";
+			$childName = $entityPrefix + "childnode";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -svc $svc | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
 			
 			#ACT create child Node
-			$newChildNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId 1 | select;
+			$newChildNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId 1 -svc $svc | select;
 			
 			#get Id of the child Node
 			$childNodeId = $newChildNode.Id;
 			
 			#get parent & child Node
-			$query = "Id eq {0}" -f $nodeId;
-			$parentNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
-			
-			$query = "Id eq {0}" -f $childNodeId;
-			$childNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
-
+			$parentNode = Get-ApcNode -Id $nodeId -svc $svc | select;
+			$childNode = Get-ApcNode -Id $childNodeId -svc $svc | select;
 			
 			#ASSERT parent & child Node creation
 			$parentNode | Should Not Be $null;
@@ -73,14 +66,10 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$childNode.Id | Should Not Be $null;
 			$childNode.ParentId | Should Be $nodeId;
 			
-			$childId = $childNode.Id;
-			
 			try
 			{
 				#get the parent node
-				$query = "Id eq {0}" -f $nodeId;
-				$parentNode = $svc.Core.Nodes.AddQueryOption('$filter', $query) | select;
-				$svc.Core.DeleteObject($parentNode);
+				$parentNode = Get-ApcNode -Id $nodeId -svc $svc | select;
 				#remove Node, but it's supposed to fail as we have Children
 				$svc.Core.SaveChanges(); # } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			}
@@ -95,14 +84,14 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 				$svc = Enter-Appclusive;
 				
 				#get the child node
-				$childNode = Get-ApcNode -Id $childId | select;
+				$childNode = Get-ApcNode -Id $childNodeId -svc $svc | select;
 	
 				#delete the child node first
 				$svc.Core.DeleteObject($childNode);
 				$result = $svc.Core.SaveChanges();
 				
 				#get the parent node
-				$parentNode = Get-ApcNode -Id $nodeId | select;
+				$parentNode = Get-ApcNode -Id $nodeId -svc $svc | select;
 	
 				#delete the parent node
 				$svc.Core.DeleteObject($parentNode);
@@ -110,13 +99,14 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			}
 			
 		}
-		<#
+		
 		It "DeleteNodeCheckAttatchedEntitiesDeletion" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "newtestnode";
+			$extName = $entityPrefix + "external-test-node";
 			
-			#create node
-			$newNode = Create-Node -svc $svc -Name $nodeName | select;
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
@@ -126,7 +116,12 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$jobId = [int] $job.Id;
 			
 			#create external node
-			$extName = $entityPrefix + "external-test-node";
+			$extNode = New-ApcExternalNode -Name $extName -NodeId $nodeId ;
+			
+			
+			
+			<#
+			
 			$extNode = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNode;
 			$extNode.Name = $extName;
 			$extNode.ExternalId = "509f27d7-4380-42fa-ac6d-0731c8f2111c";
@@ -134,7 +129,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$extNode.NodeId = $nodeId;
 			$svc.Core.AddToExternalNodes($extNode);
 			$result = $svc.Core.SaveChanges();
-			
+			<#
 			$result.StatusCode | Should Be 201;
 			#get the externa Node
 			$query = "Name eq '{0}' and NodeId eq {1}" -f $extName, $nodeId;
@@ -238,9 +233,9 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$query = "Id eq {0}" -f $entityBagId;
 			$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $query) | select;
 			$entityBag | Should Be $null;
+			#>
 			
-			
-		}#>
+		}
 		
 
 		
