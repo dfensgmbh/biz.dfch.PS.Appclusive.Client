@@ -13,6 +13,9 @@ Describe "Get-Connector" -Tags "Get-Connector" {
 	. "$here\Get-Connector.ps1"
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
+
+    $REQUIRE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__;
+    $PROVIDE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__;
 	
 	Context "Get-Connector" {
         $entityPrefix = "GetConnector";
@@ -135,7 +138,7 @@ Describe "Get-Connector" -Tags "Get-Connector" {
 			$entity.EntityKindId | Should Be $connector.EntityKindId;
 			$entity.Description | Should Be $connector.Description;
 			$entity.Multiplicity | Should Be $connector.Multiplicity;
-			$entity.ConnectionType | Should Be 1;
+			$entity.ConnectionType | Should Be $PROVIDE;
 		}
 	
         It "Get-ConnectorWithEntityKindId-ShouldReturnList" -Test {

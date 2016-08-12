@@ -190,11 +190,11 @@ Process
 		    }
 		    if($PSBoundParameters.ContainsKey('Require')) 
 		    { 
-			    $Exp += ("(ConnectionType eq 2)");
+			    $Exp += ("(ConnectionType eq {0})" -f [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__);
 		    }
 		    if($PSBoundParameters.ContainsKey('Provide')) 
 		    { 
-			    $Exp += ("(ConnectionType eq 1)");
+			    $Exp += ("(ConnectionType eq {0})" -f [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__);
 		    }
 
 
