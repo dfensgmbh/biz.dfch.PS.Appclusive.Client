@@ -1,7 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-ManagementUri" {
+Describe "Get-ManagementUri" -Tags "Get-ManagementUri" {
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -200,7 +200,7 @@ Describe -Tags "Get-ManagementUri" {
 			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-ManagementUri -svc $svc -First $showFirst;
+			$resultFirst = Get-ApcManagementUri -Name "biz.dfch.CS.Appclusive.Core.OdataServices.Csm.IncidentsController" -svc $svc;
 			$result = Get-ManagementUri -svc $svc -Id $resultFirst.Id -ExpandManagementCredential;
 
 			# Assert
