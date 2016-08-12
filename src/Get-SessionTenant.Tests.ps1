@@ -18,6 +18,12 @@ Describe -Tags "Get-SessionTenant.Tests" "Get-SessionTenant.Tests" {
 		
 		BeforeEach {
 			$error.Clear();
+			
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			
+			$svc = Enter-ApcServer;
 		}
 		
 		AfterEach {
