@@ -1,5 +1,4 @@
 #includes tests for test cases CLOUDTCL-1871 and CLOUDTCL-1872
-$svc = Enter-Appclusive;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
