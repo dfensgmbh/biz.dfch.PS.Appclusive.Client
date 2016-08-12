@@ -176,23 +176,23 @@ Process
 	    else 
 	    {
 		    $Exp = @();
-		    if($Id) 
+		    if($PSBoundParameters.ContainsKey('Id')) 
 		    { 
 			    $Exp += ("(Id eq {0})" -f $Id);
 		    }
-		    if($EntityKindId) 
+		    if($PSBoundParameters.ContainsKey('EntityKindId')) 
 		    { 
 			    $Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
 		    }
-		    if($InterfaceId) 
+		    if($PSBoundParameters.ContainsKey('InterfaceId')) 
 		    { 
 			    $Exp += ("(InterfaceId eq {0})" -f $InterfaceId);
 		    }
-		    if($Require) 
+		    if($PSBoundParameters.ContainsKey('Require')) 
 		    { 
 			    $Exp += ("(ConnectionType eq 2)");
 		    }
-		    if($Provide) 
+		    if($PSBoundParameters.ContainsKey('Provide')) 
 		    { 
 			    $Exp += ("(ConnectionType eq 1)");
 		    }
