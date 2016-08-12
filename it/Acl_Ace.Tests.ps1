@@ -1,4 +1,5 @@
 #includes tests for test cases CLOUDTCL-1871 and CLOUDTCL-1872
+$svc = Enter-Appclusive;
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -17,6 +18,8 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 	
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes", "Aces", "Acls");
+	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 	
 	Context "#CLOUDTCL-1871-AclTests" {
 		
@@ -49,11 +52,10 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aclName = $entityPrefix + "Acl";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and entityKindId of the node
 			$nodeId = $newNode.Id;
-			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#ACT create acl
 			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
@@ -74,7 +76,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$newAclDescription = "Updated Description";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
@@ -98,7 +100,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName = $entityPrefix + "Ace";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
@@ -141,7 +143,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName2 = $entityPrefix + "Ace2";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
@@ -197,7 +199,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName = $entityPrefix + "Ace";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
@@ -228,7 +230,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$newAceDescription = "Updated Description";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
@@ -276,7 +278,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName2 = $entityPrefix + "Ace2";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
@@ -300,7 +302,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceName = $entityPrefix + "Ace";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId | select;
 			
 			#get Id and EntityKindId of the node
 			$nodeId = $newNode.Id;
