@@ -193,7 +193,6 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'current')]
 	[alias('WhoAmI')]
 	[switch] $Current = $false
-	
 )
 
 Begin 
