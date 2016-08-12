@@ -52,7 +52,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Order/
 .NOTES
 See module manifest for required software versions and dependencies.
 #>
-# Requires biz.dfch.PS.Appclusive.Client
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
