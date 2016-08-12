@@ -19,6 +19,7 @@ Describe -Tags "Invoke-EntityAction" "Invoke-EntityAction" {
 	
 	$svc = Enter-ApcServer;
 
+	# DFTODO - Create node before every test and remove it after test
     $NodeEntity = Get-Node -First 1 -svc $svc;
 	$EntityId = $NodeEntity.Id;
 	
@@ -35,7 +36,7 @@ Describe -Tags "Invoke-EntityAction" "Invoke-EntityAction" {
 			$EntityActionName = 'Status';
 			$ExpectedResult = 'single';
 			
-			# Act			
+			# Act
 			$result = Invoke-EntityAction -EntityId $EntityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc;
 
 			# Assert
