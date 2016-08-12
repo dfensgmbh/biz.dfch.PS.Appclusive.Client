@@ -321,7 +321,7 @@ Process
 				{
 					if ( $item.ManagementCredentialId )
 					{
-						$Response_ = Get-ManagementCredential -Id $Response.ManagementCredentialId;
+						$Response_ = Get-ManagementCredential -svc $svc -Id $Response.ManagementCredentialId;
 						$null = $ResponseTemp.Add($Response_);
 					}
 				}
