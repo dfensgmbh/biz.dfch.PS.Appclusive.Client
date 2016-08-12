@@ -17,7 +17,15 @@ Describe -Tags "Get-Version" "Get-Version" {
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	
-	# $svc = Enter-ApcServer;
+	BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			
+			$svc = Enter-ApcServer;
+		}
+	
+
 
 	Context "Get-Version" {
 	
