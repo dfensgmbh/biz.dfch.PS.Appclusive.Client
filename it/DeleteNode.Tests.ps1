@@ -191,9 +191,6 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$entityBag | Should Be $null;
 			
 		}
-		
 
-		
-		
 	}
 }
