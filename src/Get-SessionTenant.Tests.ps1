@@ -10,6 +10,7 @@ Describe -Tags "Get-SessionTenant.Tests" "Get-SessionTenant.Tests" {
 	. "$here\Get-ModuleVariable.ps1"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Set-SessionTenant.ps1"
+	. "$here\Get-Tenant.ps1"
 	
 	Context "Get-SessionTenant.Tests" {
 	
@@ -49,7 +50,7 @@ Describe -Tags "Get-SessionTenant.Tests" "Get-SessionTenant.Tests" {
 			$result | Should Be $null;
 		}
 		
-		It "GetSessionTenantWithIdDefined-ReturnsNull" -Test {
+		It "GetSessionTenantWithIdDefined-ReturnsCurrentSessionTenant" -Test {
 		
 			# Arrange
 			$tenantId = '11111111-1111-1111-1111-111111111111'
