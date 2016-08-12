@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-Interface" {
+Describe "Get-Interface" -Tags "Get-Interface" {
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -15,13 +15,22 @@ Describe -Tags "Get-Interface" {
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
-	$svc = Enter-ApcServer;
-
 	Context "Get-Interface" {
+        BeforeEach {
+            $moduleName = 'biz.dfch.PS.Appclusive.Client';
+            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+            Import-Module $moduleName;
+
+            $svc = Enter-ApcServer;
+        }
 
         $entityPrefix = "GetInterface";
 	
         AfterAll {
+            $moduleName = 'biz.dfch.PS.Appclusive.Client';
+            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+            Import-Module $moduleName;
+
             $svc = Enter-ApcServer;
             $entities = $svc.Core.Connectors.AddQueryOption('$filter', "startswith(Name, 'GetInterface')") | Select;
          

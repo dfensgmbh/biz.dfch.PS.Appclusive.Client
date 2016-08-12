@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-Connector" "Get-Connector" {
+Describe "Get-Connector" -Tags "Get-Connector" {
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -14,13 +14,20 @@ Describe -Tags "Get-Connector" "Get-Connector" {
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
-	$svc = Enter-ApcServer;
-
 	Context "Get-Connector" {
-
         $entityPrefix = "GetConnector";
 	
+        BeforeEach {
+            $moduleName = 'biz.dfch.PS.Appclusive.Client';
+            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+            Import-Module $moduleName;
+	        $svc = Enter-ApcServer;
+        }
+
         AfterAll {
+            $moduleName = 'biz.dfch.PS.Appclusive.Client';
+            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+            Import-Module $moduleName;
             $svc = Enter-ApcServer;
             $entities = $svc.Core.Connectors.AddQueryOption('$filter', "startswith(Name, 'GetConnector')") | Select;
          

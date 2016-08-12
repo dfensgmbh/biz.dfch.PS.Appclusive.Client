@@ -188,11 +188,11 @@ Process
 		    { 
 			    $Exp += ("(InterfaceId eq {0})" -f $InterfaceId);
 		    }
-		    if(!!$Require) 
+		    if($Require) 
 		    { 
 			    $Exp += ("(ConnectionType eq 2)");
 		    }
-		    if(!!$Provide) 
+		    if($Provide) 
 		    { 
 			    $Exp += ("(ConnectionType eq 1)");
 		    }
