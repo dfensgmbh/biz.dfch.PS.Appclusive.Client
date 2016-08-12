@@ -299,8 +299,8 @@ Describe "Get-EntityKind" -Tags "Get-EntityKind" {
         $entityPrefix = "GetEntityKindConnector";
         $entitySetName = "EntityKinds";
 	
-        $REQUIRE = 2L;
-        $PROVIDE = 1L;
+        $REQUIRE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__;
+        $PROVIDE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__;
 
         AfterAll {
             $svc = Enter-ApcServer;
