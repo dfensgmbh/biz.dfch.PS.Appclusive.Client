@@ -242,6 +242,16 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
 	[switch] $ExpandExternalNodes = $false
 	,
+    # Returns all Connectors which provide this Interface
+    [Parameter(Mandatory = $true, ParameterSetName = 'ProvideInterface')]
+    [Alias('Provide')]
+    [long] $ProvideInterface
+    ,
+    # Returns all Connectors which require this Interface
+	[Parameter(Mandatory = $true, ParameterSetName = 'RequireInterface')]
+    [Alias('Require')]
+    [long] $RequireInterface
+    ,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
@@ -296,6 +306,24 @@ Process
 		{
 			$Response = $Response | Select -Property $Select;
 		}
+	}
+    elseif($PSCmdlet.ParameterSetName -eq 'RequireInterface') 
+	{
+        $Response = $svc.Core.InvokeEntitySetActionWithListResult("Nodes", "RequireInterface", [biz.dfch.CS.Appclusive.Api.Core.Node], @{"InterfaceId"=$RequireInterface});
+
+		if($Select) 
+		{
+			$Response = $Response | Select -Property $Select;
+		}
+	}
+    elseif($PSCmdlet.ParameterSetName -eq 'ProvideInterface') 
+	{
+        $Response = $svc.Core.InvokeEntitySetActionWithListResult("Nodes", "ProvideInterface", [biz.dfch.CS.Appclusive.Api.Core.Node], @{"InterfaceId"=$ProvideInterface});
+        
+		if($Select) 
+		{
+			$Response = $Response | Select -Property $Select;
+		}
 	} 
 	else 
 	{
@@ -323,6 +351,12 @@ Process
 			$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$ModifiedById ) 'User not found';
 			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+		}
+		if($CreatedBy)
+		{ 
+			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
+			Contract-Assert ( !!$CreatedById ) 'User not found';
+			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
 		}
 		if($EntityKindName)
 		{
