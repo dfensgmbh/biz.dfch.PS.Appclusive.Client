@@ -136,7 +136,6 @@ Begin
 
 Process 
 {
-
     # Default test variable for checking function response codes.
     [Boolean] $fReturn = $false;
     # Return values are always and only returned via OutputParameter.
@@ -144,9 +143,6 @@ Process
 	
     try 
     {
-	    # Parameter validation
-	    # N/A
-	
 	    if($PSCmdlet.ParameterSetName -eq 'list') 
 	    {
 		    if($Select -And 'object' -ne $As) 
@@ -219,13 +215,13 @@ Process
             }
             else
             {
-                if (!!$ListProviders)
+                if ($PSBoundParameters.ContainsKey('ListProviders'))
                 {
-                    Write-Host "Providers";
+                    $Response = Get-Connector -svc $svc -InterfaceId $Response.Id -Provide;
                 }
-                elseif (!!$ListConsumers)
+                elseif ($PSBoundParameters.ContainsKey('ListConsumers'))
                 {
-                    Write-Host "Consumers";
+                    $Response = Get-Connector -svc $svc -InterfaceId $Response.Id -Require;
                 }
             }
 
@@ -318,4 +314,20 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Interface; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Interface; }
+ 
+#
+# Copyright 2016 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#

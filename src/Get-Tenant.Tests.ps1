@@ -2,14 +2,20 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Get-Tenant" "Get-Tenant" {
+Describe "Get-Tenant" -Tags "Get-Tenant" {
 
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	
-	$svc = Enter-ApcServer;
+    BeforeEach {
+        $moduleName = 'biz.dfch.PS.Appclusive.Client';
+        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+        Import-Module $moduleName;
+
+        $svc = Enter-ApcServer;
+    }
 
 	Context "Get-Tenant" {
 	

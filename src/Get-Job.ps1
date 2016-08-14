@@ -251,6 +251,16 @@ PARAM
 	[Alias('ExpandChildJobs')]
 	[switch] $ExpandChildren = $false
 	,
+	# Indicates to return node information
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[switch] $ExpandInterface = $false
+	,
+	# Indicates to return node information
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[switch] $ExpandConnector = $false
+	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
@@ -385,6 +395,32 @@ Process
 					if ( $item.RefId )
 					{
 						$Response_ = Get-Node -Id $item.RefId -svc $svc;
+						$null = $ResponseTemp.Add($Response_);
+					}
+				}
+				$Response = $ResponseTemp.ToArray();
+			}
+			elseif ( $ExpandInterface )
+			{
+				$ResponseTemp = New-Object System.Collections.ArrayList;
+				foreach ($item in $Response)
+				{
+					if ( $item.RefId )
+					{
+						$Response_ = $svc.Core.Interfaces.AddQueryOption('$filter', ('Id eq {0}' -f $item.RefId)) | Select;
+						$null = $ResponseTemp.Add($Response_);
+					}
+				}
+				$Response = $ResponseTemp.ToArray();
+			}
+			elseif ( $ExpandConnector )
+			{
+				$ResponseTemp = New-Object System.Collections.ArrayList;
+				foreach ($item in $Response)
+				{
+					if ( $item.RefId )
+					{
+						$Response_ = $svc.Core.Connectors.AddQueryOption('$filter', ('Id eq {0}' -f $item.RefId)) | Select;
 						$null = $ResponseTemp.Add($Response_);
 					}
 				}
