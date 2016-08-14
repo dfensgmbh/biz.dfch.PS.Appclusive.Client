@@ -14,6 +14,8 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 
     $entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes", "ExternalNodes", "Acls", "Aces", "EntityBags");
+	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 
 	Context "#CLOUDTCL-2190-DeleteNodeWithChildNode" {
 		BeforeEach {
@@ -44,20 +46,20 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$childName = $entityPrefix + "childnode";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -svc $svc | select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
 			#get Id of the node
 			$nodeId = $newNode.Id;
 			
 			#ACT create child Node
-			$newChildNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId 1 -svc $svc | select;
+			$newChildNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
 			
 			#get Id of the child Node
 			$childNodeId = $newChildNode.Id;
 			
 			#get parent & child Node
-			$parentNode = Get-ApcNode -Id $nodeId -svc $svc | select;
-			$childNode = Get-ApcNode -Id $childNodeId -svc $svc | select;
+			$parentNode = Get-ApcNode -Id $nodeId -svc $svc;
+			$childNode = Get-ApcNode -Id $childNodeId -svc $svc;
 			
 			#ASSERT parent & child Node creation
 			$parentNode | Should Not Be $null;
@@ -69,7 +71,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			try
 			{
 				#get the parent node
-				$parentNode = Get-ApcNode -Id $nodeId -svc $svc | select;
+				$parentNode = Get-ApcNode -Id $nodeId -svc $svc;
 				#remove Node, but it's supposed to fail as we have Children
 				$svc.Core.SaveChanges(); # } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			}
@@ -84,14 +86,14 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 				$svc = Enter-Appclusive;
 				
 				#get the child node
-				$childNode = Get-ApcNode -Id $childNodeId -svc $svc | select;
+				$childNode = Get-ApcNode -Id $childNodeId -svc $svc;
 	
 				#delete the child node first
 				$svc.Core.DeleteObject($childNode);
 				$result = $svc.Core.SaveChanges();
 				
 				#get the parent node
-				$parentNode = Get-ApcNode -Id $nodeId -svc $svc | select;
+				$parentNode = Get-ApcNode -Id $nodeId -svc $svc;
 	
 				#delete the parent node
 				$svc.Core.DeleteObject($parentNode);
@@ -109,19 +111,19 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$entityBagName = $entityPrefix + "entityBag";
 			
 			#ACT create node
-			$newNode = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -svc $svc| select;
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
 			#get Id and entityKindId of the node
 			$nodeId = $newNode.Id;
 			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#get the job of the node
-			$job = Get-ApcNode -Id $nodeId -ExpandJob | select;
+			$job = Get-ApcNode -Id $nodeId -ExpandJob;
 			$jobId = [int] $job.Id;
 			
 			#create external node
 			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
-			#Write-Host ($extNode2 | out-string);
+			#Write-Host ($extNode | out-string);
 			
 			#ASSERT external Node
 			$extNode | Should Not Be $null;
@@ -129,13 +131,13 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$extNodeId = $extNode.Id;
 			
 			#ACT create acl
-			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId | select;
+			$acl = Create-Acl -svc $svc -aclName $aclName -entityId $nodeId -entityKindId $nodeEntityKindId;
 			
 			#get Id of the acl
 			$aclId = $acl.Id;
 			
 			#ACT Create Ace
-			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId | select;
+			$ace = Create-Ace -svc $svc -aceName $aceName -aclId $aclId;
 			
 			#get the Id of the ace
 			$aceId = $ace.Id;
@@ -156,13 +158,13 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$entityBagId = $entityBag.Id;
 			
 			#ACT delete Node
-			$node = Get-ApcNode -Id $nodeId -svc $svc | select;
+			$node = Get-ApcNode -Id $nodeId -svc $svc;
 			$svc.Core.DeleteObject($node);
 			$result = $svc.Core.SaveChanges();
 			
 			#ASSERT
 			#check that node is deleted
-			$node = Get-ApcNode -Id $nodeId -svc $svc | select;
+			$node = Get-ApcNode -Id $nodeId -svc $svc;
 			$node | Should Be $null;
 			
 			#check that Job is deleted
