@@ -24,22 +24,6 @@ Describe "New-User" -Tags "New-User" {
 		# Context wide constants
 		# N/A
 
-		# It "New-User-ShouldReturnNewEntity" -Test {
-			# # Arrange
-			# $Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			# $Mail = "Mail-{0}@appclusive.net" -f [guid]::NewGuid().ToString();
-			# $ExternalId = "{0}" -f [guid]::NewGuid();
-			
-			# # Act
-			# $result = New-User -svc $svc -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType Internal;
-
-			# # Assert
-			# $result | Should Not Be $null;
-			# $result.Name | Should Be $Name;
-			# $result.Mail | Should Be $Mail;
-			# $result.ExternalId | Should Be $ExternalId;
-		# }
-
 		It "New-UserDuplicate-ShouldReturnNull" -Test {
 			# Arrange
 			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();

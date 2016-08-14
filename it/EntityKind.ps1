@@ -15,7 +15,6 @@ function CreateEntityKind($entityKindName, $entityKindDescription, $entityKindVe
 	return $entityKind;
 }
 
-
 #
 # Copyright 2015 d-fens GmbH
 #
