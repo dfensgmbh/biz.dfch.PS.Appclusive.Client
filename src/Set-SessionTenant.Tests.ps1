@@ -39,7 +39,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			$true | Should Be $true;
 		}
 		
-		It "SetSessionTenantWithInvalidId-Throws" -Test {
+		It "SetSessionTenantWithInvalidId-ThrowsContractException" -Test {
 		
 			# Arrange
 			$tenantId = [Guid]::NewGuid()
