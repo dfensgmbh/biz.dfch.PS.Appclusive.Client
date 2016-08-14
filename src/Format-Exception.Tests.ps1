@@ -1,5 +1,4 @@
-#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; RequiredVersion = '1.1.1.20160710' }
-#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Appclusive.Client'; RequiredVersion = '3.0.0.20160715' }
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -13,6 +12,12 @@ function Stop-Pester($message = "Fatal. Cannot continue.")
 
 
 Describe -Tags "Format-Exception" "Format-Exception" {
+
+	BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+		}
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -284,7 +289,6 @@ Describe -Tags "Format-Exception" "Format-Exception" {
 			$result[0] | Should BeOfType [System.Management.Automation.ExtendedTypeSystemException];
 			$result[1].GetType().FullName | Should Be "System.Data.Services.Client.DataServiceQueryException";
 			$result[2].GetType().FullName | Should Be "System.Data.Services.Client.DataServiceClientException";
-			Write-Host ($result | Out-String);
 		}
 	}
 

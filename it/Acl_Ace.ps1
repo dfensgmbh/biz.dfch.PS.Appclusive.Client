@@ -9,7 +9,7 @@ function Create-Acl {
 		,
 		$entityId
 		,
-		$entityKindId = 1
+		$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__
 		,
 		$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM
 	)

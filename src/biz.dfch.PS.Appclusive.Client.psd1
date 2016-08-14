@@ -161,6 +161,24 @@ NestedModules = @(
 	'Get-Version.ps1'
 	,
 	'Format-Exception.ps1'
+	,
+	'New-Connector.ps1'
+	,
+	'Set-Connector.ps1'
+	,
+	'Get-Connector.ps1'
+	,
+	'Remove-Connector.ps1'
+	,
+	'New-Interface.ps1'
+	,
+	'Set-Interface.ps1'
+	,
+	'Get-Interface.ps1'
+	,
+	'Remove-Interface.ps1'
+	,
+	'Test-Connect.ps1'
 )
 
 # Functions to export from this module

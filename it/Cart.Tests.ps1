@@ -187,45 +187,6 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cart = GetCartOfUser -svc $svc;
 			$cart | Should Be $null;
 		}
-		
-		It "Cart-SetCartDescription" -Test {
-			# # Assert
-			# $newDescription = "Updated"
-			
-			# # Get catItem
-			# $catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			# $catItem | Should Not Be $null;
-			
-			# # Create new cartItem
-			# $cartItem = CreateCartItem -catItem $catItem;
-
-			# # Add cartItem
-			# $svc.Core.AddToCartItems($cartItem);
-			# $result = $svc.Core.SaveChanges();
-			
-			# $cart = GetCartOfUser -svc $svc;
-			# $cart | Should Not Be $null;
-			
-			# # Update description
-			# $cart.Description = $newDescription;
-			# $svc.Core.UpdateObject($cart);
-			# $result = $svc.Core.SaveChanges();
-			
-			# $cartUpdated = GetCartOfUser -svc $svc;
-			
-			# #Check Update
-			# $cartUpdated | Should Not Be $null;
-			# $cartUpdated.Id | Should Not $cart.Id;
-			# $cartUpdated.Description | Should Be $newDescription;
-			
-			# # Cleanup
-			# $svc.Core.DeleteObject($cart);
-			# $result = $svc.Core.SaveChanges();
-			# $result.StatusCode | Should Be 204;
-
-			# $cart = GetCartOfUser -svc $svc;
-			# $cart | Should Be $null;
-		}
 	}
 	
 	Context "#CLOUDTCL-1876-CartItemTests" {	
