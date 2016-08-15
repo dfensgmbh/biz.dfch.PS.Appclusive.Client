@@ -228,38 +228,43 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
 			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
 		}
-		<#
-		It "AttachNodeAsChildToHisOwn-ThrowsError" -Test {
+		
+		<# will be deployed on next release
+		It "SetNodeAsItsOwnParent-ThrowsError" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			
+			#ACT create node
+			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#ASSERT Node creation
+			$node | Should Not Be $null;
+			$node.Id | Should Not Be $null;
+			$node.Name | Should Be $nodeName;
+			$node.Description | Should Be $nodeDescription;
+			
+			#ACT set node as its own parent
+			$svc.Core.SetLink($node, "Parent", $node);
+				
 			try
 			{
-				# Arrange
-				$node = New-ApcNode -Name 'Arbitrary Node 1' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				$childrenOfNode = $svc.Core.LoadProperty($node, 'Children') | Select;
-				$childrenOfNode | Should be $null;
-				
-				# Act
-				$svc.Core.SetLink($node, "Parent", $node);
-				
-				try
-				{
-					$updateResult = $Svc.Core.SaveChanges();
-				}
-				catch
-				{
-					$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
-					$exception.'odata.error'.message.value | Should Be "An error has occurred.";
-					$detach = $svc.Core.Detach($node);
-				}
+				$updateResult = $Svc.Core.SaveChanges();
+			}
+			
+			catch
+			{
+				$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
+				$exception.'odata.error'.message.value | Should Be "An error has occurred.";
+				$_.Exception.Message | Should Not Be $null;
+				$_.FullyQualifiedErrorId | Should Not Be $null;
+				Write-Host ($_.Exception.Message | Out-String);
+				Write-Host ($_.FullyQualifiedErrorId | Out-String);
 			}
 			finally
 			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
+			#CLEANUP is done here because setting same node as parent and child has created a loop
+			#reload of service connection and the node is needed
+			
 			}
 		}
 		
@@ -320,7 +325,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
-		
+		<#
 		It "GetAssignablePermissionsForConfigurationNode-ReturnsIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
 			$configurationRootNodeId = 2;
@@ -615,35 +620,6 @@ Describe -Tags "Node.Tests" "Node.Tests" {
             $deletedJob = $svc.Core.Jobs.AddQueryOption('$filter', $jobFilter) | Select;
 
             $deletedJob | Should Be $null;
-        }
-
-        It "DeletingNodeStopsIfHasChild" -Test {        
-            $nodeName = "DeletingNodeStopsIfHasChild";
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-            $createdNode = Get-ApcNode -Name $nodeName;
-
-			$childNode = New-ApcNode -Name ("{0}-Child" -f $nodeName) -ParentId $createdNode.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-
-            { DeleteNode $createdNode.Id; } | Should Throw;
-        }
-        
-        It "DeletingNodeStopsIfHasChildren" -Test {
-        
-            $nodeName = "DeletingNodeStopsIfHasChildren";
-            $nodeChildren = 4;
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-
-            $createdNode = Get-ApcNode -Name $nodeName;
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node];
-            
-            for ($i = 1; $i -le $nodeChildren; $i++)
-            {
-			    $childNode = New-ApcNode -Name ("{0}-Child-{1}" -f $nodeName,$i) -ParentId $createdNode.Id -EntityKindId 1 -Parameters @{} -svc $svc
-            }
-
-            { DeleteNode $createdNode.Id; } | Should Throw;
         }
 
         It "DeletingNodeStopsIfHasIncomingAssocs" -Test {
