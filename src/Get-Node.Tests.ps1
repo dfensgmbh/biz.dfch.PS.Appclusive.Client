@@ -1,3 +1,4 @@
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -97,9 +98,9 @@ Describe "Get-Node" -Tags "Get-Node" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Node] | Should Be $true;
 		}
 		
-		It "Get-Node-ShouldReturnFiveEntities" -Test {
+		It "Get-Node-ShouldReturnThreeEntities" -Test {
 			# Arrange
-			$ShowFirst = 5;
+			$ShowFirst = 3;
 			
 			# Act
 			$result = Get-Node -svc $svc -First $ShowFirst;
@@ -172,12 +173,15 @@ Describe "Get-Node" -Tags "Get-Node" {
 			}
 		}
 		
-		It "Get-NodeByCreatedByThatDoesNotExist-ShouldReturnNull" -Test {
+		It "Get-NodeByCreatedByThatDoesNotExist-ShouldThrowContractException" -Test {
 			# Arrange
 			$User = 'User-that-does-not-exist';
 			
-			# Act
-			{ $result = Get-Node -svc $svc -CreatedBy $User; } | Should Throw;
+			# Act / Assert
+			{ $result = Get-Node -svc $svc -CreatedBy $User; } | Should ThrowErrorId "Contract";
+
+			# Assert
+			# N/A
 		}
 		
 		It "Get-NodeByCreatedBy-ShouldReturnListWithEntities" -Test {

@@ -30,7 +30,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			$node = New-ApcNode -Name 'Arbitrary' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
 
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
+			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $node.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 
 			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};

@@ -340,6 +340,12 @@ Process
 		{
 			$Exp += ("ParentId eq {0}" -f $ParentId);
 		}
+		if($CreatedBy) 
+		{ 
+			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
+			Contract-Assert ( !!$CreatedById ) 'User not found';
+			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+		}
 		if($ModifiedBy)
 		{ 
 			$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;

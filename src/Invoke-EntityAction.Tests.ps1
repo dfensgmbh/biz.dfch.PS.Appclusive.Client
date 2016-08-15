@@ -23,9 +23,10 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
         Import-Module $moduleName;
 
         $svc = Enter-ApcServer;
-        
-        $NodeEntity = Get-Node -First 1 -svc $svc;
-	    $EntityId = $NodeEntity.Id;
+	
+		# DFTODO - Create node before every test and remove it after test
+		$NodeEntity = Get-Node -First 1 -svc $svc;
+		$EntityId = $NodeEntity.Id;
 	
 	    if ( !$EntityId ) { Stop-Pester; }
     }
@@ -41,7 +42,7 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
 			$EntityActionName = 'Status';
 			$ExpectedResult = 'single';
 			
-			# Act			
+			# Act
 			$result = Invoke-EntityAction -EntityId $EntityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc;
 
 			# Assert

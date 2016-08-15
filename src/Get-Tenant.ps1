@@ -141,7 +141,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Tenant/
 .NOTES
 See module manifest for required software versions and dependencies.
 #>
-# Requires biz.dfch.PS.Appclusive.Client
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
@@ -194,7 +193,6 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'current')]
 	[alias('WhoAmI')]
 	[switch] $Current = $false
-	
 )
 
 Begin 

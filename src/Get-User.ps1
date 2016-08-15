@@ -328,7 +328,7 @@ Process
 	}
 	elseif($PSCmdlet.ParameterSetName -eq 'tenant')
 	{
-		$Response = Get-Tenant -Current;
+		$Response = Get-Tenant -svc $svc -Current;
 		Contract-Assert (!!$Response);
 	}
 	else 
