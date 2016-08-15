@@ -114,48 +114,8 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
 			Remove-ApcNode -id $childNode.Id -Confirm:$false -svc $svc;
 		}
-		<#
-		It "DeleteParentNodeWithExistingChildThrowsException" -Test {
-			try 
-			{
-				# Arrange
-				$node = New-ApcNode -Name 'Arbitrary Parent' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode = New-ApcNode -Name 'Arbitrary Child' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				$childNode | Should Not Be $null;
-				$childNode.Id | Should Not Be 0;
-				$childNode.ParentId | Should Be $node.Id;
-				$node | Should Not Be $null;
-				$node.Id | Should Not Be 0;
-						
-				# Act
-				try 
-				{
-					$svc.Core.DeleteObject($node);
-					$svc.Core.SaveChanges();
-				} catch 
-				{
-					$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
-					$exception.'odata.error'.message.value | Should Be "An error has occurred.";
-					$detach = $svc.Core.Detach($node);
-				}
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $childNode.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
-		}
 		
+		<#
 		It "LoadChildNodesSucceeds" -Test {
 			try
 			{
