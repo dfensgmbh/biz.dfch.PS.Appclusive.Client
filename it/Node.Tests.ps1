@@ -71,8 +71,8 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
 				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
-		}
-		#>
+		}#>
+		
 		It "CreateNode" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
@@ -181,47 +181,54 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
 			Remove-ApcNode -id $childNode.Id -Confirm:$false -svc $svc;	
 		}
-		<#
-		It "AttachNodeAsChildToAnotherNodeSucceeds" -Test {
-			try
-			{
-				# Arrange
-				$node1 = New-ApcNode -Name 'Arbitrary Node 1' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$node2 = New-ApcNode -Name 'Arbitrary Node 2' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				$childrenOfNode1 = $svc.Core.LoadProperty($node1, 'Children') | Select;
-				$childrenOfNode1 | Should be $null;
-				$childrenOfNode2 = $svc.Core.LoadProperty($node2, 'Children') | Select;
-				$childrenOfNode2 | Should be $null;
-				
-				# Act
-				$svc.Core.SetLink($node2, "Parent", $node1);
-				$updateResult = $Svc.Core.SaveChanges();
-				
-				#Assert
-				$parentNodeReload = $svc.Core.LoadProperty($node2, 'Parent') | Select;
-				$childNodeReload = $svc.Core.LoadProperty($node1, 'Children') | Select;
-
-				$updateResult.StatusCode | Should Be 204;
-				$parentNodeReload.Id | Should Be $node1.Id
-				$childNodeReload.Id | Should Be $node2.Id
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node1.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node2.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $node2.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node1.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
-		}
 		
+		It "SetNodeAsChildToAnotherNode" -Test {
+			#ARRANGE
+			$nodeName1 = $entityPrefix + "node1";
+			$nodeName2 = $entityPrefix + "node2";
+			
+			#ACT create nodes
+			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get ids of nodes
+			$node1Id = $node1.Id;
+			$node2Id = $node2.Id;
+			
+			#ASSERT Nodes creation
+			$node1 | Should Not Be $null;
+			$node1.Id | Should Not Be $null;
+			$node1.Name | Should Be $nodeName1;
+			$node2 | Should Not Be $null;
+			$node2.Id | Should Not Be $null;
+			$node2.Name | Should Be $nodeName2;
+			$childrenOfNode1 = $svc.Core.LoadProperty($node1, 'Children') | Select;
+			$childrenOfNode1 | Should be $null;
+			$childrenOfNode2 = $svc.Core.LoadProperty($node2, 'Children') | Select;
+			$childrenOfNode2 | Should be $null;
+			
+			#ACT set node1 as parent of node2
+			$svc.Core.SetLink($node2, "Parent", $node1);
+			$updateResult = $svc.Core.SaveChanges();
+			
+			#Assert
+			$parentNodeReload = $svc.Core.LoadProperty($node2, 'Parent') | Select;
+			$childNodeReload = $svc.Core.LoadProperty($node1, 'Children') | Select;
+			
+			#ASSERT
+			$updateResult.StatusCode | Should Be 204;
+			$parentNodeReload.Id | Should Be $node1.Id;
+			$childNodeReload.Id | Should Be $node2.Id;
+			
+			#Reload the service connection and the node2 so we assert the parentId change
+			$svc = Enter-Appclusive;
+			$node2Reload = Get-ApcNode -id $node2Id;
+			$node2Reload.ParentId | Should Be $node1Id;
+			
+			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
+			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
+		}
+		<#
 		It "AttachNodeAsChildToHisOwn-ThrowsError" -Test {
 			try
 			{
