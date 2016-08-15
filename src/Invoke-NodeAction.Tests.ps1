@@ -44,15 +44,15 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 		$jobResult = @{Version = "1"; Message = "Arbitrary message"; Succeeded = $true};
 		$null = Invoke-EntityAction -InputObject $nodeJob -EntityActionName "JobResult" -InputParameters $jobResult -svc $svc;
 		
-	    $EntityId = $nodeEntity.Id;
+	    $entityId = $nodeEntity.Id;
 	
-	    if ( !$EntityId ) { Stop-Pester; }
+	    if ( !$entityId ) { Stop-Pester; }
     }
 	
 	AfterEach {
 		$svc = Enter-ApcServer;
 		
-		$r = Remove-Node -Id $EntityId -Confirm:$false -svc $svc;
+		$r = Remove-Node -Id $entityId -Confirm:$false -svc $svc;
 	}
 
 	Context "Invoke-NodeAction" {
@@ -62,26 +62,26 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 
 		It "Invoke-NodeAction-ShouldReturnStatus" -Test {
 			# Arrange
-			$InputName = (Get-Node -Id $EntityId -ExpandAvailableActions -svc $svc) | Select -First 1;
+			$inputName = (Get-Node -Id $entityId -ExpandAvailableActions -svc $svc) | Select -First 1;
 			
 			# Act
-			$actionInvocationResult = Invoke-NodeAction -EntityId $EntityId -InputName $InputName -svc $svc;
+			$actionInvocationResult = Invoke-NodeAction -EntityId $entityId -InputName $inputName -svc $svc;
 			$svc = Enter-ApcServer;
-			$node = Get-Node -Id $EntityId -svc $svc -ExpandStatus;
+			$node = Get-Node -Id $entityId -svc $svc -ExpandStatus;
 
 			# Assert
-			$actionInvocationResult.InputName | Should Be $InputName;
-			$node.Condition | Should Be $InputName;
+			$actionInvocationResult.InputName | Should Be $inputName;
+			$node.Condition | Should Be $inputName;
 		}
 
-		It "Invoke-UnkownNodeAction-ReturnsBadRequest" -Test {
+		It "Invoke-UnkownNodeAction-ResultsInBadRequest" -Test {
 			# Arrange
-			$InputName = "NotExistingAction";
+			$inputName = "NotExistingAction";
 			
 			# Act			
 			try 
 			{
-				Invoke-NodeAction -EntityId $EntityId -InputName $InputName -svc $svc;
+				Invoke-NodeAction -EntityId $entityId -InputName $inputName -svc $svc;
 				
 				# Assert
 				"An Exception " | Should Be " thrown when invoking unknown action";
