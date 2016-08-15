@@ -53,7 +53,7 @@ Describe "Get-SessionTenant.Tests" -Tags "Get-SessionTenant.Tests" {
 		It "GetSessionTenantWithIdDefined-ReturnsCurrentSessionTenant" -Test {
 		
 			# Arrange
-			$tenantId = '11111111-1111-1111-1111-111111111111'
+			$tenantId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$null = Set-SessionTenant $tenantId -svc $svc;
 			
 			# Act
