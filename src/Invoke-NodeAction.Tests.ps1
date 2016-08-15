@@ -28,13 +28,27 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
         
 	    $svc = Enter-ApcServer;
 	
+		# Create new node for tests
 	    $NodeName = "Name-{0}" -f [guid]::NewGuid().ToString();
         $ekId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__
         $NodeEntity = Set-Node -Name $NodeName -EntityKindId $ekId -CreateIfNotExist -svc $svc;
+		
+		# Finish initial state transition of newly created node
+		$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $node.Id, $ekId;
+		$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+		$jobResult = @{Version = "1"; Message = "Arbitrary message"; Succeeded = $true};
+		$null = Invoke-ApcEntityAction -InputObject $nodeJob -EntityActionName "JobResult" -InputParameters $jobResult;
+		
 	    $EntityId = $NodeEntity.Id;
 	
 	    if ( !$EntityId ) { Stop-Pester; }
     }
+	
+	AfterEach {
+		$svc = Enter-ApcServer;
+		
+		$r = Remove-Node -Id $EntityId -Confirm:$false -svc $svc;
+	}
 
 	Context "Invoke-NodeAction" {
 	
@@ -65,8 +79,6 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 			$result.Status | Should Not Be $InputName;
 		}
 	}
-	
-	$r = Remove-Node -Id $EntityId -Confirm:$false -svc $svc;
 }
 
 #
