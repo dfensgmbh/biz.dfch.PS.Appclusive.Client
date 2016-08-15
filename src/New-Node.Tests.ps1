@@ -30,9 +30,10 @@ Describe "New-Node" -Tags "New-Node" {
 		It "New-Node-ShouldCreateAndReturnNewEntity" -Test {
 			# Arrange
 			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$currentTenant = Get-Tenant -Current -svc $svc;
 			
 			# Act
-			$result = New-Node -svc $svc -Name $Name -ParentId 1 -EntityKindId 1;
+			$result = New-Node -svc $svc -Name $Name -ParentId $currentTenant.NodeId -EntityKindId [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -42,19 +43,18 @@ Describe "New-Node" -Tags "New-Node" {
 			# Cleanup
 			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $result.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
 			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
 		}
 
 		It "New-NodeDuplicate-ShouldThrow" -Test {
 			# Arrange
 			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$tenant = Get-Tenant -Current -svc $svc;
-			$node = New-Node -svc $svc -Name $Name -ParentId $tenant.NodeId -EntityKindId $tenant.NodeId;
+			$currentTenant = Get-Tenant -Current -svc $svc;
+			$node = New-Node -svc $svc -Name $Name -ParentId $currentTenant.NodeId -EntityKindId [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$node | Should Not Be $null;
 			
 			# Act
-			{ $result = New-Node -svc $svc -Name $Name -ParentId 1 -EntityKindId 1; } | Should Throw 'Entity does already exist';
+			{ $result = New-Node -svc $svc -Name $Name -ParentId $currentTenant.NodeId -EntityKindId [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__; } | Should Throw 'Entity does already exist';
 
 			# Assert
 			$result | Should Be $null;
