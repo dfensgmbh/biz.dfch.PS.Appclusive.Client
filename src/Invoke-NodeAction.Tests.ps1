@@ -32,7 +32,8 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 	
 		# Create new node for tests
 	    $nodeName = "Name-{0}" -f [guid]::NewGuid().ToString();
-		$ekId = ($svc.Core.EntityKinds.AddQueryOption('$filter', "Id gt 4096") | Select -First 1).id;
+		$filterQuery = "Id gt {0}" -f [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::ReservationEnd.value__;
+		$ekId = ($svc.Core.EntityKinds.AddQueryOption('$filter', $filterQuery) | Select -First 1).id;
         $nodeEntity = Set-Node -Name $nodeName -EntityKindId $ekId -CreateIfNotExist -svc $svc;
 		Contract-Assert($nodeEntity);
 		
