@@ -477,28 +477,6 @@ Describe -Tags "Node.Tests" "Node.Tests" {
             return $entityBag;
         }
 
-        function CreateAcl([long]$nodeId, [string]$key)
-        {
-            $acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
-            $acl.EntityId = $nodeId;
-            $acl.EntityKindId = 1;
-            $acl.Name = $key;
-
-            return $acl;
-        }
-
-        function CreateAce([long]$aclId, [string]$key)
-        {
-            $ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
-            $ace.AclId = $aclId;
-            $ace.Name = $key;
-            $ace.PermissionId = 0; #all
-            $ace.TrusteeType = 1; #user
-            $ace.TrusteeId = 1;
-            $ace.Type = 1; #allow
-
-            return $ace;
-        }
 
         function DeleteNode([long]$nodeId)
         {
