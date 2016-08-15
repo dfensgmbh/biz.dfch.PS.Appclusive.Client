@@ -87,37 +87,34 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$node.Name | Should Be $nodeName;
 			$node.Description | Should Be $nodeDescription;
 		}
-		<#
-		It "AddNewParentAndChildNodeSucceeds" -Test {
-			try
-			{
-				# Act
-				$node = New-ApcNode -Name 'Arbitrary Parent' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode = New-ApcNode -Name 'Arbitrary Child' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				#Assert	
-				$childNode | Should Not Be $null;
-				$childNode.Id | Should Not Be 0;
-				$childNode.ParentId | Should Be $node.Id;
-				$node | Should Not Be $null;
-				$node.Id | Should Not Be 0;
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $childNode.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
-		}
 		
+		It "CreateParentAndChildNode" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$childName = $entityPrefix + "childnode";
+			
+			#ACT create node
+			$parentNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $parentNode.Id;
+			
+			#ACT create child Node
+			$childNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#ASSERT parent & child Node creation
+			$parentNode | Should Not Be $null;
+			$parentNode.Id | Should Not Be $null;
+			$parentNode.Name | Should Be $nodeName;
+			$childNode | Should Not Be $null;
+			$childNode.Id | Should Not Be $null;
+			$childNode.ParentId | Should Be $nodeId;
+			$childNode.Name | Should Be $childName;
+			
+			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
+			Remove-ApcNode -id $childNode.Id -Confirm:$false -svc $svc;
+		}
+		<#
 		It "DeleteParentNodeWithExistingChildThrowsException" -Test {
 			try 
 			{
