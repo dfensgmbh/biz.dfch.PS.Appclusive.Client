@@ -1,5 +1,4 @@
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
+#Includes tests for test case CLOUDTCL-1873
 
 function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 {
@@ -11,8 +10,11 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Node.Tests" "Node.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-
-	. "$here\$sut"
+	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Nodes");
+	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 
 	Context "#CLOUDTCL-1873-NodeTests" {
 		
@@ -20,9 +22,24 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		<#
 		It "DoStateChangeOnNodeSetsConditionAndConditionParametersOnJob" -Test {
 			# Arrange
 			$condition = 'Continue';
@@ -55,32 +72,22 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
-		
-		It "CreateAndDeleteNodeSucceeds" -Test {
-			# Arrange
+		#>
+		It "CreateNode" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$nodeDescription = "node description";
 			
-			# Act
-			$node = New-ApcNode -Name 'Arbitrary' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
+			#ACT create node
+			$node = New-ApcNode -Name $nodeName -Description $nodeDescription -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
-			try 
-			{
-				#Assert	
-				$node | Should Not Be $null;
-				$node.Id | Should Not Be 0;
-			} 
-			finally 
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				$deletionResult = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-				
-				$deletionResult.StatusCode | Should Be 204;
-			}
+			#ASSERT Node creation
+			$node | Should Not Be $null;
+			$node.Id | Should Not Be $null;
+			$node.Name | Should Be $nodeName;
+			$node.Description | Should Be $nodeDescription;
 		}
-		
+		<#
 		It "AddNewParentAndChildNodeSucceeds" -Test {
 			try
 			{
@@ -687,7 +694,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
             $svc.Core.AddToAssocs($assoc);
 
             { DeleteNode $createdNode.Id; } | Should Throw;
-        }
+        }#>
     }
 }
 
