@@ -9,15 +9,20 @@ function Stop-Pester($message = "Unrepresentative, because no entities existing.
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-
-Describe -Tags "Get-User" "Get-User" {
+Describe "Get-User" -Tags "Get-User" {
 
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"	
 	
-	$svc = Enter-ApcServer;
+    BeforeEach {
+        $moduleName = 'biz.dfch.PS.Appclusive.Client';
+        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+        Import-Module $moduleName;
+
+        $svc = Enter-ApcServer;
+    }
 
 	Context "Get-User" {
 	

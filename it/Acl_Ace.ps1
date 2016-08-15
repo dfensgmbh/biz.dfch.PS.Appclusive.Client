@@ -1,32 +1,227 @@
-function CreateAcl($aclName, $aclDescription) 
-{
+function Create-Acl {
+	Param
+	(
+		$svc
+		,
+		$aclName
+		,
+		$aclDescr = "Test Acl"
+		,
+		$entityId
+		,
+		$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__
+		,
+		$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM
+	)
+	
 	$acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
-	$acl.Name = $aclName; #"required-contains-name-of-resource"
-	$acl.Description = $aclDescription; #"required-contains-id-to-resource"
-	$acl.Created = [System.DateTimeOffset]::Now;
-	$acl.Modified = $acl.Created;
-	$acl.CreatedBy = $ENV:USERNAME;
-	$acl.ModifiedBy = $acl.CreatedBy;
-	$acl.Tid = "11111111-1111-1111-1111-111111111111";
-	$acl.Id = 0;
-	return $acl;
+	$acl.Name = $aclName;
+	$acl.Description = $aclDescr;
+	$acl.EntityId = $entityId;
+	$acl.EntityKindId = $EntityKindId;
+	$acl.Tid = $tenantId;
+	
+	#add it to acls
+	$svc.Core.AddToAcls($acl);
+	$result = $svc.Core.SaveChanges();
+	
+	#get ACL
+	$query = "Name eq '{0}' and EntityId eq {1}" -f $aclName, $nodeId;
+	$loadedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+				
+	#ASSERT	
+	$bin = $result.StatusCode | Should be 201;
+	$bin = $loadedAcl | Should Not Be $null;
+	$bin = $loadedAcl.Id | Should Not Be 0;
+	$bin = $loadedAcl.EntityId | Should Be $entityId;
+	$bin = $loadedAcl.EntityKindId | Should Be $EntityKindId;
+	$bin = $loadedAcl.Tid | Should Be $tenantId;
+		
+	return $loadedAcl;
 }
 
-function CreateAce($aceName, $aceDescription, $aceAclId, $aceAction) 
-{
+function Delete-Acl {
+	Param
+	(
+		$svc
+		,
+		$aclId
+	)
+	
+	#get the acl
+	$query = "Id eq {0}" -f $aclId;
+	$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	
+	#delete the acl
+	$svc.Core.DeleteObject($acl);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted acl
+	$query = "Id eq {0}" -f $aclId;
+	$deletedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT acl is deleted
+	$bin = $deletedAcl | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
+}
+
+function Update-Acl {
+	Param
+	(
+		$svc
+		,
+		$aclId
+		,
+		$newAclName
+		,
+		$newAclDescription
+	)
+	
+	#get the Acl 
+	$query = "Id eq {0}" -f $aclId;
+	$acl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	$aclName = $acl.Name; #get old name
+	$aclDescription = $acl.Description; #get old desription
+	
+	#Set new name and description for the acl
+	$acl.Name = $newAclName;
+	$acl.Description = $newAclDescription;
+	
+	#save changes
+	$svc.Core.UpdateObject($acl)
+	$result = $svc.core.SaveChanges();	
+				
+	#get the updated Acl 
+	$query = "Id eq {0}" -f $aclId;
+	$updatedAcl = $svc.Core.Acls.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	$bin = $updatedAcl.Name | Should Be $newAclName;
+	$bin = $updatedAcl.Name | Should Not Be $aclName;
+	$bin = $updatedAcl.Description | Should Be $newAclDescription;
+	$bin = $updatedAcl.Description | Should Not Be $aclDescription;
+	$bin = $updatedAcl.Id | Should Be $aclId;
+	
+	return $updatedAcl;
+}
+
+function Create-Ace{
+	Param
+	(
+		$svc
+		,
+		$aceName
+		,
+		$aceDescription = "Test Ace"
+		,
+		$aclId
+		,
+		$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM
+		,
+		$trusteeId = (Get-ApcUser -Name $ENV:USERNAME).Id
+		,
+		$trusteeType = [biz.dfch.CS.Appclusive.Public.Security.TrusteeTypeEnum]::User.value__ #1 for users
+		,
+		$type = [biz.dfch.CS.Appclusive.Public.Security.AceTypeEnum]::ALLOW
+		,
+		$permissionId = ($svc.core.Permissions | select -first 1).Id
+	)
+	
 	$ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
 	$ace.Name = $aceName;
 	$ace.Description = $aceDescription;
-	$ace.AclId = $aceAclId;
-	$ace.Trustee = $ENV:USERNAME;
-	$ace.Action = $aceAction;
-	$ace.Created = [System.DateTimeOffset]::Now;
-	$ace.Modified = $ace.Created;
-	$ace.CreatedBy = $ENV:USERNAME;
-	$ace.ModifiedBy = $ace.CreatedBy;
-	$ace.Tid = "11111111-1111-1111-1111-111111111111";
-	$ace.Id = 0;
-	return $ace;
+	$ace.AclId = $aclId;
+	$ace.Tid = $tenantId;
+	$ace.TrusteeId = $trusteeId;
+	$ace.TrusteeType = $trusteeType;
+	$ace.Type = $type;
+	$ace.PermissionId = $permissionId;
+	
+	#create ace
+	$svc.Core.AddToAces($ace);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the ace
+	$query = "Name eq '{0}' and AclId eq {1}" -f $aceName, $aclId;
+	$loadedAce = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT new ace
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $loadedAce | Should Not Be $null;
+	$bin = $loadedAce.Id | Should Not Be $null;
+	$bin = $loadedAce.AclId | Should Be $aclId;
+	$bin = $loadedAce.Tid | Should Be $tenantId;
+	$bin = $loadedAce.TrusteeId | Should Be $trusteeId;
+	$bin = $loadedAce.TrusteeType | Should Be $trusteeType;
+	$bin = $loadedAce.Type | Should Be $type;
+	$bin = $loadedAce.PermissionId | Should Be $permissionId;
+	
+	return $loadedAce;
+}
+
+function Delete-Ace{
+	Param
+	(
+		$svc
+		,
+		$aceId
+	)
+	
+	#get the ace
+	$query = "Id eq {0}" -f $aceId;
+	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#delete the ace
+	$svc.Core.DeleteObject($acl);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted ace
+	$query = "Id eq {0}" -f $aceId;
+	$deletedAce = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT ace is deleted
+	$bin = $deletedAce | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
+}
+
+function Update-Ace {
+	Param
+	(
+		$svc
+		,
+		$aceId
+		,
+		$newAceName
+		,
+		$newAceDescription
+	)
+	
+	#get the Ace
+	$query = "Id eq {0}" -f $aceId;
+	$ace = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	$aceName = $ace.Name; #get old name
+	$aceDescription = $ace.Description; #get old desription
+	
+	#Set new name and description for the acl
+	$ace.Name = $newAceName;
+	$ace.Description = $newAceDescription;
+	
+	#save changes
+	$svc.Core.UpdateObject($ace)
+	$result = $svc.core.SaveChanges();	
+				
+	#get the updated Acl 
+	$query = "Id eq {0}" -f $aceId;
+	$updatedAce = $svc.Core.Aces.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	$bin = $updatedAce.Name | Should Be $newAceName;
+	$bin = $updatedAce.Name | Should Not Be $aceName;
+	$bin = $updatedAce.Description | Should Be $newAceDescription;
+	$bin = $updatedAce.Description | Should Not Be $aceDescription;
+	$bin = $updatedAce.Id | Should Be $aceId;
+	
+	return $updatedAce;
 }
 
 

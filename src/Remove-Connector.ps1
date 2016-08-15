@@ -66,11 +66,12 @@ Process
 	{ 
 		$Exp += ("(Id eq {0})" -f $Id);
 	}
+    $r = @();
 
 	$FilterExpression = [String]::Join(' and ', $Exp);
 
-	$interface = $svc.Core.$entitySetName.AddQueryOption('$filter',$FilterExpression).AddQueryOption('$top', 1);
-    Remove-Entity -svc $svc -Id $interface.Id -EntitySetName $entitySetName -Confirm:$false;
+	$entity = $svc.Core.$entitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', 1) | Select;
+    Remove-Entity -svc $svc -Id ($entity.Id) -EntitySetName $entitySetName -Confirm:$false;
 
 	$OutputParameter = Format-ResultAs $r $As
 	$fReturn = $true;
@@ -89,3 +90,19 @@ End
 
 }
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Remove-Connector; } 
+ 
+#
+# Copyright 2016 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#

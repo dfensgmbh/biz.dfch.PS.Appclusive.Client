@@ -38,11 +38,19 @@ See module manifest for dependencies and further requirements.
 PARAM 
 (
 	# Specifies the Key property of the entity.
-	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Id')]
-	[string] $Id
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'Id')]
+	[long] $Id
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'EntityKindId')]
+	[long] $EntityKindId
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'InterfaceId')]
+	[long] $InterfaceId
 	,
 	# Specifies the order of the returned entites. You can specify more than one property (e.g. Key and Name).
-	[ValidateSet('Id', 'Name')]
+	[ValidateSet('Id', 'Name', 'EntityKindId', 'InterfaceId')]
 	[Parameter(Mandatory = $false, Position = 1)]
 	[string[]] $OrderBy = @('Id','Name')
 	,
@@ -75,7 +83,15 @@ PARAM
 	# Specifies to return all existing entities
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[switch] $ListAvailable = $false
-    ,
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $false)]
+	[switch] $Require = $false
+	,
+	# Specifies to return all existing entities
+	[Parameter(Mandatory = $false)]
+	[switch] $Provide = $false
+	,
 	# Specifies the return format of the search
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty', 'object')]
 	[Parameter(Mandatory = $false)]
@@ -160,10 +176,27 @@ Process
 	    else 
 	    {
 		    $Exp = @();
-		    if($Id) 
+		    if($PSBoundParameters.ContainsKey('Id')) 
 		    { 
 			    $Exp += ("(Id eq {0})" -f $Id);
 		    }
+		    if($PSBoundParameters.ContainsKey('EntityKindId')) 
+		    { 
+			    $Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+		    }
+		    if($PSBoundParameters.ContainsKey('InterfaceId')) 
+		    { 
+			    $Exp += ("(InterfaceId eq {0})" -f $InterfaceId);
+		    }
+		    if($PSBoundParameters.ContainsKey('Require')) 
+		    { 
+			    $Exp += ("(ConnectionType eq {0})" -f [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__);
+		    }
+		    if($PSBoundParameters.ContainsKey('Provide')) 
+		    { 
+			    $Exp += ("(ConnectionType eq {0})" -f [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__);
+		    }
+
 
 		    $FilterExpression = [String]::Join(' and ', $Exp);
 
@@ -286,4 +319,20 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Connector; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Connector; }
+ 
+#
+# Copyright 2016 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
