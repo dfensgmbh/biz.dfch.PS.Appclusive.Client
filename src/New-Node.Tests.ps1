@@ -12,6 +12,7 @@ Describe "New-Node" -Tags "New-Node" {
 	. "$here\Set-Node.ps1"
 	. "$here\Get-EntityKind.ps1"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-Tenant.ps1"
 	
     BeforeEach {
         $moduleName = 'biz.dfch.PS.Appclusive.Client';
@@ -32,23 +33,24 @@ Describe "New-Node" -Tags "New-Node" {
 			
 			# Act
 			$result = New-Node -svc $svc -Name $Name -ParentId 1 -EntityKindId 1;
-
+			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $Name;
 			
-			# Cleanup
-			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
 			
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $result.Id;
+			# Cleanup
+			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $result.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
+			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
 		}
 
 		It "New-NodeDuplicate-ShouldThrow" -Test {
 			# Arrange
 			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$node = New-Node -svc $svc -Name $Name -ParentId 1 -EntityKindId 1;
+			$tenant = Get-Tenant -Current -svc $svc;
+			$node = New-Node -svc $svc -Name $Name -ParentId $tenant.NodeId -EntityKindId $tenant.NodeId;
 			$node | Should Not Be $null;
 			
 			# Act
@@ -58,11 +60,11 @@ Describe "New-Node" -Tags "New-Node" {
 			$result | Should Be $null;
 			
 			# Cleanup
-			Remove-ApcEntity -svc $svc -Id $node.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
-			
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
+			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $node.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+
 			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
+			Remove-ApcEntity -svc $svc -Id $node.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
 		}
 	}
 }
