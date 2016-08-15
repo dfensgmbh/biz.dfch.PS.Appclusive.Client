@@ -100,7 +100,8 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -svc $svc -ParentId '11111111-1111-1111-1111-111111111111';
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
+			$result = Get-Tenant -svc $svc -ParentId $systemTenantId;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -113,7 +114,8 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -svc $svc -Id '11111111-1111-1111-1111-111111111111' -ExternalType:External;
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
+			$result = Get-Tenant -svc $svc -Id $systemTenantId -ExternalType:External;
 
 			# Assert
 			$result | Should Be $null;
@@ -124,7 +126,8 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -svc $svc -Id '11111111-1111-1111-1111-111111111111' -ExternalType:External;
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
+			$result = Get-Tenant -svc $svc -Id $systemTenantId -ExternalType:External;
 
 			# Assert
 			$result | Should Be $null;

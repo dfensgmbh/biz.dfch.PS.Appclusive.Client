@@ -1,7 +1,6 @@
 function CreateProduct($productName, $productDescription) 
 {
 	$product = New-Object biz.dfch.CS.Appclusive.Api.Core.Product;
-	$product.Tid = "11111111-1111-1111-1111-111111111111";
 	$product.CreatedBy = $ENV:USERNAME;
 	$product.ModifiedBy = $product.CreatedBy;
 	$product.Created = [DateTimeOffset]::Now;

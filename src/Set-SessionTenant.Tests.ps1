@@ -54,7 +54,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 		It "SetSessionTenantWithValidId-Throws" -Test {
 		
 			# Arrange
-			$tenantId = '11111111-1111-1111-1111-111111111111'
+			$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
 			
 			# Act
 			$result = Set-SessionTenant $tenantId -svc $svc;

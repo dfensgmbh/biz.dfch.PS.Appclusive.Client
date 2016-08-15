@@ -4,11 +4,8 @@ function CreateEntityKind($entityKindName, $entityKindDescription, $entityKindVe
 	$entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
 	$entityKind.Version = $entityKindVersion;
 	$entityKind.Parameters = $entityKindParameters;
-	# $entityKind.Tid = '11111111-1111-1111-1111-111111111111';
 	$entityKind.Name = $entityKindName;
 	$entityKind.Description = $entityKindDescription;
-	# $entityKind.CreatedById = 1;
-	# $entityKind.ModifiedById = $entityKind.CreatedById;
 	$entityKind.Created = [DateTimeOffset]::Now;
 	$entityKind.Modified = $entityKind.Created;
 	$entityKind.Id = 0;
