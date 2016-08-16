@@ -280,7 +280,6 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 				$assoc = $svc.core.Assocs.AddQueryOption('$filter', $query) | Select;
 				$assoc | Should be $null;
 			}
-			
 		}
 	}
 }
