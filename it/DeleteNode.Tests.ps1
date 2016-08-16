@@ -118,7 +118,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			
 			#get the job of the node
 			$job = Get-ApcNode -Id $nodeId -ExpandJob;
-			$jobId = [int] $job.Id;
+			$jobId = [long] $job.Id;
 			
 			#create external node
 			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;

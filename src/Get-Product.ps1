@@ -183,7 +183,7 @@ PARAM
 	# Id of the product
 	[Parameter(Mandatory = $false, ParameterSetName = 'Id')]
 	[ValidateNotNullOrEmpty()]
-	[Int] $Id = $null
+	[long] $Id = $null
 	,
 	# Name of the product
 	[Parameter(Mandatory = $false, ParameterSetName = 'Parameter')]

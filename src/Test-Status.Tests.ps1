@@ -59,18 +59,6 @@ Describe "Test-Status" -Tags "Test-Status" {
 			$result | Should Be $true;
 		}
 
-		It "Test-StatusAuthenticatedReturnsUnauthorised" -Test {
-			# Arrange
-			$cred = New-Object System.Net.NetworkCredential('invalid-user', 'invalid-password');
-			$svc = Enter-ApcServer -Credential $cred;
-
-			# Act
-			$result = Test-Status -Authenticate -svc $svc -ErrorAction:SilentlyContinue;
-			
-			# Assert
-			$result | Should Be $false;
-		}
-
 		It "Test-StatusEchoSucceeds" -Test {
 			# Arrange
 			$svc = Enter-ApcServer;

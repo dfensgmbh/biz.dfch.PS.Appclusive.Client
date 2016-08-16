@@ -228,7 +228,9 @@ Describe "Get-Node" -Tags "Get-Node" {
     $usedEntitySets = @("Connectors", "Interfaces", "Nodes", "EntityKinds");
     $REQUIRE = 2L;
     $PROVIDE = 1L;
-    Context "Get-Node-Connector" {    
+	
+    Context "Get-Node-Connector" {
+	
         BeforeEach {
             $moduleName = 'biz.dfch.PS.Appclusive.Client';
             Remove-Module $moduleName -ErrorAction:SilentlyContinue;

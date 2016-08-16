@@ -94,7 +94,7 @@ Param
 	,
 	# Specifies the Node id for this entity
 	[Parameter(Mandatory = $false)]
-	[int] $NodeId
+	[long] $NodeId
 	,
 	# Specifies the External id for this entity
 	[Parameter(Mandatory = $false)]

@@ -146,8 +146,6 @@ NestedModules = @(
 	,
 	'Get-CimiTarget.ps1'
 	,
-	'New-Order.ps1'
-	,
 	'Get-Product.ps1'
 	,
 	'Get-CatalogueItem.ps1'

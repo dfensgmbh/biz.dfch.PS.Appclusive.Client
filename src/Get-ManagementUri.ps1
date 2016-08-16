@@ -135,7 +135,7 @@ PARAM
 (
 	# Specifies the name of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
-	[int] $Id
+	[long] $Id
 	,
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'name')]
 	[Alias('n')]
