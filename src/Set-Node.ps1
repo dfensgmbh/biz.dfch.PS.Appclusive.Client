@@ -99,7 +99,7 @@ Param
 	,
 	# Specifies the Parent id for this entity
 	[Parameter(Mandatory = $false)]
-	[long] $ParentId
+	[long] $ParentId = 1
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
