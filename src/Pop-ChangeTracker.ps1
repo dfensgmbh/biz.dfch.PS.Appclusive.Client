@@ -70,7 +70,7 @@ Param
 
 	Contract-Requires ($DataContext -is [hashtable]) 
 
-	Contract-Requires ($svc.$Service.GetType().BaseType.FullName -eq 'System.Data.Services.Client.DataServiceContext') 
+	Contract-Requires ($svc.$Service.GetType().BaseType.FullName -eq 'biz.dfch.CS.Appclusive.Api.DataServiceContextBase') 
 	$m = $svc.$Service;
 
 	$fReturn = $false;
