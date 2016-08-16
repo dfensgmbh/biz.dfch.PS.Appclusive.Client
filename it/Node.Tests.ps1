@@ -40,39 +40,6 @@ Describe -Tags "Node.Tests" "Node.Tests" {
             }
         }
 		<#
-		It "DoStateChangeOnNodeSetsConditionAndConditionParametersOnJob" -Test {
-			# Arrange
-			$condition = 'Continue';
-			$conditionParams = @{Msg = "tralala"};
-			
-			$node = New-ApcNode -Name 'Arbitrary' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-
-			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
-			$null = Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
-			
-			# Act
-			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName 'InvokeAction' -InputName $condition -InputParameters $conditionParams;
-			
-			try 
-			{
-				# Assert
-				$svc = Enter-ApcServer;
-				$result | Should Not Be $null;
-				$resultingJob = Get-ApcJob -Id $job.Id -svc $svc;
-				$resultingJob.Condition | Should Be $condition;
-				$resultingJob.ConditionParameters | Should Be ($conditionParams | ConvertTo-Json -Compress);
-			}
-			finally 
-			{
-				# Cleanup
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
-		}#>
-		
 		It "CreateNode" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
@@ -237,6 +204,9 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#ACT create node
 			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
+			#get id of node
+			$nodeId = $node.Id;
+			
 			#ASSERT Node creation
 			$node | Should Not Be $null;
 			$node.Id | Should Not Be $null;
@@ -262,11 +232,11 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			}
 			finally
 			{
-			#CLEANUP is done here because setting same node as parent and child has created a loop
-			#reload of service connection and the node is needed
-			
+				#CLEANUP
+				$svc = Enter-Appclusive;
+				Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
 			}
-		}
+		} #>
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
 			# Arrange
@@ -325,7 +295,43 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
-		<#
+		
+		It "DoStateChangeOnNodeSetsConditionAndConditionParametersOnJob" -Test {
+			# Arrange
+			$nodeName = $entityPrefix + "node";
+			$condition = 'Continue';
+			$conditionParams = @{Msg = "tralala"};
+			
+			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
+
+			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
+			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+
+			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
+			$null = Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
+			
+			# Act
+			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName 'InvokeAction' -InputName $condition -InputParameters $conditionParams;
+			
+			try 
+			{
+				# Assert
+				$svc = Enter-ApcServer;
+				$result | Should Not Be $null;
+				$resultingJob = Get-ApcJob -Id $job.Id -svc $svc;
+				$resultingJob.Condition | Should Be $condition;
+				$resultingJob.ConditionParameters | Should Be ($conditionParams | ConvertTo-Json -Compress);
+			}
+			finally 
+			{
+				# Cleanup
+				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
+				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
+			}
+		}
+		
+		
+		
 		It "GetAssignablePermissionsForConfigurationNode-ReturnsIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
 			$configurationRootNodeId = 2;
@@ -398,7 +404,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			# All product related permissions + permissions for
 			# Nodes and its subtypes like Folders, ScheduledJobs, ScheduledJobInstances, Machines and Networks
 			$assignablePermissions.Count | Should Be ($allPermissions.Count - 131);
-		}
+		} <#
 	}
 
     Context "#269-DeletionLogicForNode" {
