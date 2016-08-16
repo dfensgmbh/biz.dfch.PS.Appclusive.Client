@@ -52,7 +52,7 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 	AfterEach {
 		$svc = Enter-ApcServer;
 		
-		$r = Remove-Node -Id $entityId -Confirm:$false -svc $svc;
+		$null = Remove-Node -Id $entityId -Confirm:$false -svc $svc;
 	}
 
 	Context "Invoke-NodeAction" {
