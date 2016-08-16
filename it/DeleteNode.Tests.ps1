@@ -76,7 +76,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 				$parentNode = Get-ApcNode -Id $nodeId -svc $svc;
 				$svc.Core.DeleteObject($parentNode);
 				#remove Node, but it's supposed to fail as we have Children
-				$svc.Core.SaveChanges(); # } | Should ThrowDataServiceClientException @{StatusCode = 400};
+				$svc.Core.SaveChanges();
 			}
 			catch
 			{
