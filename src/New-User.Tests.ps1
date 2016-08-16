@@ -14,15 +14,15 @@ Describe "New-User" -Tags "New-User" {
 	$entityNamePrefix = "New-User-";
 	$usedEntitySets = @("Users");
 
-	BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-
-        $svc = Enter-ApcServer;
-    }
-	
 	Context "New-User" {
+
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+		}
 	
 		AfterAll {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
