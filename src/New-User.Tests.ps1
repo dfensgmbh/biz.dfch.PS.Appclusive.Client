@@ -22,26 +22,26 @@ Describe "New-User" -Tags "New-User" {
         $svc = Enter-ApcServer;
     }
 	
-	AfterAll {
-		$moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-		
-		$svc = Enter-ApcServer;
-		$entityFilter = "startswith(Name, '{0}')" -f $entityNamePrefix;
+	Context "New-User" {
+	
+		AfterAll {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityNamePrefix;
 
-		foreach ($entitySet in $usedEntitySets)
-		{
-			$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
-	 
-			foreach ($entity in $entities)
+			foreach ($entitySet in $usedEntitySets)
 			{
-				Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
 			}
 		}
-	}
-	
-	Context "New-User" {
 	
 		# Context wide constants
 		# N/A
