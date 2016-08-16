@@ -19,8 +19,9 @@ Describe "Pop-ChangeTracker" -Tags "Pop-ChangeTracker" {
 		
 		BeforeEach {
 			$error.Clear();
-			Remove-Module biz.dfch.PS.Appclusive.Client -ErrorAction:SilentlyContinue;
-			Import-Module biz.dfch.PS.Appclusive.Client -ErrorAction:SilentlyContinue;
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
 			
 			$biz_dfch_PS_Appclusive_Client.DataContext = New-Object System.Collections.Stack;
 		}
