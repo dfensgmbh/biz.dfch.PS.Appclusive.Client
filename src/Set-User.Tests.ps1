@@ -21,7 +21,7 @@ Describe "Set-User" -Tags "Set-User" {
         $svc = Enter-ApcServer;
     }
 	
-	AfterAll {
+	AfterEach {
 		$svc = Enter-ApcServer;
 		$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 

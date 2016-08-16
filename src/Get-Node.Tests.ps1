@@ -239,7 +239,7 @@ Describe "Get-Node" -Tags "Get-Node" {
             $svc = Enter-ApcServer;
         }
 
-        AfterAll {
+        AfterEach {
             $moduleName = 'biz.dfch.PS.Appclusive.Client';
             Remove-Module $moduleName -ErrorAction:SilentlyContinue;
             Import-Module $moduleName;

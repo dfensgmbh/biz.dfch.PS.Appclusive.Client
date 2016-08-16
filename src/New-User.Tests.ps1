@@ -22,7 +22,7 @@ Describe "New-User" -Tags "New-User" {
         $svc = Enter-ApcServer;
     }
 	
-	AfterAll {
+	AfterEach {
 		$moduleName = 'biz.dfch.PS.Appclusive.Client';
         Remove-Module $moduleName -ErrorAction:SilentlyContinue;
         Import-Module $moduleName;
