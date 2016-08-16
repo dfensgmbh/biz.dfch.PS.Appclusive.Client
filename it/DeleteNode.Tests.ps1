@@ -40,7 +40,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
             }
         }
 		
-		It "DeleteNodeWithChildNode" -Test {
+		It "DeleteNodeWithChildNode-ThrowsError" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
 			$childName = $entityPrefix + "childnode";
@@ -71,9 +71,10 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			try
 			{
 				#get the parent node
-				$parentNode = Get-ApcNode -Id $nodeId -svc $svc;
+				$query = Get-ApcNode -Id $nodeId -svc $svc;
+				$svc.Core.DeleteObject($parentNode);
 				#remove Node, but it's supposed to fail as we have Children
-				$svc.Core.SaveChanges();
+				$svc.Core.SaveChanges(); # } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			}
 			catch
 			{
@@ -190,6 +191,33 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$query = "Id eq {0}" -f $entityBagId;
 			$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $query) | select;
 			$entityBag | Should Be $null;
+		}
+		
+		It "DeleteNodeWithChildNode-ThrowsError" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$childName = $entityPrefix + "childnode";
+			$nodeChildren = 4;
+			
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			$ids = @();
+			#ACT create chilren nodes
+			for ($i =1; $i -le $nodeChildren; $i++)
+			{
+				$newChildNode = New-ApcNode -Name ("{0}-{1}" -f $nodeName,$i) -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+				$ids += $newChildNode.Id;
+			}
+			
+			#CLEANUP delete chilren nodes
+			foreach ($id in $ids)
+			{
+				Remove-ApcNode -Id $id -Confirm:$false -svc $svc;
+			}
 		}
 	}
 }
