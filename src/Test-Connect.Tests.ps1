@@ -35,7 +35,7 @@ Describe "Test-Connect" -Tags "Test-Connect" {
     
 	Context "Test-Connect" {
     	
-        AfterEach {
+        AfterAll {
             $moduleName = 'biz.dfch.PS.Appclusive.Client';
             Remove-Module $moduleName -ErrorAction:SilentlyContinue;
             Import-Module $moduleName;

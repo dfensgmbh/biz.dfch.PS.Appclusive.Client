@@ -12,31 +12,31 @@ Describe "Set-User" -Tags "Set-User" {
 	$entityPrefix = "Set-User-";
 	$usedEntitySets = @("Users");
 	
-    BeforeEach {
+	Context "Set-User" {
 	
-		$moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
+	    BeforeEach {
+		
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
 
-        $svc = Enter-ApcServer;
-    }
-	
-	AfterEach {
-		$svc = Enter-ApcServer;
-		$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+			$svc = Enter-ApcServer;
+		}
+		
+		AfterEach {
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
-		foreach ($entitySet in $usedEntitySets)
-		{
-			$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
-	 
-			foreach ($entity in $entities)
+			foreach ($entitySet in $usedEntitySets)
 			{
-				Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
 			}
 		}
-	}
-
-	Context "Set-User" {
 	
 		# Context wide constants
 		# N/A
