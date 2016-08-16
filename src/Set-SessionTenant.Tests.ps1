@@ -10,6 +10,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 	. "$here\Get-ModuleVariable.ps1"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-SessionTenant.ps1"
+	. "$here\Get-Tenant.ps1"
 	
     BeforeEach {
         $moduleName = 'biz.dfch.PS.Appclusive.Client';
