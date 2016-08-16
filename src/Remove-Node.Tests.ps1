@@ -34,6 +34,11 @@ Describe "Remove-Node" -Tags "Remove-Node" {
 
 			$creationResult | Should Not Be $null;
 			$creationResult.Name | Should Be $Name;
+						
+			# Get and Delete Job
+			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $creationResult.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
 			
 			# Act
 			$deletionResult = Remove-ApcEntity -svc $svc -Id $creationResult.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
@@ -43,9 +48,7 @@ Describe "Remove-Node" -Tags "Remove-Node" {
 			$deletionResult.StatusCode | Should Be 204;
 			
 			# Cleanup
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $creationResult.Id;
-			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
+			
 		}
 
 		It "Remove-NodeThatDoesNotExist-ShouldReturnNull" -Test {

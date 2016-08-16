@@ -38,11 +38,10 @@ Describe "Set-Node" -Tags "Set-Node" {
 			$result.Name | Should Be $Name;
 			
 			# Cleanup
-			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
-			
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $result.Id;
+			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $result.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
+			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
 		}
 
 		It "Set-NodeWithNewDescription-ShouldReturnUpdatedEntity" -Test {
@@ -64,11 +63,10 @@ Describe "Set-Node" -Tags "Set-Node" {
 			$result.Description | Should Be $NewDescription;
 			
 			# Cleanup
-			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
-			
 			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $result.Id;
 			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
+			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
 		}
 	}
 }
