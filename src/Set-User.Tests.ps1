@@ -13,7 +13,8 @@ Describe "Set-User" -Tags "Set-User" {
 	$usedEntitySets = @("Users");
 	
     BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
+	
+		$moduleName = 'biz.dfch.PS.Appclusive.Client';
         Remove-Module $moduleName -ErrorAction:SilentlyContinue;
         Import-Module $moduleName;
 

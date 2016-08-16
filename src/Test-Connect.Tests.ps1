@@ -32,7 +32,8 @@ Describe "Test-Connect" -Tags "Test-Connect" {
     $usedEntitySets = @("Connectors", "Interfaces", "Nodes", "EntityKinds");
     $REQUIRE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__;
     $PROVIDE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__;
-    Context "Test-Connect" {
+    
+	Context "Test-Connect" {
     	
         AfterAll {
             $moduleName = 'biz.dfch.PS.Appclusive.Client';
