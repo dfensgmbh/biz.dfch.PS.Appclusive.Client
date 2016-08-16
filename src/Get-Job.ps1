@@ -169,7 +169,7 @@ PARAM
 (
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
-	[int] $Id
+	[long] $Id
 	,
 	# Specifies the name of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'name')]
@@ -186,7 +186,7 @@ PARAM
 	,
 	# Specifies the Parent id for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[int] $ParentId
+	[long] $ParentId
 	,
 	# Specifies the Parent id for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
@@ -194,7 +194,7 @@ PARAM
 	,
 	# Specifies the EntityKind id for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[int] $EntityKindId
+	[long] $EntityKindId
 	,
 	# Specifies the EntityKind name for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]

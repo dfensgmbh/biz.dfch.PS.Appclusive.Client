@@ -204,7 +204,7 @@ PARAM
 	# Id of the catalogue item
 	[Parameter(Mandatory = $false, ParameterSetName = 'Id')]
 	[ValidateNotNullOrEmpty()]
-	[Int] $Id = $null
+	[long] $Id = $null
 	,
 	# Full name or part of it, for the item you want to search - this is not case sensitive
 	[Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]

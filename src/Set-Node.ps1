@@ -108,7 +108,7 @@ Param
 	,
 	# Specifies the EntityKind id for this entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'id')]
-	[int] $EntityKindId
+	[long] $EntityKindId
 	,
 	# Specifies the EntityKind name for this entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
