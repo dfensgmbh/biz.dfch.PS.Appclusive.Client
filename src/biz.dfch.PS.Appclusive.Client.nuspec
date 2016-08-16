@@ -85,7 +85,6 @@ See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detail
 	<file src="New-ExternalNode.ps1" target="tools\New-ExternalNode.ps1" />
 	<file src="Set-ExternalNode.ps1" target="tools\Set-ExternalNode.ps1" />
 	<file src="Get-CimiTarget.ps1" target="tools\Get-CimiTarget.ps1" />
-	<file src="New-Order.ps1" target="tools\New-Order.ps1" />
 	<file src="Get-Product.ps1" target="tools\Get-Product.ps1" />
 	<file src="Get-CatalogueItem.ps1" target="tools\Get-CatalogueItem.ps1" />
 	<file src="Get-Tenant.ps1" target="tools\Get-Tenant.ps1" />
