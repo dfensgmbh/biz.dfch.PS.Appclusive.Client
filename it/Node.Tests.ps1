@@ -302,16 +302,16 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$condition = 'Continue';
 			$conditionParams = @{Msg = "tralala"};
 			
-			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
-
+			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -Parameters @{} -svc $svc;
+			Write-Host ($node | Out-String);
 			$query = "RefId eq '{0}'" -f $node.Id;
 			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-
+			Write-Host ($job | Out-String);
 			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
 			$null = Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
-			
+			Write-Host ($job | Out-String);
 			# Act
-			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName 'InvokeAction' -InputName $condition -InputParameters $conditionParams;
+			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName InvokeAction -InputName $condition -InputParameters $conditionParams;
 			
 			try 
 			{
