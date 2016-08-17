@@ -1,20 +1,17 @@
-#$template = $svc.Core.InvokeEntitySetActionWithSingleResult('CatalogueItems', 'Template', [biz.dfch.CS.Appclusive.Api.Core.CatalogueItem], $null);
-
-
 function Create-Catalogue {
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$name
+		$Name
 		,
-		$description = "Description"
+		$Description = "Description"
 		,
-		$status = "Published"
+		$Status = "Published"
 		,
-		$version = 1
+		$Version = 1
 		,
-		$tenantId = (Get-ApcTenant -Current).Id
+		$TenantId = (Get-ApcTenant -Current).Id
 	)
 	
 	#create catalog object
@@ -25,7 +22,7 @@ function Create-Catalogue {
 	$newCatalogue.Description = $Description;
 	$newCatalogue.Status = $Status;
 	$newCatalogue.Version = $Version;
-	$newCatalogue.Tid = $tenantId;
+	$newCatalogue.Tid = $TenantId;
 	
 	#ACT - create new catalogue
 	$svc.Core.AddToCatalogues($newCatalogue);
@@ -51,9 +48,9 @@ function Create-Catalogue {
 function Delete-Catalogue{
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$catalogueId
+		$CatalogueId
 	)
 	
 	#get the catalogue
@@ -77,17 +74,17 @@ function Delete-Catalogue{
 function Create-Product {
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$name
+		$Name
 		,
-		$description = "Arbitrary Product"
+		$Description = "Arbitrary Product"
 		,
-		$type = "Test Product"
+		$Type = "Test Product"
 		,
-		$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Product.value__
+		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Product.value__
 		,
-		$tenantId = (Get-ApcTenant -Current).Id
+		$TenantId = (Get-ApcTenant -Current).Id
 	)
 	
 	#add parameters
@@ -122,9 +119,9 @@ function Create-Product {
 function Delete-Product {
 	Param 
 	(
-		$svc
+		$Svc
 		,
-		$productId
+		$ProductId
 	)
 	
 	#get the product
@@ -148,23 +145,23 @@ function Delete-Product {
 function Create-CatalogueItem {
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$name
+		$Name
 		,
-		$description = "Test Catalogue Item"
+		$Description = "Test Catalogue Item"
 		,
-		$catalogueId
+		$CatalogueId
 		,
-		$productId
+		$ProductId
 		,
-		$parameters = '{}'
+		$Parameters = '{}'
 		,
-		$validFrom = $template.ValidFrom
+		$ValidFrom = $template.ValidFrom
 		,
-		$validUntil = $template.ValidUntil
+		$ValidUntil = $template.ValidUntil
 		,
-		$endOfLife = $template.EndOfLife
+		$EndOfLife = $template.EndOfLife
 	)
 	
 	#get Catalogue Item template
@@ -209,9 +206,9 @@ function Create-CatalogueItem {
 function Delete-CatalogueItem {
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$catalogueItemId
+		$CatalogueItemId
 	)
 	
 	#get the Catalogue Item
@@ -235,11 +232,11 @@ function Delete-CatalogueItem {
 function Update-Catalogue {
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$catalogueId
+		$CatalogueId
 		,
-		$newCatalogueDescription
+		$NewCatalogueDescription
 	)
 	
 	#get the Catalogue 
@@ -267,11 +264,11 @@ function Update-Catalogue {
 function Update-CatalogueItem{
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$catalogueItemId
+		$CatalogueItemId
 		,
-		$newCatalogueItemDescription
+		$NewCatalogueItemDescription
 	)
 	
 	#get the Catalogue Item
@@ -295,3 +292,19 @@ function Update-CatalogueItem{
 	
 	return $updatedCatalogueItem;
 }
+
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
