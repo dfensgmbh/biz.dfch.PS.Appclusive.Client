@@ -4,6 +4,9 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
 Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 
+	write-host $here;
+	write-host $sut;
+
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
@@ -48,8 +51,10 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$value = "value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$result = Set-ManagementUri -svc $svc -Name $name -type $type -value $value -CreateIfNotExist;
+			$result = Set-ManagementUri -svc $svc -Name $name -Type $type -Value $value -CreateIfNotExist;
 
+			write-host $result;
+			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
@@ -57,7 +62,7 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$result.Value | Should Be $value;
 		}
 		
-		It "Set-ManagementUri-ShouldReturnEntityWithDescription" -Test {
+		It "Set-ManagementUri-ShouldReturnNewEntityWithDescription" -Test {
 			# Arrange
 			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
@@ -83,17 +88,17 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$newValue = "NewValue" -f [guid]::NewGuid().ToString();
 			
-			$result1 = Set-ManagementUri -svc $svc -Name $name -Description $description -Value $value -type $type -CreateIfNotExist;
+			$result1 = Set-ManagementUri -svc $svc -Name $name -Description $description -Value $value -Type $type -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			$result = Set-ManagementUri -svc $svc -Name $name -Description $newDescription -Value $newValue;
+			$result = Set-ManagementUri -svc $svc -Name $name -Description $newDescription -Type $type -Value $newValue;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Description | Should Be $newDescription;
 			$result.Value | Should Be $newValue;
-			}
+		}
 	}
 }
 

@@ -1,53 +1,66 @@
-function New-KeyNameValue {
+function Set-ManagementUri {
 <#
 .SYNOPSIS
-Creates a K/N/V entry in Appclusive.
+Sets or creates a ManagementCredential entry in Appclusive.
 
 
 .DESCRIPTION
-Creates a K/N/V entry in Appclusive.
+Sets or creates a ManagementCredential entry in Appclusive.
 
-You must specify all three parameters 'Key', 'Name' and 'Value'. If the entry already exists no update of the existing entry is performed.
+By updating a ManagementCredential entry you can specify if you want to update the Name, Username, Password or any combination thereof.
 
 
 .OUTPUTS
-default | json | json-pretty | xml | xml-pretty
-
-.EXAMPLE
-New-KeyNameValue myKey myName myValue
-
-Id         : 3131
-Key        : myKey
-Name       : myName
-Value      : myValue
-CreatedBy  : SERVER1\Administrator
-Created    : 11/13/2014 11:08:46 PM +00:00
-ModifiedBy : SERVER1\Administrator
-Modified   : 11/13/2014 11:08:46 PM +00:00
-RowVersion : {0, 0, 0, 0...}
-
-Create a new K/N/V entry if it not already exists.
+default
 
 
 .EXAMPLE
-New-KeyNameValue -Key myKey -Name myName -Value myValue
+Set-ManagementCredential myName myUserName myPassword -CreateIfNotExist
 
-Id         : 3131
-Key        : myKey
-Name       : myName
-Value      : myValue
-CreatedBy  : SERVER1\Administrator
-Created    : 11/13/2014 11:08:46 PM +00:00
-ModifiedBy : SERVER1\Administrator
-Modified   : 11/13/2014 11:08:46 PM +00:00
-RowVersion : {0, 0, 0, 0...}
+Username          : myUserName
+EncryptedPassword : ***
+Id                : 4
+Tid               : 22222222-2222-2222-2222-222222222222
+Name              : myName
+Description       : 
+CreatedById       : 1
+ModifiedById      : 1
+Created           : 01.12.2015 00:00:00 +01:00
+Modified          : 01.12.2015 00:00:00 +01:00
+RowVersion        : {0, 0, 0, 0...}
+ManagementUris    : {}
+Tenant            :
+CreatedBy         : SYSTEM
+ModifiedBy        : SYSTEM
 
-Create a new K/N/V entry if it not already exists.
+Create a new ManagementCredential entry if it does not exists.
+
+
+.EXAMPLE
+Set-ManagementCredential -Name myName -NewName myNewName -Username myNewUserName -Password myNewPassword
+
+Username          : myNewUserName
+EncryptedPassword : ***
+Id                : 4
+Tid               : 22222222-2222-2222-2222-222222222222
+Name              : myNewName
+Description       : 
+CreatedById       : 1
+ModifiedById      : 1
+Created           : 01.12.2015 00:00:00 +01:00
+Modified          : 01.12.2015 00:00:00 +01:00
+RowVersion        : {0, 0, 0, 0...}
+ManagementUris    : {}
+Tenant            :
+CreatedBy         : SYSTEM
+ModifiedBy        : SYSTEM
+
+Update an existing ManagementCredential with new name, username and password.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-KeyNameValue/
-Set-KeyNameValue: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-KeyNameValue/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementCredential/
+Set-ManagementCredential: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementCredential/
 
 
 .NOTES
@@ -56,40 +69,44 @@ See module manifest for dependencies and further requirements.
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+    SupportsShouldProcess = $false
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-KeyNameValue/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementCredential/'
 )]
 Param 
 (
-	# Specifies the type to modify
+	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
-	[ValidateNotNullOrEmpty()]
-	[Alias("t")]
-	[string] $Type
-	,
-	# Specifies the value to modify
-	[Parameter(Mandatory = $true, Position = 1)]
-	[ValidateNotNullOrEmpty()]
-	[Alias('v')]
-	[string] $Value
-	,
-	# Specifies the Name to modify
-	[Parameter(Mandatory = $true, Position = 2)]
-	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the ManagementCredential to modify
+	# Specifies the value
+	[Parameter(Mandatory = $true)]
+	[string] $Value
+	,
+	# Specifies the type to modify
+	[Parameter(Mandatory = $true)]
+	[string] $Type
+	,
+	# Specifies the new name
 	[Parameter(Mandatory = $false)]
-	[Alias('m')]
+	[string] $NewName
+	,
+	# Specifies the description
+	[Parameter(Mandatory = $false)]
+	[Alias("d")]
+	[string] $Description
+	,
+	# Specifies the ManagementCredentialId
+	[Parameter(Mandatory = $false)]
 	[long] $ManagementCredentialId
 	,
-	# Specifies the value to modify
+	# Specifies to create a entity if it does not exist
 	[Parameter(Mandatory = $false)]
-	[string] $Description
+	[Alias("c")]
+	[switch] $CreateIfNotExist = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -116,127 +133,131 @@ Begin
 }
 # Begin
 
-Process
+Process 
 {
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
 
-	try 
+# Default test variable for checking function response codes.
+[Boolean] $fReturn = $false;
+# Return values are always and only returned via OutputParameter.
+$OutputParameter = $null;
+$AddedEntity = $null;
+
+try 
+{
+	$exp = @();
+	
+	$exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
+	$exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
+	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+
+	$FilterExpression = [String]::Join(' and ', $exp);
+
+	$entity = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+
+	if(!$CreateIfNotExist -And !$entity) 
 	{
-
-		$Exp = @();
-		$ManagementUriContents = @();
-		
-		$Exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
-		$ManagementUriContents += $Type;
-
-		$Exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
-		$ManagementUriContents += $Value;
-		
-		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-		$ManagementUriContents += $Name;
-		
-		if(!!$ManagementCredentialId)
-		{
-			$Exp += ("(tolower(ManagementCredentialId) eq '{0}')" -f $ManagementCredentialId);
-			$ManagementUriContents += $ManagementCredentialId;		
-		}
-
-		$FilterExpression = [String]::Join(' and ', $Exp);
-		$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
-
-		$mu = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-		if($mu) 
-		{
-			$msg = "Value: Parameter validation FAILED. Entity does already exist: '{0}'." -f $ManagementUriContentsString;
-			Log-Error $fn $msg;
-			$e = New-CustomErrorRecord -m $msg -cat ResourceExists -o $ManagementUriContentsString;
-			throw($gotoError);
-		}
-		if($PSCmdlet.ShouldProcess($ManagementUriContents))
-		{
-			if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId')
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc -As $As;
-			}
-			elseif($PSBoundParameters.ContainsKey('Description'))
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -Description $Description -CreateIfNotExist -svc $svc -As $As;
-			}
-			elseif()
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -ManagementCredentialId $ManagementCredentialId -CreateIfNotExist -svc $svc -As $As;
-			}
-			else
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -CreateIfNotExist -svc $svc -As $As;
-			}
-			$OutputParameter = $r;
-		}
-
-		$fReturn = $true;
-
+		$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
+		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		throw($gotoError);
 	}
-	catch 
+	if(!$entity) 
 	{
-		if($gotoSuccess -eq $_.Exception.Message) 
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.ManagementUri;
+		$svc.Core.AddToManagementUris($entity);
+		$AddedEntity = $entity;
+		$entity.Type = $Type;
+		$entity.Value = $Value;
+		$entity.Name = $Name;
+		$entity.Created = [System.DateTimeOffset]::Now;
+		$entity.Modified = $entity.Created;
+		$entity.CreatedById = 0;
+		$entity.ModifiedById = 0;
+		$entity.Tid = [guid]::Empty.ToString();
+	}
+	if($PSBoundParameters.ContainsKey('Description'))
+	{
+		$entity.Description = $Description;
+	}
+	if($PSBoundParameters.ContainsKey('ManagementCredentialId'))
+	{
+		$entity.ManagementCredentialId = $ManagementCredentialId;
+	}
+	if($NewName) 
+	{ 
+		$entity.Name = $NewName; 
+	}
+	
+	$svc.Core.UpdateObject($entity);
+	$r = $svc.Core.SaveChanges();
+
+	$r = $entity;
+	$OutputParameter = Format-ResultAs $r $As;
+	$fReturn = $true;
+}
+catch 
+{
+	if($gotoSuccess -eq $_.Exception.Message) 
+	{
+		$fReturn = $true;
+	} 
+	else 
+	{
+		[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
+		$ErrorText += (($_ | fl * -Force) | Out-String);
+		$ErrorText += (($_.Exception | fl * -Force) | Out-String);
+		$ErrorText += (Get-PSCallStack | Out-String);
+		
+		if($_.Exception -is [System.Net.WebException]) 
 		{
-			$fReturn = $true;
-		} 
+			Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
+			Log-Debug $fn $ErrorText -fac 3;
+		}
 		else 
 		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
+			Log-Error $fn $ErrorText -fac 3;
+			if($gotoError -eq $_.Exception.Message) 
 			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
-			}
+				Log-Error $fn $e.Exception.Message;
+				$PSCmdlet.ThrowTerminatingError($e);
+			} 
+			elseif($gotoFailure -ne $_.Exception.Message) 
+			{ 
+				Write-Verbose ("$fn`n$ErrorText"); 
+			} 
 			else 
 			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -ne $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					# N/A
-				}
+				# N/A
 			}
-			$fReturn = $false;
-			$OutputParameter = $null;
 		}
+		$fReturn = $false;
+		$OutputParameter = $null;
+		
+		if($AddedEntity) { $svc.Core.DeleteObject($AddedEntity); }
 	}
-	finally 
-	{
-		# Clean up
-		# N/A
-	}
+}
+finally 
+{
+	# Clean up
+	# N/A
+}
+
 }
 # Process
 
 End 
 {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	# Return values are always and only returned via OutputParameter.
-	return $OutputParameter;
+
+$datEnd = [datetime]::Now;
+Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+
+# Return values are always and only returned via OutputParameter.
+return $OutputParameter;
+
 }
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-ManagementUri; } 
 
 # 
 # Copyright 2014-2015 d-fens GmbH
@@ -257,8 +278,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrGS+r7CA42q1FvvF14tmAAa/
-# t32gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0D72e2zQrxaTY3P8hFo+FL/o
+# zi6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -357,26 +378,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS17DLMz48XrHuV
-# AVM5V3bN4s+0tTANBgkqhkiG9w0BAQEFAASCAQCS2sqdiJFUeW+nvYjD6id7M3Cc
-# L7EOjEVm4yLeVhoBMxrmJTKnNKkjMux27hdf18+qNlG0JyFmjMLXq9mztTOmQGe5
-# NuZJ1w4F38nqZNWuWCztOuZg8+TQcz+v7eTLpTCjKwJ3A6J9dkHyN2iQgwSpr5kM
-# PUWX9ucwUe0Ud9Sb47hESde/nHDIIPejdis3UKtqKGt98TNBkjVCB5TgFRYG4MmY
-# 2pje/sU4PIdPFR5re+u9zgD6/rhEqFD4Ld7WpitV277YpaGSvoGikYcuMVMu/1YA
-# CMqRPiAqDx0x2adi62vT99ZNRacimIsx5YAdJv24h/8ge8gJxugyMzACgXlQoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSrV+NEzFW4pjfe
+# 61uitVpfcDtsUTANBgkqhkiG9w0BAQEFAASCAQBnG8/Sdw9eI2G3APeaWFh7KUXj
+# 9/K9a2lHrjjSSxan+lJF0X8MKoQtn5RVO5t8xfrWn67zEm/nn5kBnnitMopp4jDh
+# aJO65PZfaPvETlbrAoHg6aqjC9SiSNrbexUcib++/hm6by5phpIAzmEEKa1mL5un
+# EbnbXvnKSO7CHdesKRIqhmX25ObQGm4jSw1vyfy9rZB8OL172C/+OKjs3gQcyYXn
+# 0LuzJgoFIxk6HDVaNDaW2DRw0mTqgjrQHnLHSkB0vDvtHk4EsOMqJFppsWSHXjlp
+# 0WUUZzJvvSElJpd8ZHV5IOruqucrOm3nQ+GbH/0b9s9DbQPZZRGnp8egQC31oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyODEyMDYxMlowIwYJKoZIhvcNAQkEMRYEFCdEgrrp7VGX4+HkpMubo6Ir7DAL
+# MDcyODEyMDYyMFowIwYJKoZIhvcNAQkEMRYEFHh1LeS1bigtBpjNZ0QQdJCpmEJj
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBBKF/aOp5S8Mr7ldaE
-# 3/Pr1L3AxyxNhZUd0qfkrvqm8g0GLe+dUvw2U2yYMFok9h9AbZMDJKwhc+G9XDbt
-# Bzgh2vBnVM/2SICzs4jiYyGxaSTwXpUlwyjV2Orgn+/inqn3Ty6K1zUU2KmJpstS
-# ZSXPJV9GxQj5tEqnuSIDWPe4JNj5HaN5eNXiz9SwTNzIbV9DC0phVe+vY42BWy50
-# Tcf7kTlWRJ+0GSI7qWSrPkuVbAho0LSKFMHHi20P483lhFo32sfrHdOLIzQV8tBL
-# T0yHHnLSw2rFMH5IYkvZJRfmumV+zeHwyXQwC3RZanhjFkMZZHM8EZMGtOFAWzlr
-# WbsA
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBQdp4iOvHrp2LZvaio
+# 81kEtfgLfd7IoB9ed9il85RP2Tn2xCtfPNE4R+nc6ONSdXw9O0AJkwYYNK+7t0zt
+# 9t+dMSRKpq9aHBwetduA9NAarmMk9W1qP/gR2AXoRA/1MnI2/qUlnZSsnpNnuzO6
+# LuqucTrTiQTYxzndZRzPyVdbTQI9P6R230/Lw4yD2BoTQIgpqOhqLPr5wlG+83Dg
+# vo8Vz8eVaQEnt9ux8xnYuSVivdo68L0NGmI0sMmySFnYYqMxr/ZK4vCIHiFOijuM
+# Kyu45W2LkuKzeqDb7v/ZRJnz6aeE56guVLiXYP0z+lo3TodkXx+KdDVGNPcrgJvQ
+# 5+Rc
 # SIG # End signature block
