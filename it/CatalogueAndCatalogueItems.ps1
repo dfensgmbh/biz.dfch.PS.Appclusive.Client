@@ -1,3 +1,6 @@
+#$template = $svc.Core.InvokeEntitySetActionWithSingleResult('CatalogueItems', 'Template', [biz.dfch.CS.Appclusive.Api.Core.CatalogueItem], $null);
+
+
 function Create-Catalogue {
 	Param
 	(
@@ -147,25 +150,36 @@ function Create-CatalogueItem {
 	(
 		$svc
 		,
-		$catalogueItemName
+		$name
+		,
+		$description = "Test Catalogue Item"
+		,
+		$catalogueId
 		,
 		$productId
 		,
-		$catalogueId
+		$parameters = '{}'
+		,
+		$validFrom = $template.ValidFrom
+		,
+		$validUntil = $template.ValidUntil
+		,
+		$endOfLife = $template.EndOfLife
 	)
 	
 	#get Catalogue Item template
 	$template = $svc.Core.InvokeEntitySetActionWithSingleResult('CatalogueItems', 'Template', [biz.dfch.CS.Appclusive.Api.Core.CatalogueItem], $null);
+	
 	#add parameters
 	$newCatalogueItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CatalogueItem;
-	$newCatalogueItem.ValidFrom = $template.ValidFrom
-	$newCatalogueItem.ValidUntil = $template.ValidUntil
-	$newCatalogueItem.EndOfLife = $template.EndOfLife
-	$newCatalogueItem.Name = $catalogueItemName;
-	$newCatalogueItem.Parameters = '{}';
-	$newCatalogueItem.Description = 'Test Catalogue Item';
-	$newCatalogueItem.ProductId = $productId;
+	$newCatalogueItem.Name = $name;
+	$newCatalogueItem.Description = $description;
 	$newCatalogueItem.CatalogueId = $catalogueId;
+	$newCatalogueItem.ProductId = $productId;
+	$newCatalogueItem.Parameters = $parameters;
+	$newCatalogueItem.ValidFrom = $validFrom;
+	$newCatalogueItem.ValidUntil = $validUntil;
+	$newCatalogueItem.EndOfLife = $endOfLife;
 	
 	#create catalogueItem
 	$svc.Core.AddToCatalogueItems($newCatalogueItem);
@@ -173,14 +187,22 @@ function Create-CatalogueItem {
 	
 	#get catalogueItem
 	$query = "Id eq {0}" -f $newCatalogueItem.Id;
-	$newCatalogueItem = $svc.Core.CatalogueItems.AddQueryOption('$filter', $query) | select;
+	$catalogueItem = $svc.Core.CatalogueItems.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT catalogue Item
-	$newCatalogueItem | Should Not Be $null;
-	$newCatalogueItem.Id | Should Not Be $null;
-	$result.StatusCode | Should Be 201;
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $catalogueItem | Should Not Be $null;
+	$bin = $catalogueItem.Id | Should Not Be $null;
+	$bin = $catalogueItem.Name | Should Be $name;
+	$bin = $catalogueItem.Description | Should Be $description;
+	$bin = $catalogueItem.CatalogueId | Should Be $catalogueId;
+	$bin = $catalogueItem.ProductId | Should Be $productId;
+	$bin = $catalogueItem.Parameters | Should Be $parameters;
+	$bin = $catalogueItem.ValidFrom | Should Be $validFrom;
+	$bin = $catalogueItem.ValidUntil | Should Be $validUntil;
+	$bin = $catalogueItem.EndOfLife | Should Be $endOfLife;
 	
-	return $newCatalogueItem;
+	return $catalogueItem;
 
 }
 
