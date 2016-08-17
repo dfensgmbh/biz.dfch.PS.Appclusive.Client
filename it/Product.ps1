@@ -69,6 +69,64 @@ function Delete-Product {
 	return $result;
 }
 
+function Update-Product{
+	Param
+	(
+		$Svc
+		,
+		$ProductId
+		,
+		$UpdatedName
+		,
+		$UpdatedDescription
+		,
+		$UpdatedVersion
+		,
+		$UpdatedType
+		,
+		$UpdatedValidFrom
+		,
+		$UpdatedValidUntil
+		,
+		$UpdatedEndOfLife
+		,
+		$UpdatedParameters
+	)
+	
+	#get the product
+	$product = Get-Apcproduct -Id $productId;
+	
+	#update the Catalogue Item
+	$product.Name = $UpdatedName;
+	$product.Description = $UpdatedDescription;
+	$product.Version = $UpdatedVersion;
+	$product.Type = $UpdatedType;
+	$product.ValidFrom = $UpdatedValidFrom;
+	$product.ValidUntil = $UpdatedValidUntil;
+	$product.EndOflife = $UpdatedEndOfLife;
+	$product.Parameters = $UpdatedParameters;
+	
+	$svc.Core.UpdateObject($product);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the updated Catalogue Item
+	$updatedProduct = Get-Apcproduct -Id $productId;
+	
+	#ASSERT - update
+	$updatedProduct.Id | Should Be $productId;
+	$updatedProduct | Should Not Be $product;
+	$updatedProduct.Name | Should Be $UpdatedName;
+	$updatedProduct.Description | Should Be $UpdatedDescription;
+	$updatedProduct.Version | Should Be $UpdatedVersion;
+	$updatedProduct.Type | Should Be $UpdatedType;
+	$updatedProduct.ValidFrom | Should Be $UpdatedValidFrom;
+	$updatedProduct.ValidUntil | Should Be $UpdatedValidUntil;
+	$updatedProduct.EndOflife | Should Be $UpdatedEndOfLife;
+	$updatedProduct.Parameters | Should Be $UpdatedParameters;
+	
+	return $updatedProduct;
+}
+
 #
 # Copyright 2015 d-fens GmbH
 #
