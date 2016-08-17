@@ -44,30 +44,17 @@ Describe -Tags "Product.Tests" "Product.Tests" {
         }
 		
 		It "CreateAndDeleteProduct" -Test {
-			try 
-			{
-				# Arrange
-				$productName = 'Product PesterTest';
-				$productDescription = 'Product created in pester tests';
-				
-				# Act
-				$product = CreateProduct -productName $productName -productDescription $productDescription;
-				$svc.Core.AddToProducts($product);
-				$result = $svc.Core.SaveChanges();
-				
-				# Assert
-				$result.StatusCode | Should Be 201;
-				$product.Id | Should Not Be 0;
-			} 
-			finally 
-			{
-				#Cleanup
-				$svc.Core.DeleteObject($product);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
+			#ARRANGE
+			$productName = $entityPrefix + "Product";
+			
+			#ACT create product
+			$newProduct = Create-Product -Svc $svc -Name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT delete product
+			Delete-Product -Svc $svc -ProductId $productId;
 		}
-		
+		<#
 		It "LoadCatalogueItemsOfProduct" -Test {
 			try 
 			{
@@ -85,7 +72,7 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 				$product = CreateProduct -productName $productName -productDescription $productDescription;
 				$svc.Core.AddToProducts($product);
 				$result = $svc.Core.SaveChanges();
-				
+				Write-Host ($newProduct | Out-String);
 				# Add catalogue item
 				$catItem = CreateCatalogueItem -cat $cat -product $product;
 				$svc.Core.AddToCatalogueItems($catItem);
@@ -174,7 +161,7 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 				$result = $svc.Core.SaveChanges();
 				$result.StatusCode | Should Be 204;
 			}
-		}
+		}#>
 	}
 	
 }
