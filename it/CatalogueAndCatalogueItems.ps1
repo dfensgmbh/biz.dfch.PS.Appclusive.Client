@@ -71,8 +71,6 @@ function Delete-Catalogue{
 	return $result;
 }
 
-
-
 function Create-CatalogueItem {
 	Param
 	(
