@@ -143,6 +143,46 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
 		}
 		
+		It "LoadCatalogueItemsOfCatalogue" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName1 = $entityPrefix + "CatalogueItem1";
+			$catalogueItemName2 = $entityPrefix + "CatalogueItem2";
+			
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue items
+			$newCatalogueItem1 = Create-CatalogueItem -svc $svc -name $catalogueItemName1 -catalogueId $catalogueId -productId $productId;
+			$catalogueItem1Id = $newCatalogueItem1.Id;
+			$newCatalogueItem2 = Create-CatalogueItem -svc $svc -name $catalogueItemName2 -catalogueId $catalogueId -productId $productId;
+			$catalogueItem2Id = $newCatalogueItem2.Id;
+			
+			#ACT load catalogue from the catalogue item
+			$loadedCatalogueItems = $svc.Core.LoadProperty($newCatalogue, 'CatalogueItems') | Select;
+			
+			#ASSERT thet loaded catalogue is the correct one
+			$loadedCatalogueItems | Should Not Be $null;
+			$loadedCatalogueItems.Id -contains $catalogueItem1Id | Should be $true;
+			$loadedCatalogueItems.Id -contains $catalogueItem2Id | Should be $true;
+
+			#CLEANUP delete catalogue items
+			Delete-CatalogueItem -svc $svc -catalogueItemId $catalogueItem1Id;
+			Delete-CatalogueItem -svc $svc -catalogueItemId $catalogueItem2Id;
+			
+			#CLEANUP delete product
+			Delete-Product -svc $svc -productId $productId; 
+			
+			#CLEANUP delete catalogue
+			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
+		}
+		
 		It "UpdateEmptyCatalogue" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "newTestCatalogue";
