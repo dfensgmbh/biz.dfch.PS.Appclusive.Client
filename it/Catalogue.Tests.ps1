@@ -17,6 +17,17 @@ Describe -Tags "Catalogue.Tests" "Catalogue.Tests" {
 	
 	Context "#CLOUDTCL-1874-CatalogueTests" {
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 		# Context wide constants
 		$catName = 'Default DaaS';
 		New-Variable -Name cat -Value 'will-be-used-later';

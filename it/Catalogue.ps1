@@ -31,6 +31,11 @@ function CreateCatalogueItem($catalogue, $product)
 	return $catItem;
 }
 
+
+
+
+
+
 function CreateCatalogue($catName)
 {
 	$cat = New-Object biz.dfch.CS.Appclusive.Api.Core.Catalogue;
