@@ -12,6 +12,12 @@ function Create-Product {
 		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Product.value__
 		,
 		$TenantId = (Get-ApcTenant -Current).Id
+		,
+		$ValidFrom = [DateTimeOffset]::Now
+		,
+		$ValidUntil =[DateTimeOffset]::Now.AddDays(365)
+		,
+		$EndOfLife = [DateTimeOffset]::Now.AddDays(365)
 	)
 	
 	#add parameters
@@ -21,6 +27,9 @@ function Create-Product {
 	$newProduct.Type = $type;
 	$newProduct.EntityKindId = $entityKindId;
 	$newProduct.Tid = $tenantId;
+	$newProduct.ValidFrom = $ValidFrom;
+	$newProduct.ValidUntil = $ValidUntil;
+	$newProduct.EndOfLife = $EndOfLife;
 	
 	#ACT create product
 	$svc.Core.AddToProducts($newProduct);
@@ -39,6 +48,9 @@ function Create-Product {
 	$bin = $product.Type |Should Be $type;
 	$bin = $product.EntityKindId |Should Be $entityKindId;
 	$bin = $product.Tid |Should Be $tenantId;
+	$bin = $product.ValidFrom |Should Be $ValidFrom;
+	$bin = $product.ValidUntil |Should Be $ValidUntil;
+	$bin = $product.EndOfLife |Should Be $EndOfLife;
 
 	return $product;
 }
@@ -64,7 +76,7 @@ function Delete-Product {
 	$deletedProduct = $svc.Core.Products.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT that product is deleted
-	$deletedProduct | Should Be $null;
+	$bin = $deletedProduct | Should Be $null;
 	
 	return $result;
 }
@@ -80,8 +92,6 @@ function Update-Product{
 		,
 		$UpdatedDescription
 		,
-		$UpdatedVersion
-		,
 		$UpdatedType
 		,
 		$UpdatedValidFrom
@@ -94,12 +104,11 @@ function Update-Product{
 	)
 	
 	#get the product
-	$product = Get-Apcproduct -Id $productId;
+	$product = Get-ApcProduct -Id $productId;
 	
-	#update the Catalogue Item
+	#update the product
 	$product.Name = $UpdatedName;
 	$product.Description = $UpdatedDescription;
-	$product.Version = $UpdatedVersion;
 	$product.Type = $UpdatedType;
 	$product.ValidFrom = $UpdatedValidFrom;
 	$product.ValidUntil = $UpdatedValidUntil;
@@ -109,20 +118,18 @@ function Update-Product{
 	$svc.Core.UpdateObject($product);
 	$result = $svc.Core.SaveChanges();
 	
-	#get the updated Catalogue Item
+	#get the updated product
 	$updatedProduct = Get-Apcproduct -Id $productId;
 	
 	#ASSERT - update
-	$updatedProduct.Id | Should Be $productId;
-	$updatedProduct | Should Not Be $product;
-	$updatedProduct.Name | Should Be $UpdatedName;
-	$updatedProduct.Description | Should Be $UpdatedDescription;
-	$updatedProduct.Version | Should Be $UpdatedVersion;
-	$updatedProduct.Type | Should Be $UpdatedType;
-	$updatedProduct.ValidFrom | Should Be $UpdatedValidFrom;
-	$updatedProduct.ValidUntil | Should Be $UpdatedValidUntil;
-	$updatedProduct.EndOflife | Should Be $UpdatedEndOfLife;
-	$updatedProduct.Parameters | Should Be $UpdatedParameters;
+	$bin = $updatedProduct.Id | Should Be $productId;
+	$bin = $updatedProduct.Name | Should Be $UpdatedName;
+	$bin = $updatedProduct.Description | Should Be $UpdatedDescription;
+	$bin = $updatedProduct.Type | Should Be $UpdatedType;
+	$bin = $updatedProduct.ValidFrom | Should Be $UpdatedValidFrom;
+	$bin = $updatedProduct.ValidUntil | Should Be $UpdatedValidUntil;
+	$bin = $updatedProduct.EndOflife | Should Be $UpdatedEndOfLife;
+	$bin = $updatedProduct.Parameters | Should Be $UpdatedParameters;
 	
 	return $updatedProduct;
 }
