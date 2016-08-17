@@ -76,11 +76,16 @@ Param
 	[Alias('v')]
 	[string] $Value
 	,
+	# Specifies the Name to modify
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[Alias('n')]
+	[string] $Name
+	,
 	# Specifies the ManagementCredential to modify
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
 	[Alias('m')]
-	[string] $ManagementCredentialId
+	[long] $ManagementCredentialId
 	,
 	# Specifies the value to modify
 	[Parameter(Mandatory = $false)]
@@ -129,7 +134,10 @@ Process
 
 		$Exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
 		$ManagementUriContents += $Value;
-
+		
+		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+		$ManagementUriContents += $Name;
+		
 		if(!!$ManagementCredentialId)
 		{
 			$Exp += ("(tolower(ManagementCredentialId) eq '{0}')" -f $ManagementCredentialId);
@@ -139,8 +147,8 @@ Process
 		$FilterExpression = [String]::Join(' and ', $Exp);
 		$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
 
-		$knv = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-		if($knv) 
+		$mu = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+		if($mu) 
 		{
 			$msg = "Value: Parameter validation FAILED. Entity does already exist: '{0}'." -f $ManagementUriContentsString;
 			Log-Error $fn $msg;
@@ -149,13 +157,17 @@ Process
 		}
 		if($PSCmdlet.ShouldProcess($ManagementUriContents))
 		{
+			if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId')
+			{
+				$r = Set-ManagementUri -Name $Name -type $type -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc -As $As;
+			}
 			if($PSBoundParameters.ContainsKey('Description'))
 			{
-				$r = Set-ManagementCredential -Key $Key -Name $Name -Value $Value -Description $Description -CreateIfNotExist -svc $svc -As $As;
+				$r = Set-ManagementUri -Name $Name -type $type -Description $Description -CreateIfNotExist -svc $svc -As $As;
 			}
 			else
 			{
-				$r = Set-ManagementCredential -Key $Key -Name $Name -Value $Value -CreateIfNotExist -svc $svc -As $As;
+				$r = Set-ManagementUri -Name $Name -type $type -CreateIfNotExist -svc $svc -As $As;
 			}
 			$OutputParameter = $r;
 		}
@@ -220,7 +232,7 @@ End
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-KeyNameValue; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; } 
 
 # 
 # Copyright 2014-2015 d-fens GmbH
