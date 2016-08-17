@@ -1,3 +1,5 @@
+#includes tests for CLOUDTCL-1878
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -11,10 +13,11 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Product.Tests" "Product.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-
 	. "$here\$sut"
-	. "$here\Catalogue.ps1"
+	. "$here\CatalogueAndCatalogueItems.ps1"
 	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Catalogues", "CatalogueItems", "Products");
 	
 	Context "#CLOUDTCL-1878-ProductTests" {
 		
@@ -22,21 +25,23 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "LoadProductsCreatedBySeed" -Test {
-			# Arrange
-			
-			# Act
-			$products = $svc.Core.Products;
-			
-			# Assert
-			$products | Should Not Be $null;
-			$products.Name -contains "VDI Personal" | Should Be $true;
-			$products.Name -contains "VDI Technical" | Should Be $true;
-			$products.Name -contains "DSWR Autocad 12 Production" | Should Be $true;
-		}
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 		
 		It "CreateAndDeleteProduct" -Test {
 			try 
