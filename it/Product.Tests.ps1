@@ -43,7 +43,7 @@ Describe -Tags "Product.Tests" "Product.Tests" {
             }
         }
 		
-		It "CreateAndDeleteProduct" -Test {
+		It "Product-CreateAndDelete" -Test {
 			#ARRANGE
 			$productName = $entityPrefix + "Product";
 			
@@ -54,55 +54,33 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 			#ACT delete product
 			Delete-Product -Svc $svc -ProductId $productId;
 		}
-		<#
-		It "LoadCatalogueItemsOfProduct" -Test {
-			try 
-			{
-				# Arrange
-				$productName = 'Product PesterTest';
-				$productDescription = 'Product created in pester tests';
-				$catName = 'NewCatalogueInTest'
-			
-				# Create catalogue
-				$cat = CreateCatalogue -catName $catName
-				$svc.Core.AddToCatalogues($cat);
-				$result = $svc.Core.SaveChanges();
-				
-				# Create product
-				$product = CreateProduct -productName $productName -productDescription $productDescription;
-				$svc.Core.AddToProducts($product);
-				$result = $svc.Core.SaveChanges();
-				Write-Host ($newProduct | Out-String);
-				# Add catalogue item
-				$catItem = CreateCatalogueItem -cat $cat -product $product;
-				$svc.Core.AddToCatalogueItems($catItem);
-				$result = $svc.Core.SaveChanges();
-				
-				# Act
-				$catalogueItemOfProduct = $svc.Core.LoadProperty($product, 'CatalogueItems') | Select;
-				
-				# Assert
-				$result.StatusCode | Should Be 201;
-				$catalogueItemOfProduct | Should Not Be $null;
-				$catalogueItemOfProduct.Id | Should Be $catItem.Id;
-			} 
-			finally 
-			{
-				# Cleanup
-				$svc.Core.DeleteObject($catItem);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($product);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($cat);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
-		}
 		
+		It "LoadCatalogueItemsOfProduct" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -Svc $svc -Name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -Svc $svc -Name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -Svc $svc -Name $catalogueItemName -CatalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
+				
+			#ACT load catalogueitems of product
+			$catalogueItemOfProduct = $svc.Core.LoadProperty($newProduct, 'CatalogueItems') | Select;
+			
+			#ASSERT 
+			$catalogueItemOfProduct | Should Not Be $null;
+			$catalogueItemOfProduct.Id | Should Be $catalogueItemId;
+		}
+		<#
 		It "UpdateProduct" -Test {
 			try 
 			{
