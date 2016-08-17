@@ -71,76 +71,7 @@ function Delete-Catalogue{
 	return $result;
 }
 
-function Create-Product {
-	Param
-	(
-		$Svc
-		,
-		$Name
-		,
-		$Description = "Arbitrary Product"
-		,
-		$Type = "Test Product"
-		,
-		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Product.value__
-		,
-		$TenantId = (Get-ApcTenant -Current).Id
-	)
-	
-	#add parameters
-	$newProduct = New-Object biz.dfch.CS.Appclusive.Api.Core.Product;
-	$newProduct.Name = $name;
-	$newProduct.Description = $description;
-	$newProduct.Type = $type;
-	$newProduct.EntityKindId = $entityKindId;
-	$newProduct.Tid = $tenantId;
-	
-	#ACT create product
-	$svc.Core.AddToProducts($newProduct);
-	$result = $svc.Core.SaveChanges();
-	
-	#get product
-	$query = "Id eq {0}" -f $newProduct.Id;
-	$product = $svc.Core.Products.AddQueryOption('$filter', $query) | select;
-	
-	#ASSERT product
-	$bin = $result.StatusCode | Should Be 201;
-	$bin = $product | Should Not Be $null;
-	$bin = $product.Name | Should Be $name;
-	$bin = $product.Description | Should Be $description;
-	$bin = $product.Id | Should Not Be $null;
-	$bin = $product.Type |Should Be $type;
-	$bin = $product.EntityKindId |Should Be $entityKindId;
-	$bin = $product.Tid |Should Be $tenantId;
 
-	return $product;
-}
-
-function Delete-Product {
-	Param 
-	(
-		$Svc
-		,
-		$ProductId
-	)
-	
-	#get the product
-	$query = "Id eq {0}" -f $productId;
-	$product = $svc.Core.Products.AddQueryOption('$filter', $query) | select;
-	
-	#delete product
-	$svc.Core.DeleteObject($product);
-	$result = $svc.Core.SaveChanges();
-	
-	#get the deleted product
-	$query = "Id eq {0}" -f $productId;
-	$deletedProduct = $svc.Core.Products.AddQueryOption('$filter', $query) | select;
-	
-	#ASSERT that product is deleted
-	$deletedProduct | Should Be $null;
-	
-	return $result;
-}
 
 function Create-CatalogueItem {
 	Param
