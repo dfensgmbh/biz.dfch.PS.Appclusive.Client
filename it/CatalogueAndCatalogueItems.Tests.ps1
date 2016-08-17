@@ -14,6 +14,7 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"
+	. "$here\Product.ps1"
 	
     $entityPrefix = "TestItem-";
 	$usedEntitySets = @("Catalogues", "CatalogueItems", "Products");
