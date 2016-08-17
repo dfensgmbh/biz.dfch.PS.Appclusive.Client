@@ -79,67 +79,39 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 			#ASSERT 
 			$catalogueItemOfProduct | Should Not Be $null;
 			$catalogueItemOfProduct.Id | Should Be $catalogueItemId;
+			
+			#CLEANUP delete catalogue item
+			Delete-CatalogueItem -Svc $svc -CatalogueItemId $catalogueItemId;
+			
+			#CLEANUP delete product
+			Delete-Product -Svc $svc -ProductId $productId;
+			
+			#CLEANUP delete catalogue
+			Delete-Catalogue -Svc $svc -CatalogueId $catalogueId;
 		}
-		<#
+		
 		It "UpdateProduct" -Test {
-			try 
-			{
-				# Arrange
-				$productName = 'Product PesterTest';
-				$productDescription = 'Product created in pester tests';
-				
-				$productNameUpdate = 'Name updated'
-				$productDescriptionUpdate = 'Description updated';
-				$productVersionUpdate = 2;
-				$productTypeUpdate = "Type updated";
-				$productValidFromUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productValidUntilUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productEndOfSaleUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productEndOfLifeUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productParameterUpdate = 'New Parameter';
-				
-				$product = CreateProduct -productName $productName -productDescription $productDescription;
-				$svc.Core.AddToProducts($product);
-				$result = $svc.Core.SaveChanges();
-
-				# Act
-				$product.Name = $productNameUpdate;
-				$product.Description = $productDescriptionUpdate
-				$product.Type = $productTypeUpdate;
-				$product.Version = $productVersionUpdate;
-				$product.ValidFrom = $productValidFromUpdate;
-				$product.ValidUntil = $productValidUntilUpdate;
-				$product.EndOfSale = $productEndOfSaleUpdate;
-				$product.EndOfLife = $productEndOfLifeUpdate;
-				$product.Parameters = $productParameterUpdate;
-
-				$svc.Core.UpdateObject($product);
-				$result = $svc.Core.SaveChanges();
-				
-				$productReload = $svc.Core.Products.AddQueryOption('$filter', "Id eq {0}" -f $product.Id) | Select;
-				
-				# Assert
-				$result.StatusCode | Should Be 204;
-				$product.Id | Should Not Be 0;
-				
-				$productReload.Name | Should Be $productNameUpdate;
-				$productReload.Description | Should Be $productDescriptionUpdate
-				$productReload.Type | Should Be $productTypeUpdate;
-				$productReload.Version | Should Be $productVersionUpdate;
-				$productReload.ValidFrom | Should Be $productValidFromUpdate;
-				$productReload.ValidUntil | Should Be $productValidUntilUpdate;
-				$productReload.EndOfSale | Should Be $productEndOfSaleUpdate;
-				$productReload.EndOfLife | Should Be $productEndOfLifeUpdate;
-				$productReload.Parameters | Should Be $productParameterUpdate;
-			} 
-			finally 
-			{
-				#Cleanup
-				$svc.Core.DeleteObject($product);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
-		}#>
+			#ARRANGE
+			$productName = $entityPrefix + "Product";
+			
+			#ACT create product
+			$newProduct = Create-Product -Svc $svc -Name $productName;
+			$productId = $newProduct.Id;
+			
+			$productNameUpdate = 'Name updated'
+			$productDescriptionUpdate = 'Description updated';
+			$productTypeUpdate = "Type updated";
+			$productValidFromUpdate = [DateTimeOffset]::Now.AddDays(365);
+			$productValidUntilUpdate = [DateTimeOffset]::Now.AddDays(600);
+			$productEndOfLifeUpdate = [DateTimeOffset]::Now.AddDays(600);
+			$productParameterUpdate = 'New Parameter';
+			
+			#ACT update product
+			$updatedProduct = Update-Product -Svc $svc -ProductId $productId -UpdatedName $productNameUpdate -UpdatedDescription $productDescriptionUpdate -UpdatedType $productTypeUpdate -UpdatedValidFrom $productValidFromUpdate -UpdatedValidUntil $productValidUntilUpdate -UpdatedEndOfLife $productEndOfLifeUpdate -UpdatedParameters $productParameterUpdate;
+			
+			#CLEANUP delete product
+			Delete-Product -Svc $svc -ProductId $productId;
+		}
 	}
 	
 }
