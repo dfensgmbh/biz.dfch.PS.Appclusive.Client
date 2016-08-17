@@ -3,26 +3,26 @@ function Create-Catalogue {
 	(
 		$svc
 		,
-		[string] $Name
+		$name
+		,
+		$description = "Description"
+		,
+		$status = "Published"
+		,
+		$version = 1
+		,
+		$tenantId = (Get-ApcTenant -Current).Id
 	)
-	
-	$catalogueVersion = "1";
-	$catalogueStatus = "Published";
-	
-	
-	
-	
-	$catalogueDescription = "Description"
 	
 	#create catalog object
 	$newCatalogue = New-Object biz.dfch.CS.Appclusive.Api.Core.Catalogue;
 	
 	#add mandatory parameters
 	$newCatalogue.Name = $Name;
-	$newCatalogue.Version = $catalogueVersion;
-	$newCatalogue.Status = $catalogueStatus;
-	$newCatalogue.Tid = "11111111-1111-1111-1111-111111111111";
-	$newCatalogue.Description = $catalogueDescription;
+	$newCatalogue.Description = $Description;
+	$newCatalogue.Status = $Status;
+	$newCatalogue.Version = $Version;
+	$newCatalogue.Tid = $tenantId;
 	
 	#ACT - create new catalogue
 	$svc.Core.AddToCatalogues($newCatalogue);
@@ -30,15 +30,19 @@ function Create-Catalogue {
 	
 	#get the catalogue
 	$query = "Id eq {0}" -f $newCatalogue.Id;
-	$newCatalogue = $svc.Core.Catalogues.AddQueryOption('$filter', $query) | select;
+	$catalogue = $svc.Core.Catalogues.AddQueryOption('$filter', $query) | select;
 	
-	#ASSERT for catalogue creation
-	$newCatalogue | Should Not Be $null;
-	$newCatalogue.Id | Should Not Be $null;
-	$newCatalogue.Tid |Should Not Be $null;
-	$result.StatusCode | Should Be 201;
+	#ASSERT catalogue creation
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $catalogue | Should Not Be $null;
+	$bin = $catalogue.Name | Should Be $name;
+	$bin = $catalogue.Description | Should Be $description;
+	$bin = $catalogue.Id | Should Not Be $null;
+	$bin = $catalogue.Status |Should Be $status;
+	$bin = $catalogue.Version |Should Be $version;
+	$bin = $catalogue.Tid |Should Be $tenantId;
 	
-	return $newCatalogue;
+	return $catalogue;
 }
 
 function Delete-Catalogue{

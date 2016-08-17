@@ -1,4 +1,4 @@
-# includes tests for test case 2191
+# includes tests for test case CLOUDTCL-2191
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path;
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".");
@@ -15,19 +15,10 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"
 	
-	
-	
-	
-	
-	
-	
-	
-	
-
     $entityPrefix = "TestItem-";
 	$usedEntitySets = @("Catalogues", "CatalogueItems", "Products");
 
-    Context "#CLOUDTCL-2191-Catalogue" {	
+    Context "#CLOUDTCL-2191-CatalogueAndcatalogueItems" {	
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
@@ -35,7 +26,7 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			$svc = Enter-Appclusive;
 		}
 		
-		AfterAll {
+		AfterEach {
             $svc = Enter-Appclusive;
             $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
@@ -51,18 +42,18 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
         } 
 
 		
-		It "CreateAndDeleteCatalogue" -Test {
+		It "Catalogue-CreateAndDelete" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "newTestCatalogue";
 			
-			#ACT
+			#ACT create catalogue & get catalogue Id
 			$newCatalogue = Create-Catalogue -svc $svc -Name $catalogueName;
 			$catalogueId = $newCatalogue.Id;
 			
-			#ACT - DeleteCatalogue
+			#CLEANUP delete catalogue
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;	
 		}
-		
+		<#
 		It "CreateAndDeleteCatalogueItemInCatalogue" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "newTestCatalogue";
@@ -170,6 +161,6 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			
 			#delete catalogue
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
-		}
+		}#>
 	}
 }
