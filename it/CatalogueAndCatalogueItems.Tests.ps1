@@ -40,45 +40,106 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
                 }
             }
         } 
-
 		
 		It "Catalogue-CreateAndDelete" -Test {
 			#ARRANGE
-			$catalogueName = $entityPrefix + "newTestCatalogue";
+			$catalogueName = $entityPrefix + "Catalogue";
 			
 			#ACT create catalogue & get catalogue Id
-			$newCatalogue = Create-Catalogue -svc $svc -Name $catalogueName;
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
 			$catalogueId = $newCatalogue.Id;
 			
 			#CLEANUP delete catalogue
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;	
 		}
-		<#
+		
 		It "CreateAndDeleteCatalogueItemInCatalogue" -Test {
 			#ARRANGE
-			$catalogueName = $entityPrefix + "newTestCatalogue";
-			$productName = $entityPrefix + "newTestProduct";
-			$catalogueItemName = $entityPrefix + "newTestCatalogueItem";
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
 			
-			#create catalogue
-			$newCatalogue = Create-Catalogue -svc $svc -Name $catalogueName;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
 			$catalogueId = $newCatalogue.Id;
 			
-			#create product
-			$newProduct = Create-Product -svc $svc -productName $productName;
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
 			$productId = $newProduct.Id;
 			
-			#create catalogue item
-			$newCatalogueItem = Create-CatalogueItem -svc $svc -catalogueItemName $catalogueItemName -productId $productId -catalogueId $catalogueId;
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
 			$catalogueItemId = $newCatalogueItem.Id;
 			
-			#delete catalogue item
+			#CLEANUP delete catalogue item
 			Delete-CatalogueItem -svc $svc -catalogueItemId $catalogueItemId;
 			
-			#delete product
-			Delete-Product -svc $svc -productId $productId;
+			#CLEANUP delete product
+			Delete-Product -svc $svc -productId $productId; 
 			
-			#delete catalogue
+			#CLEANUP delete catalogue
+			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
+		}
+		
+		It "GetCatalogueItem" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
+			
+			#ACT get catalogue Item using Get-ApccatalogueItem
+			$loadedCatalogueItem = Get-ApcCatalogueItem -Id $catalogueItemId;
+			
+			#ASSERT that the catalogue is the coorect one
+			$loadedCatalogueItem | Should Not Be $null;
+			$loadedCatalogueItem | Should Be $newCatalogueItem;
+		}
+		
+		It "LoadCatalogueOfCatalogueItem" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
+			
+			#ACT load catalogue from the catalogue item
+			$loadedCatalogue = $svc.Core.LoadProperty($newCatalogueItem, 'Catalogue') | Select;
+			
+			#ASSERT thet loaded catalogue is the correct one
+			$loadedCatalogue | Should Not Be $null;
+			$loadedCatalogue.Id | Should Be $catalogueId;
+			$loadedCatalogue | Should Be  $newCatalogue;
+
+			##CLEANUP delete catalogue item
+			Delete-CatalogueItem -svc $svc -catalogueItemId $catalogueItemId;
+			
+			#CLEANUP delete product
+			Delete-Product -svc $svc -productId $productId; 
+			
+			#CLEANUP delete catalogue
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
 		}
 		
@@ -88,7 +149,7 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			$newCatalogueDescription = "Updated Description";
 			
 			#ACT - create empty catalogue
-			$newCatalogue = Create-Catalogue -svc $svc -Name $catalogueName;
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
 			$catalogueId = $newCatalogue.Id;
 			
 			#ACT - update description of empty catalogue
@@ -98,7 +159,6 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
 		}
 		
-		
 		It "UpdateCatalogueWithCatalogueItem" -Test {	
 			#ARRANGE
 			$catalogueName = $entityPrefix + "newTestCatalogue";
@@ -107,15 +167,15 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			$newCatalogueDescription = "Updated Description";
 			
 			#create catalogue
-			$newCatalogue = Create-Catalogue -svc $svc -Name $catalogueName;
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
 			$catalogueId = $newCatalogue.Id;
 			
 			#create product
-			$newProduct = Create-Product -svc $svc -productName $productName;
+			$newProduct = Create-Product -svc $svc -name $productName;
 			$productId = $newProduct.Id;
 			
 			#create catalogue item
-			$newCatalogueItem = Create-CatalogueItem -svc $svc -catalogueItemName $catalogueItemName -productId $productId -catalogueId $catalogueId;
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -productId $productId -catalogueId $catalogueId;
 			$catalogueItemId = $newCatalogueItem.Id;
 			
 			#ACT - update description of catalogue
@@ -139,15 +199,15 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			$newCatalogueItemDescription = "Updated Description for Catalogue Item";
 			
 			#create catalogue
-			$newCatalogue = Create-Catalogue -svc $svc -Name $catalogueName;
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
 			$catalogueId = $newCatalogue.Id;
 			
 			#create product
-			$newProduct = Create-Product -svc $svc -productName $productName;
+			$newProduct = Create-Product -svc $svc -name $productName;
 			$productId = $newProduct.Id;
 						
 			#create catalogue item
-			$newCatalogueItem = Create-CatalogueItem -svc $svc -catalogueItemName $catalogueItemName -productId $productId -catalogueId $catalogueId;
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -productId $productId -catalogueId $catalogueId;
 			$catalogueItemId = $newCatalogueItem.Id;
 			
 			#ACT - update description of catalogue Item
@@ -161,6 +221,6 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			
 			#delete catalogue
 			Delete-Catalogue -svc $svc -catalogueId $catalogueId;
-		}#>
+		}
 	}
 }
