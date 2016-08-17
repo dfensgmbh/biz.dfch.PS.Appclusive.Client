@@ -134,7 +134,7 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			$loadedCatalogue.Id | Should Be $catalogueId;
 			$loadedCatalogue | Should Be  $newCatalogue;
 
-			##CLEANUP delete catalogue item
+			#CLEANUP delete catalogue item
 			Delete-CatalogueItem -svc $svc -catalogueItemId $catalogueItemId;
 			
 			#CLEANUP delete product
