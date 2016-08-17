@@ -76,30 +76,44 @@ function Create-Product {
 	(
 		$svc
 		,
-		$productName
+		$name
+		,
+		$description = "Arbitrary Product"
+		,
+		$type = "Test Product"
+		,
+		$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Product.value__
+		,
+		$tenantId = (Get-ApcTenant -Current).Id
 	)
+	
 	#add parameters
 	$newProduct = New-Object biz.dfch.CS.Appclusive.Api.Core.Product;
-	$newProduct.Name = $productName;
-	$newProduct.Description = "Arbitrary Product";
-	$newProduct.Type = "Test Product";
-	$newProduct.EntityKindId = 4864;
-	$newProduct.Tid = "11111111-1111-1111-1111-111111111111";
+	$newProduct.Name = $name;
+	$newProduct.Description = $description;
+	$newProduct.Type = $type;
+	$newProduct.EntityKindId = $entityKindId;
+	$newProduct.Tid = $tenantId;
 	
-	#create product
+	#ACT create product
 	$svc.Core.AddToProducts($newProduct);
 	$result = $svc.Core.SaveChanges();
 	
 	#get product
 	$query = "Id eq {0}" -f $newProduct.Id;
-	$newProduct = $svc.Core.Products.AddQueryOption('$filter', $query) | select;
+	$product = $svc.Core.Products.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT product
-	$newProduct | Should Not Be $null;
-	$newProduct.Id | Should Not Be $null;
-	$result.StatusCode | Should Be 201;
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $product | Should Not Be $null;
+	$bin = $product.Name | Should Be $name;
+	$bin = $product.Description | Should Be $description;
+	$bin = $product.Id | Should Not Be $null;
+	$bin = $product.Type |Should Be $type;
+	$bin = $product.EntityKindId |Should Be $entityKindId;
+	$bin = $product.Tid |Should Be $tenantId;
 
-	return $newProduct;
+	return $product;
 }
 
 function Delete-Product {
