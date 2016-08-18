@@ -93,9 +93,9 @@ Describe "Get-Job"  -Tags "Get-Job" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Job] | Should Be $true;
 		}
 		
-		It "Get-Job-ShouldReturnFiveEntities" -Test {
+		It "Get-Job-ShouldReturnThreeEntities" -Test {
 			# Arrange
-			$ShowFirst = 5;
+			$ShowFirst = 3;
 			
 			# Act
 			$result = Get-Job -svc $svc -First $ShowFirst;
