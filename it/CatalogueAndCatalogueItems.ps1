@@ -86,15 +86,12 @@ function Create-CatalogueItem {
 		,
 		$Parameters = '{}'
 		,
-		$ValidFrom = $template.ValidFrom
+		$ValidFrom = [DateTimeOffset]::Now
 		,
-		$ValidUntil = $template.ValidUntil
+		$ValidUntil = [DateTimeOffset]::Now.AddDays(365)
 		,
-		$EndOfLife = $template.EndOfLife
+		$EndOfLife = [DateTimeOffset]::Now.AddDays(365)
 	)
-	
-	#get Catalogue Item template
-	$template = $svc.Core.InvokeEntitySetActionWithSingleResult('CatalogueItems', 'Template', [biz.dfch.CS.Appclusive.Api.Core.CatalogueItem], $null);
 	
 	#add parameters
 	$newCatalogueItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CatalogueItem;
