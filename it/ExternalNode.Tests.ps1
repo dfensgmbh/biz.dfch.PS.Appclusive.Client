@@ -9,6 +9,15 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 }
 
 
+
+
+
+
+
+
+
+
+
 Describe -Tags "Appclusive.ExternalNode" "Appclusive.ExternalNode" {
 	. "$here\$sut"
 
