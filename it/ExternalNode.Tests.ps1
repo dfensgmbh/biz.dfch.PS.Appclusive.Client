@@ -1,3 +1,5 @@
+#includes tests for CLOUDTCL-
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -8,94 +10,78 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-
-
-
-
-
-
-
-
-
-
-Describe -Tags "Appclusive.ExternalNode" "Appclusive.ExternalNode" {
+Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 	. "$here\$sut"
-
-	Context "ExternalNode_PinDown" {
 	
-		BeforeAll {
-            Import-Module biz.dfch.PS.Appclusive.Client
-			$svc = Enter-ApcServer;
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Nodes", "ExternalNodes");
+	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+	$nodeParentId = (Get-ApcTenant -Current).NodeId;
+	
+	Context "#CLOUDTCL--ExternalNodeTests" {
+		
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-Appclusive;
 		}
 		
-        function CreateExternalNode([long]$nodeId, [string]$name)
-        {
-            $externalNode = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNode;
-            $externalNode.NodeId = $nodeId;
-            $externalNode.ExternalId = ("Arbitrary-Id-{0}" -f $nodeId);
-            $externalNode.ExternalType = "Arbitrary-Type";
-            $externalNode.Name = $name;
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
-            return $externalNode;        
-        }  
-
-        function CreateExternalNodeBag([long]$externalNodeId, [string]$key, [string]$value)
-        {
-            $externalNodeBag = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag;
-            $externalNodeBag.ExternaldNodeId = $externalNodeId;
-            $externalNodeBag.Name = $key;
-            $externalNodeBag.Value = $value;
-
-            return $externalNodeBag;
-        }
-
-		AfterAll {
-            Write-Host "    [_] " -ForegroundColor Green -NoNewline;
-
-            Write-Host "Deleting created External Nodes" -NoNewLine;
-            $nodeNames = @("Create-Read-ExternalNode", "Create-Read-ExternalNodeBags",
-                            "Update-ExternalNode", "Update-ExternalNode-Updated", "Update-ExternalNodeBags",
-                            "Delete-ExternalNode", "Delete-ExternalNode-Also-Deletes-NodeBags",
-                            "Properties-Returns-ExternalNodeBags");
-
-            foreach ($nodeName in $nodeNames)
+            foreach ($entitySet in $usedEntitySets)
             {
-                $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-                $createdNodes = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter) | Select;
-
-                foreach ($node in $createdNodes)
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
                 {
-                    $svc.Core.DeleteObject($node);
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
                 }
             }
-
-            $svc.Core.SaveChanges();
-            
-            Write-Host " Done" -ForegroundColor Green;
-		}
-		
-		It "Warmup" -Test {
-			1 | Should Be 1;
-		}
-		
-        It "Create-Read-ExternalNode" -Test {            
-            $nodeName = "Create-ExternalNode";
-            $nodeId = 1;
-            $node = CreateExternalNode $nodeId $nodeName;
-
-            $svc.Core.AddToExternalNodes($node);
-            $svc.Core.SaveChanges();
-
-            $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-            $createdNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
-            $createdNode.NodeId | Should Be 1;
-            $createdNode.ExternalId | Should Be ("Arbitrary-Id-{0}" -f $nodeId);
-            $createdNode.ExternalType | Should Be "Arbitrary-Type";
-            $createdNode.Name | Should Be $nodeName;
         }
-
+		
+        It "Create-Get-ExternalNode" -Test {            
+            $nodeName = $entityPrefix + "node";
+			$extName = $entityPrefix + "externalnode";
+			
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id and entityKindId of the node
+			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
+			
+			#create external node
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
+			#Write-Host ($extNode | out-string);
+			#get id of external node
+			$extNodeId = $extNode.Id;
+			
+			#ASSERT external Node
+			$extNode | Should Not Be $null;
+            $extNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
+            $extNode.NodeId | Should Be $nodeId;
+            $extNode.ExternalId | Should Be $nodeId;
+            $extNode.ExternalType | Should Be "ArbitraryType";
+            $extNode.Name | Should Be $extName;
+			
+			#ACT Get the external-node using Get-ApcExternalNode
+			$loadedextNode = Get-ApcExternalNode -Id $extNodeId -svc $svc;
+			
+			#ASSERT the node we get is the same
+			$loadedextNode | Should Not Be $null;
+            $loadedextNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
+            $loadedextNode.NodeId | Should Be $nodeId;
+            $loadedextNode.ExternalId | Should Be $nodeId;
+            $loadedextNode.ExternalType | Should Be "ArbitraryType";
+            $loadedextNode.Name | Should Be $extName;
+			
+			#CLEANUP delete Node - external node is deleted automatically
+			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
+        }
+		<#
         It "Create-Read-ExternalNodeBags" -Test {
             $nodeName = "Create-Read-ExternalNodeBags";
             $nodeId = 1;
@@ -293,7 +279,7 @@ Describe -Tags "Appclusive.ExternalNode" "Appclusive.ExternalNode" {
             $createdNodeBags = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
 
             $createdNodeBags.Count | Should Be 0;
-        }
+        }#>
     }
 }
 
