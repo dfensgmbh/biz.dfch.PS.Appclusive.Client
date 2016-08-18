@@ -84,6 +84,44 @@ function Update-ExternalNode{
 	return $updatedExternalNode;
 }
 
+function Update-ExternalNodeBag{
+	Param
+	(
+		$Svc
+		,
+		$ExternalNodeBagId
+		,
+		$UpdatedName
+		,
+		$UpdatedDescription
+		,
+		$UpdatedValue
+	)
+	
+	#get the external node bag
+	$filter = "Id eq {0}" -f $externalNodeBagId;
+	$externalNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $filter) | Select;
+	
+	#update the external node bag
+	$externalNodeBag.Name = $UpdatedName;
+	$externalNodeBag.Description = $UpdatedDescription;
+	$externalNodeBag.Value = $UpdatedValue;
+	
+	$svc.Core.UpdateObject($externalNodeBag);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the updated external node
+	$updatedExternalNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $filter) | Select;
+	
+	#ASSERT - update
+	$bin = $updatedExternalNodeBag.Id | Should Be $ExternalNodeBagId;
+	$bin = $updatedExternalNodeBag.Name | Should Be $UpdatedName;
+	$bin = $updatedExternalNodeBag.Description | Should Be $UpdatedDescription;
+	$bin = $updatedExternalNodeBag.Value | Should Be $UpdatedValue;
+	
+	return $updatedExternalNodeBag;
+}
+
 #
 # Copyright 2016 d-fens GmbH
 #
