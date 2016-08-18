@@ -1,5 +1,3 @@
-#includes tests for CLOUDTCL-
-
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -11,32 +9,61 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 }
 
 
-Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
+Describe -Tags "Appclusive.ExternalNode" "Appclusive.ExternalNode" {
 	. "$here\$sut"
 
-	Context "#CLOUDTCL--ExternalNodesTests" {
+	Context "ExternalNode_PinDown" {
 	
-		BeforeEach {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-			$svc = Enter-Appclusive;
+		BeforeAll {
+            Import-Module biz.dfch.PS.Appclusive.Client
+			$svc = Enter-ApcServer;
 		}
 		
-		AfterEach {
-            $svc = Enter-Appclusive;
-            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+        function CreateExternalNode([long]$nodeId, [string]$name)
+        {
+            $externalNode = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNode;
+            $externalNode.NodeId = $nodeId;
+            $externalNode.ExternalId = ("Arbitrary-Id-{0}" -f $nodeId);
+            $externalNode.ExternalType = "Arbitrary-Type";
+            $externalNode.Name = $name;
 
-            foreach ($entitySet in $usedEntitySets)
+            return $externalNode;        
+        }  
+
+        function CreateExternalNodeBag([long]$externalNodeId, [string]$key, [string]$value)
+        {
+            $externalNodeBag = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag;
+            $externalNodeBag.ExternaldNodeId = $externalNodeId;
+            $externalNodeBag.Name = $key;
+            $externalNodeBag.Value = $value;
+
+            return $externalNodeBag;
+        }
+
+		AfterAll {
+            Write-Host "    [_] " -ForegroundColor Green -NoNewline;
+
+            Write-Host "Deleting created External Nodes" -NoNewLine;
+            $nodeNames = @("Create-Read-ExternalNode", "Create-Read-ExternalNodeBags",
+                            "Update-ExternalNode", "Update-ExternalNode-Updated", "Update-ExternalNodeBags",
+                            "Delete-ExternalNode", "Delete-ExternalNode-Also-Deletes-NodeBags",
+                            "Properties-Returns-ExternalNodeBags");
+
+            foreach ($nodeName in $nodeNames)
             {
-                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
-         
-                foreach ($entity in $entities)
+                $nodeFilter = ("Name eq '{0}'" -f $nodeName);
+                $createdNodes = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter) | Select;
+
+                foreach ($node in $createdNodes)
                 {
-                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                    $svc.Core.DeleteObject($node);
                 }
             }
-        }
+
+            $svc.Core.SaveChanges();
+            
+            Write-Host " Done" -ForegroundColor Green;
+		}
 		
 		It "Warmup" -Test {
 			1 | Should Be 1;
@@ -260,3 +287,19 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
         }
     }
 }
+
+#
+# Copyright 2016 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
