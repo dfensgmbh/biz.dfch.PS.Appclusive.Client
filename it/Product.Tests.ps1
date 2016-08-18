@@ -1,3 +1,5 @@
+#includes tests for CLOUDTCL-1878
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -11,10 +13,11 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Product.Tests" "Product.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-
 	. "$here\$sut"
-	. "$here\Catalogue.ps1"
+	. "$here\CatalogueAndCatalogueItems.ps1"
 	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Catalogues", "CatalogueItems", "Products");
 	
 	Context "#CLOUDTCL-1878-ProductTests" {
 		
@@ -22,153 +25,92 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "LoadProductsCreatedBySeed" -Test {
-			# Arrange
-			
-			# Act
-			$products = $svc.Core.Products;
-			
-			# Assert
-			$products | Should Not Be $null;
-			$products.Name -contains "VDI Personal" | Should Be $true;
-			$products.Name -contains "VDI Technical" | Should Be $true;
-			$products.Name -contains "DSWR Autocad 12 Production" | Should Be $true;
-		}
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 		
-		It "CreateAndDeleteProduct" -Test {
-			try 
-			{
-				# Arrange
-				$productName = 'Product PesterTest';
-				$productDescription = 'Product created in pester tests';
-				
-				# Act
-				$product = CreateProduct -productName $productName -productDescription $productDescription;
-				$svc.Core.AddToProducts($product);
-				$result = $svc.Core.SaveChanges();
-				
-				# Assert
-				$result.StatusCode | Should Be 201;
-				$product.Id | Should Not Be 0;
-			} 
-			finally 
-			{
-				#Cleanup
-				$svc.Core.DeleteObject($product);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
+		It "Product-CreateAndDelete" -Test {
+			#ARRANGE
+			$productName = $entityPrefix + "Product";
+			
+			#ACT create product
+			$newProduct = Create-Product -Svc $svc -Name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT delete product
+			Delete-Product -Svc $svc -ProductId $productId;
 		}
 		
 		It "LoadCatalogueItemsOfProduct" -Test {
-			try 
-			{
-				# Arrange
-				$productName = 'Product PesterTest';
-				$productDescription = 'Product created in pester tests';
-				$catName = 'NewCatalogueInTest'
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
 			
-				# Create catalogue
-				$cat = CreateCatalogue -catName $catName
-				$svc.Core.AddToCatalogues($cat);
-				$result = $svc.Core.SaveChanges();
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -Svc $svc -Name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -Svc $svc -Name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -Svc $svc -Name $catalogueItemName -CatalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
 				
-				# Create product
-				$product = CreateProduct -productName $productName -productDescription $productDescription;
-				$svc.Core.AddToProducts($product);
-				$result = $svc.Core.SaveChanges();
-				
-				# Add catalogue item
-				$catItem = CreateCatalogueItem -cat $cat -product $product;
-				$svc.Core.AddToCatalogueItems($catItem);
-				$result = $svc.Core.SaveChanges();
-				
-				# Act
-				$catalogueItemOfProduct = $svc.Core.LoadProperty($product, 'CatalogueItems') | Select;
-				
-				# Assert
-				$result.StatusCode | Should Be 201;
-				$catalogueItemOfProduct | Should Not Be $null;
-				$catalogueItemOfProduct.Id | Should Be $catItem.Id;
-			} 
-			finally 
-			{
-				# Cleanup
-				$svc.Core.DeleteObject($catItem);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($product);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				
-				$svc.Core.DeleteObject($cat);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
+			#ACT load catalogueitems of product
+			$catalogueItemOfProduct = $svc.Core.LoadProperty($newProduct, 'CatalogueItems') | Select;
+			
+			#ASSERT 
+			$catalogueItemOfProduct | Should Not Be $null;
+			$catalogueItemOfProduct.Id | Should Be $catalogueItemId;
+			
+			#CLEANUP delete catalogue item
+			Delete-CatalogueItem -Svc $svc -CatalogueItemId $catalogueItemId;
+			
+			#CLEANUP delete product
+			Delete-Product -Svc $svc -ProductId $productId;
+			
+			#CLEANUP delete catalogue
+			Delete-Catalogue -Svc $svc -CatalogueId $catalogueId;
 		}
 		
 		It "UpdateProduct" -Test {
-			try 
-			{
-				# Arrange
-				$productName = 'Product PesterTest';
-				$productDescription = 'Product created in pester tests';
-				
-				$productNameUpdate = 'Name updated'
-				$productDescriptionUpdate = 'Description updated';
-				$productVersionUpdate = 2;
-				$productTypeUpdate = "Type updated";
-				$productValidFromUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productValidUntilUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productEndOfSaleUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productEndOfLifeUpdate = [DateTimeOffset]::Now.AddDays(365);
-				$productParameterUpdate = 'New Parameter';
-				
-				$product = CreateProduct -productName $productName -productDescription $productDescription;
-				$svc.Core.AddToProducts($product);
-				$result = $svc.Core.SaveChanges();
-
-				# Act
-				$product.Name = $productNameUpdate;
-				$product.Description = $productDescriptionUpdate
-				$product.Type = $productTypeUpdate;
-				$product.Version = $productVersionUpdate;
-				$product.ValidFrom = $productValidFromUpdate;
-				$product.ValidUntil = $productValidUntilUpdate;
-				$product.EndOfSale = $productEndOfSaleUpdate;
-				$product.EndOfLife = $productEndOfLifeUpdate;
-				$product.Parameters = $productParameterUpdate;
-
-				$svc.Core.UpdateObject($product);
-				$result = $svc.Core.SaveChanges();
-				
-				$productReload = $svc.Core.Products.AddQueryOption('$filter', "Id eq {0}" -f $product.Id) | Select;
-				
-				# Assert
-				$result.StatusCode | Should Be 204;
-				$product.Id | Should Not Be 0;
-				
-				$productReload.Name | Should Be $productNameUpdate;
-				$productReload.Description | Should Be $productDescriptionUpdate
-				$productReload.Type | Should Be $productTypeUpdate;
-				$productReload.Version | Should Be $productVersionUpdate;
-				$productReload.ValidFrom | Should Be $productValidFromUpdate;
-				$productReload.ValidUntil | Should Be $productValidUntilUpdate;
-				$productReload.EndOfSale | Should Be $productEndOfSaleUpdate;
-				$productReload.EndOfLife | Should Be $productEndOfLifeUpdate;
-				$productReload.Parameters | Should Be $productParameterUpdate;
-			} 
-			finally 
-			{
-				#Cleanup
-				$svc.Core.DeleteObject($product);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-			}
+			#ARRANGE
+			$productName = $entityPrefix + "Product";
+			
+			#ACT create product
+			$newProduct = Create-Product -Svc $svc -Name $productName;
+			$productId = $newProduct.Id;
+			
+			$productNameUpdate = 'Name updated'
+			$productDescriptionUpdate = 'Description updated';
+			$productTypeUpdate = "Type updated";
+			$productValidFromUpdate = [DateTimeOffset]::Now.AddDays(365);
+			$productValidUntilUpdate = [DateTimeOffset]::Now.AddDays(600);
+			$productEndOfLifeUpdate = [DateTimeOffset]::Now.AddDays(600);
+			$productParameterUpdate = 'New Parameter';
+			
+			#ACT update product
+			$updatedProduct = Update-Product -Svc $svc -ProductId $productId -UpdatedName $productNameUpdate -UpdatedDescription $productDescriptionUpdate -UpdatedType $productTypeUpdate -UpdatedValidFrom $productValidFromUpdate -UpdatedValidUntil $productValidUntilUpdate -UpdatedEndOfLife $productEndOfLifeUpdate -UpdatedParameters $productParameterUpdate;
+			
+			#CLEANUP delete product
+			Delete-Product -Svc $svc -ProductId $productId;
 		}
 	}
 	
