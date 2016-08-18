@@ -153,7 +153,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             
 			#ACT Update external Node
 			$newExtName = $extName + " Updated";
-			$newExtDescription = $extName + " Updated";
+			$newExtDescription = "Description Updated";
 			$newExtType = "Arbitrary-Type-Updated";
 			$newExtId = ("Arbitrary-Id-{0}-Updated" -f $nodeId);
 			
@@ -162,69 +162,52 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			#CLEANUP delete Node - external node is deleted automatically
 			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
         }
-		<#
+		
         It "Update-ExternalNodeBags" -Test {
-            $nodeName = "Update-ExternalNodeBags";
-            $nodeId = 1;
-            $node = CreateExternalNode $nodeId $nodeName;
-
-            $countOfBags = 20;
-
-            $svc.Core.AddToExternalNodes($node);
-            $svc.Core.SaveChanges();
-
-            $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-            $createdNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-
-            for($i = 1; $i -le $countOfBags; $i++)
-            {
-                $nodeBagName = ("{0}-Name-{1}" -f $nodeName,$i);
-                $nodeBagValue = ("{0}-Value-{1}" -f $nodeName,$i);
-
-                $nodebag = CreateExternalNodeBag $createdNode.Id $nodeBagName $nodeBagValue;
-                
-                $svc.Core.AddToExternalNodeBags($nodebag);
-                $svc.Core.SaveChanges();
-            }
-
-            $nodeBagsFilter = "ExternaldNodeId eq {0}" -f $createdNode.Id;
-            $createdNodeBags = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
-
-            $createdNodeBags.Count | Should Be $countOfBags;
-            for($i = 1; $i -le $countOfBags; $i++)
-            {
-                $nodeBagName = ("{0}-Name-{1}" -f $nodeName,$i);
-                $nodeBagValue = ("{0}-Value-{1}" -f $nodeName,$i);
-                
-                $nodeBagsFilter = "Name eq '{0}'" -f $nodeBagName;
-                $createdNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
-
-                $createdNodeBag | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag];
-                $createdNodeBag.Name | Should Be $nodeBagName;
-                $createdNodeBag.Value | Should Be $nodeBagValue;
-                $createdNodeBag.ExternaldNodeId | Should Be $createdNode.Id;
-
-                $createdNodeBag.Name = ("{0}-Updated" -f $nodeBagName);
-                $createdNodeBag.Value = ("{0}-Updated" -f $nodeBagValue);
-                $svc.Core.UpdateObject($createdNodeBag);
-            }
-
-            $svc.Core.SaveChanges();
-            for($i = 1; $i -le $countOfBags; $i++)
-            {
-                $nodeBagName = ("{0}-Name-{1}-Updated" -f $nodeName,$i);
-                $nodeBagValue = ("{0}-Value-{1}-Updated" -f $nodeName,$i);
-                
-                $nodeBagsFilter = "Name eq '{0}'" -f $nodeBagName;
-                $createdNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
-
-                $createdNodeBag | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag];
-                $createdNodeBag.Name | Should Be $nodeBagName;
-                $createdNodeBag.Value | Should Be $nodeBagValue;
-                $createdNodeBag.ExternaldNodeId | Should Be $createdNode.Id;
-            }
+            $nodeName = $entityPrefix + "node";
+			$extName = $entityPrefix + "externalnode";
+			$extType = "ArbitraryType";
+			$extBagName = $entityPrefix + "ExternalNodeBag";
+            $extBagValue = ("{0}-Value" -f $nodeName);
+			
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
+			
+			#create external node
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType $extType -svc $svc | select;
+			
+			#get id of external node
+			$extNodeId = $extNode.Id;
+			
+			#ASSERT external Node
+			$extNode | Should Not Be $null;
+            $extNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
+            $extNode.NodeId | Should Be $nodeId;
+            $extNode.ExternalId | Should Be $nodeId;
+            $extNode.ExternalType | Should Be $extType;
+            $extNode.Name | Should Be $extName;
+			
+			#ACT create external node bag
+            $extNodeBag = Create-ExternalNodeBag -Name $extBagName -ExternalNodeId $extNodeId -Value $extBagValue -Svc $svc;
+			
+			#get id of external node bag
+			$extNodeBagId = $extNodeBag.Id;
+			
+			#ACT Update external Node
+			$newName = $extBagName + " Updated";
+			$newDescription = "Description Updated";
+			$newValue = $extBagValue + " Updated";
+			
+			$updatedExternalNode = Update-ExternalNodeBag -Svc $svc -ExternalNodeBagId $extNodeBagId -UpdatedName $newName -UpdatedDescription $newDescription -UpdatedValue $newValue;
+			
+			#CLEANUP delete Node - external node and external node bags are deleted automatically
+			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
         }
-        
+        <#
         It "Delete-ExternalNode" -Test {
                     
             $nodeName = "Delete-ExternalNode";
