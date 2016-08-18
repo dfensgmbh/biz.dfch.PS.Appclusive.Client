@@ -41,7 +41,47 @@ function Create-ExternalNodeBag {
 	$bin = $externalNodeBag.Tid = $tid;
 
 	return $externalNodeBag;
+}
+
+function Update-ExternalNode{
+	Param
+	(
+		$Svc
+		,
+		$externalNodeId
+		,
+		$UpdatedName
+		,
+		$UpdatedDescription
+		,
+		$UpdatedExternalType
+		,
+		$UpdatedExternalId
+	)
 	
+	#get the external node
+	$externalNode = Get-ApcExternalNode -Id $externalNodeId;
+	
+	#update the external node
+	$externalNode.Name = $UpdatedName;
+	$externalNode.Description = $UpdatedDescription;
+	$externalNode.ExternalType = $UpdatedExternalType;
+	$externalNode.ExternalId = $UpdatedExternalId;
+	
+	$svc.Core.UpdateObject($externalNode);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the updated external node
+	$updatedExternalNode = Get-ApcExternalNode -Id $externalNodeId;
+	
+	#ASSERT - update
+	$bin = $updatedExternalNode.Id | Should Be $externalNodeId;
+	$bin = $updatedExternalNode.Name | Should Be $UpdatedName;
+	$bin = $updatedExternalNode.Description | Should Be $UpdatedDescription;
+	$bin = $updatedExternalNode.ExternalType | Should Be $UpdatedExternalType;
+	$bin = $updatedExternalNode.ExternalId | Should Be $UpdatedExternalId;
+	
+	return $updatedExternalNode;
 }
 
 #
