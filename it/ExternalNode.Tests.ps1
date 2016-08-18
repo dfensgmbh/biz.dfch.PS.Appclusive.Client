@@ -49,13 +49,12 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
-			#get Id and entityKindId of the node
+			#get Id of the node
 			$nodeId = $newNode.Id;
-			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#create external node
 			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
-			#Write-Host ($extNode | out-string);
+			
 			#get id of external node
 			$extNodeId = $extNode.Id;
 			
@@ -81,50 +80,53 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			#CLEANUP delete Node - external node is deleted automatically
 			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
         }
-		<#
-        It "Create-Read-ExternalNodeBags" -Test {
-            $nodeName = "Create-Read-ExternalNodeBags";
-            $nodeId = 1;
-            $node = CreateExternalNode $nodeId $nodeName;
+		
+        It "Create-Get-ExternalNodeBags" -Test {
+            $nodeName = $entityPrefix + "node";
+			$extName = $entityPrefix + "externalnode";
+			
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			$nodeEntityKindId = $newNode.EntityKindId;
+			
+			#create external node
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
+			Write-Host ($extNode | out-string);
+			#get id of external node
+			$extNodeId = $extNode.Id;
+			
+			#ASSERT external Node
+			$extNode | Should Not Be $null;
+            $extNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
+            $extNode.NodeId | Should Be $nodeId;
+            $extNode.ExternalId | Should Be $nodeId;
+            $extNode.ExternalType | Should Be "ArbitraryType";
+            $extNode.Name | Should Be $extName;
 
             $countOfBags = 20;
-
-            $svc.Core.AddToExternalNodes($node);
-            $svc.Core.SaveChanges();
-
-            $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-            $createdNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-
+			
             for($i = 1; $i -le $countOfBags; $i++)
             {
                 $nodeBagName = ("{0}-Name-{1}" -f $nodeName,$i);
                 $nodeBagValue = ("{0}-Value-{1}" -f $nodeName,$i);
 
-                $nodebag = CreateExternalNodeBag $createdNode.Id $nodeBagName $nodeBagValue;
-                
-                $svc.Core.AddToExternalNodeBags($nodebag);
-                $svc.Core.SaveChanges();
+                $nodeBag = Create-ExternalNodeBag -Name $nodeBagName -ExternalNodeId $extNodeId -Value $nodeBagValue -Svc $svc;
             }
-
-            $nodeBagsFilter = "ExternaldNodeId eq {0}" -f $createdNode.Id;
+			
+			#get the external node bags with specific id
+            $nodeBagsFilter = "ExternaldNodeId eq {0}" -f $extNodeId;
             $createdNodeBags = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
-
+			
+			#ASSERT  count of external node bags
             $createdNodeBags.Count | Should Be $countOfBags;
-            for($i = 1; $i -le $countOfBags; $i++)
-            {
-                $nodeBagName = ("{0}-Name-{1}" -f $nodeName,$i);
-                $nodeBagValue = ("{0}-Value-{1}" -f $nodeName,$i);
-                
-                $nodeBagsFilter = "Name eq '{0}'" -f $nodeBagName;
-                $createdNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
-
-                $createdNodeBag | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag];
-                $createdNodeBag.Name | Should Be $nodeBagName;
-                $createdNodeBag.Value | Should Be $nodeBagValue;
-                $createdNodeBag.ExternaldNodeId | Should Be $createdNode.Id;
-            }
+			
+			
+            
         }
-                
+        <#
         It "Update-ExternalNode" -Test {                    
             $nodeName = "Update-ExternalNode";
             $nodeId = 1;
