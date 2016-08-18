@@ -14,7 +14,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 	. "$here\$sut"
 	
 	$entityPrefix = "TestItem-";
-	$usedEntitySets = @("Nodes", "ExternalNodes");
+	$usedEntitySets = @("Nodes", "ExternalNodes", "ExternalNodeBags");
 	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 	
@@ -45,6 +45,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
         It "Create-Get-ExternalNode" -Test {            
             $nodeName = $entityPrefix + "node";
 			$extName = $entityPrefix + "externalnode";
+			$extType = "ArbitraryType";
 			
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
@@ -53,7 +54,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			$nodeId = $newNode.Id;
 			
 			#create external node
-			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType $extType -svc $svc | select;
 			
 			#get id of external node
 			$extNodeId = $extNode.Id;
@@ -63,7 +64,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             $extNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
             $extNode.NodeId | Should Be $nodeId;
             $extNode.ExternalId | Should Be $nodeId;
-            $extNode.ExternalType | Should Be "ArbitraryType";
+            $extNode.ExternalType | Should Be $extType;
             $extNode.Name | Should Be $extName;
 			
 			#ACT Get the external-node using Get-ApcExternalNode
@@ -74,7 +75,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             $loadedextNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
             $loadedextNode.NodeId | Should Be $nodeId;
             $loadedextNode.ExternalId | Should Be $nodeId;
-            $loadedextNode.ExternalType | Should Be "ArbitraryType";
+            $loadedextNode.ExternalType | Should Be $extType;
             $loadedextNode.Name | Should Be $extName;
 			
 			#CLEANUP delete Node - external node is deleted automatically
@@ -84,6 +85,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
         It "Create-Get-ExternalNodeBags" -Test {
             $nodeName = $entityPrefix + "node";
 			$extName = $entityPrefix + "externalnode";
+			$extType = "ArbitraryType";
 			
 			#ACT create node
 			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
@@ -93,8 +95,8 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			$nodeEntityKindId = $newNode.EntityKindId;
 			
 			#create external node
-			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
-			Write-Host ($extNode | out-string);
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType $extType -svc $svc | select;
+			
 			#get id of external node
 			$extNodeId = $extNode.Id;
 			
@@ -103,7 +105,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             $extNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
             $extNode.NodeId | Should Be $nodeId;
             $extNode.ExternalId | Should Be $nodeId;
-            $extNode.ExternalType | Should Be "ArbitraryType";
+            $extNode.ExternalType | Should Be $extType;
             $extNode.Name | Should Be $extName;
 
             $countOfBags = 20;
@@ -121,46 +123,46 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             $createdNodeBags = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $nodeBagsFilter) | Select;
 			
 			#ASSERT  count of external node bags
-            $createdNodeBags.Count | Should Be $countOfBags;
-			
-			
-            
+            $createdNodeBags.Count | Should Be $countOfBags;  
         }
-        <#
+        
         It "Update-ExternalNode" -Test {                    
-            $nodeName = "Update-ExternalNode";
-            $nodeId = 1;
-            $node = CreateExternalNode $nodeId $nodeName;
-
-            $svc.Core.AddToExternalNodes($node);
-            $svc.Core.SaveChanges();
-
-            $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-            $createdNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
-            $createdNode.NodeId | Should Be 1;
-            $createdNode.ExternalId | Should Be ("Arbitrary-Id-{0}" -f $nodeId);
-            $createdNode.ExternalType | Should Be "Arbitrary-Type";
-            $createdNode.Name | Should Be $nodeName;
+            $nodeName = $entityPrefix + "node";
+			$extName = $entityPrefix + "externalnode";
+			$extType = "ArbitraryType";
+			
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			#create external node
+			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType $extType -svc $svc | select;
+			
+			#get id of external node
+			$extNodeId = $extNode.Id;
+			
+			#ASSERT external Node
+			$extNode | Should Not Be $null;
+            $extNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
+            $extNode.NodeId | Should Be $nodeId;
+            $extNode.ExternalId | Should Be $nodeId;
+            $extNode.ExternalType | Should Be $extType;
+            $extNode.Name | Should Be $extName;
             
-            $createdNode.ExternalId = ("Arbitrary-Id-{0}-Updated" -f $nodeId);
-            $createdNode.ExternalType = "Arbitrary-Type-Updated";
-            $createdNode.Name = ("{0}-Updated" -f $nodeName);
-
-            $svc.Core.UpdateObject($createdNode);
-            $svc.Core.SaveChanges();
-            
-            $nodeFilter = ("Name eq '{0}-Updated'" -f $nodeName);
-            $updatedNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-            
-            $updatedNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
-            $updatedNode.NodeId | Should Be 1;
-            $updatedNode.ExternalId | Should Be ("Arbitrary-Id-{0}-Updated" -f $nodeId);
-            $updatedNode.ExternalType | Should Be "Arbitrary-Type-Updated";
-            $updatedNode.Name | Should Be ("{0}-Updated" -f $nodeName);
+			#ACT Update external Node
+			$newExtName = $extName + " Updated";
+			$newExtDescription = $extName + " Updated";
+			$newExtType = "Arbitrary-Type-Updated";
+			$newExtId = ("Arbitrary-Id-{0}-Updated" -f $nodeId);
+			
+			$updatedExternalNode = Update-ExternalNode -Svc $svc -externalNodeId $extNodeId -UpdatedName $newExtName -UpdatedDescription $newExtDescription -UpdatedExternalType $newExtType -UpdatedExternalId $newExtId;
+			
+			#CLEANUP delete Node - external node is deleted automatically
+			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
         }
-
+		<#
         It "Update-ExternalNodeBags" -Test {
             $nodeName = "Update-ExternalNodeBags";
             $nodeId = 1;
