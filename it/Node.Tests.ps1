@@ -236,7 +236,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$svc = Enter-Appclusive;
 				Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
 			}
-		} 
+		} #>
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
 			# Arrange
@@ -294,7 +294,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
 				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
-		}#>
+		}
 		
 		It "DoStateChangeOnNodeSetsConditionAndConditionParametersOnJob" -Test {
 			# Arrange
@@ -362,13 +362,16 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			{
 				# Act
 				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($configurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-				#Write-Host ($assignablePermissions | Out-String);
+				
 				# Assert
 				$assignablePermissions | Should Not Be $null;
 				# All permissions for EntityKinds except CRUD permissions for
 				# Nodes and its subtypes like Folders, ScheduledJobs, ScheduledJobInstances, Machines and Networks
 				# And except CRUD for ActiveDirectoryUsers, Persons, CimiTargets, Endpoints and permissions for SpecialOperations as there are no EntityKinds defined for
-				$assignablePermissions.Count | Should Be 131;
+				$assignablePermissions.Name -contains "Apc:TenantsCanRead" | Should Be $true;
+				$assignablePermissions.Name -contains "Apc:UsersCanDelete" | Should Be $true;
+				$assignablePermissions.Name -contains "Apc:NetworksCanRead" | Should Not Be $true;
+				$assignablePermissions.Name -contains "Apc:FoldersCanDelete" | Should Not Be $true;
 			}
 			finally
 			{
@@ -406,12 +409,15 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			# Act
 			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($rootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-			
+			#Write-Host ($assignablePermissions.Name | Out-String);
 			# Assert
 			$assignablePermissions | Should Not Be $null;
 			# All product related permissions + permissions for
 			# Nodes and its subtypes like Folders, ScheduledJobs, ScheduledJobInstances, Machines and Networks
-			$assignablePermissions.Count | Should Be ($allPermissions.Count - 131);
+			$assignablePermissions.Name -contains "Apc:NetworksCanRead" | Should Be $true;
+			$assignablePermissions.Name -contains "Apc:FoldersCanDelete" | Should Be $true;
+			$assignablePermissions.Name -contains "Apc:TenantsCanRead" | Should Not Be $true;
+			$assignablePermissions.Name -contains "Apc:UsersCanDelete" | Should Not Be $true;
 		}
     }
 }
