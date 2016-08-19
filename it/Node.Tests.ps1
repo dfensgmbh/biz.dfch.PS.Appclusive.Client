@@ -311,7 +311,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$null = Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
 			Write-Host ($job | Out-String);
 			# Act
-			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName InvokeAction -InputName $condition -InputParameters $conditionParams;
+			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName "InvokeAction" -InputName $condition -InputParameters $conditionParams;
 			
 			try 
 			{
