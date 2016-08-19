@@ -42,7 +42,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             }
         }
 		
-        It "Create-Get-ExternalNode" -Test {            
+        It "Create-Get-Delete-ExternalNode" -Test {            
             $nodeName = $entityPrefix + "node";
 			$extName = $entityPrefix + "externalnode";
 			$extType = "ArbitraryType";
@@ -78,7 +78,17 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             $loadedextNode.ExternalType | Should Be $extType;
             $loadedextNode.Name | Should Be $extName;
 			
-			#CLEANUP delete Node - external node is deleted automatically
+			#ACT delete external node
+			$svc.Core.DeleteObject($loadedextNode);
+			$result = $svc.Core.SaveChanges();
+			
+			#ASSERT external node is deleted
+			$result.StatusCode | Should Be 204;
+			$query = "Id eq {0}" -f $extNodeId;
+			$deletedExtNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $query) | select;
+			$deletedExtNode | Should Be $null;
+			
+			#CLEANUP delete node
 			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
         }
 		
@@ -108,7 +118,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
             $extNode.ExternalType | Should Be $extType;
             $extNode.Name | Should Be $extName;
 
-            $countOfBags = 20;
+            $countOfBags = 10;
 			
             for($i = 1; $i -le $countOfBags; $i++)
             {
@@ -207,34 +217,8 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			#CLEANUP delete Node - external node and external node bags are deleted automatically
 			Remove-ApcNode -svc $svc -Id $nodeId -Confirm:$false;
         }
-        <#
-        It "Delete-ExternalNode" -Test {
-                    
-            $nodeName = "Delete-ExternalNode";
-            $nodeId = 1;
-            $node = CreateExternalNode $nodeId $nodeName;
-
-            $svc.Core.AddToExternalNodes($node);
-            $svc.Core.SaveChanges();
-
-            $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-            $createdNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNode];
-            $createdNode.NodeId | Should Be 1;
-            $createdNode.ExternalId | Should Be ("Arbitrary-Id-{0}" -f $nodeId);
-            $createdNode.ExternalType | Should Be "Arbitrary-Type";
-            $createdNode.Name | Should Be $nodeName;
-
-            $svc.Core.DeleteObject($createdNode);
-            $svc.Core.SaveChanges();
-
-            $nodeFilter = ("Name eq '{0}'" -f $nodeName);
-            $deletedNode = $svc.Core.ExternalNodes.AddQueryOption('$filter', $nodeFilter).AddQueryOption('$top', 1) | Select;
-
-            $deletedNode | Should Be $null;
-        }
-	
+        
+	<#
         It "Delete-ExternalNode-Also-Deletes-NodeBags" -Test {
             $nodeName = "Delete-ExternalNode-Also-Deletes-NodeBags";
             $nodeId = 1;
