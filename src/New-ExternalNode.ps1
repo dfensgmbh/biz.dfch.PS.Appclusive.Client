@@ -15,14 +15,14 @@ You must specify all four parameters 'Name', 'NodeId', 'ExternalId' and 'Externa
 
 
 .EXAMPLE
-New-ApcExternalNode -Name TestItem -NodeId 77609 -ExternalType Cimi -ExternalId id-77609
+New-ApcExternalNode -Name "Arbitrary Name" -NodeId 42 -ExternalType ArbitraryType -ExternalId "http://example.com/api/items/1"
 
-NodeId       : 77609
-ExternalType : Cimi
-ExternalId   : id-77609
+NodeId       : 42
+ExternalType : ArbitraryType
+ExternalId   : http://example.com/api/items/1
 Id           : 61059
 Tid          : 11111111-1111-1111-1111-111111111111
-Name         : TestItem
+Name         : Arbitrary Name
 Description  :
 CreatedById  : 1
 ModifiedById : 1
