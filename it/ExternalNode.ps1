@@ -7,20 +7,21 @@ function Create-ExternalNodeBag {
 		,
 		$Description = "Test External Node Bag"
 		,
-		$Value = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::EntityBag.value__
+		$Value = "Arbitrary Value"
 		,
-		[Parameter(Mandatory=$true)] $ExternalNodeId
+		[Parameter(Mandatory=$true)]
+		$ExternalNodeId
 		,
-		$Tid = (Get-ApcTenant -Current).Id
+		$Tid = (Get-ApcTenant -Current -svc $svc).Id
 	)
 	
 	#add parameters
 	$newExternalNodeBag = New-Object biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag;
-	$newExternalNodeBag.Name = $name;
-	$newExternalNodeBag.Description = $description;
-	$newExternalNodeBag.Value = $value;
-	$newExternalNodeBag.ExternaldNodeId = $externalNodeId;
-	$newExternalNodeBag.Tid = $tid;
+	$newExternalNodeBag.Name = $Name;
+	$newExternalNodeBag.Description = $Description;
+	$newExternalNodeBag.Value = $Value;
+	$newExternalNodeBag.ExternaldNodeId = $ExternalNodeId;
+	$newExternalNodeBag.Tid = $Tid;
 	
 	#ACT create external node bag
 	$svc.Core.AddToExternalNodeBags($newExternalNodeBag);
@@ -28,17 +29,17 @@ function Create-ExternalNodeBag {
 	
 	#get external node bag
 	$query = "Id eq {0}" -f $newExternalNodeBag.Id;
-	$externalNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $query) | select;
+	$externalNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $query) | Select;
 	
 	#ASSERT external node bag
 	$bin = $result.StatusCode | Should Be 201;
 	$bin = $externalNodeBag | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.ExternalNodeBag];
 	$bin = $externalNodeBag | Should Not Be $null;
-	$bin = $externalNodeBag.Name = $name;
-	$bin = $externalNodeBag.Description = $description;
-	$bin = $externalNodeBag.Value = $value;
-	$bin = $externalNodeBag.ExternaldNodeid = $externalNodeId;
-	$bin = $externalNodeBag.Tid = $tid;
+	$bin = $externalNodeBag.Name = $Name;
+	$bin = $externalNodeBag.Description = $Description;
+	$bin = $externalNodeBag.Value = $Value;
+	$bin = $externalNodeBag.ExternaldNodeid = $ExternalNodeId;
+	$bin = $externalNodeBag.Tid = $Tid;
 
 	return $externalNodeBag;
 }
@@ -60,7 +61,7 @@ function Update-ExternalNode{
 	)
 	
 	#get the external node
-	$externalNode = Get-ApcExternalNode -Id $externalNodeId;
+	$externalNode = Get-ApcExternalNode -Id $ExternalNodeId;
 	
 	#update the external node
 	$externalNode.Name = $UpdatedName;
@@ -72,10 +73,10 @@ function Update-ExternalNode{
 	$result = $svc.Core.SaveChanges();
 	
 	#get the updated external node
-	$updatedExternalNode = Get-ApcExternalNode -Id $externalNodeId;
+	$updatedExternalNode = Get-ApcExternalNode -Id $ExternalNodeId;
 	
 	#ASSERT - update
-	$bin = $updatedExternalNode.Id | Should Be $externalNodeId;
+	$bin = $updatedExternalNode.Id | Should Be $ExternalNodeId;
 	$bin = $updatedExternalNode.Name | Should Be $UpdatedName;
 	$bin = $updatedExternalNode.Description | Should Be $UpdatedDescription;
 	$bin = $updatedExternalNode.ExternalType | Should Be $UpdatedExternalType;
@@ -99,7 +100,7 @@ function Update-ExternalNodeBag{
 	)
 	
 	#get the external node bag
-	$filter = "Id eq {0}" -f $externalNodeBagId;
+	$filter = "Id eq {0}" -f $ExternalNodeBagId;
 	$externalNodeBag = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', $filter) | Select;
 	
 	#update the external node bag
