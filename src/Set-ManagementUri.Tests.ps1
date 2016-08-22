@@ -4,9 +4,6 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
 Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 
-	write-host $here;
-	write-host $sut;
-
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
@@ -52,8 +49,6 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			
 			# Act
 			$result = Set-ManagementUri -svc $svc -Name $name -Type $type -Value $value -CreateIfNotExist;
-
-			write-host $result;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -86,13 +81,13 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
 			
 			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$newValue = "NewValue" -f [guid]::NewGuid().ToString();
+			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			
 			$result1 = Set-ManagementUri -svc $svc -Name $name -Description $description -Value $value -Type $type -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			$result = Set-ManagementUri -svc $svc -Name $name -Description $newDescription -Type $type -Value $newValue;
+			$result = Set-ManagementUri -svc $svc -Name $name -Description $newDescription -Type $type -Value $value -NewValue $newValue;
 
 			# Assert
 			$result | Should Not Be $null;
