@@ -1,17 +1,58 @@
-function CreateCartItem($catItem) 
+function Create-CartItem
 {
+	Param
+	(
+		$Svc
+		,
+		$Name
+		,
+		$Description = "Description"
+		,
+		[Parameter(Mandatory=$true)]
+		$CatalogueItemId
+		,
+		$CartId
+		,
+		$Quantity = 1
+		,
+		$Tid = (Get-ApcTenant -Current -svc $Svc).Id
+	)
+	
 	$cartItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem;
-	$cartItem.Quantity = 1;
-	$cartItem.Name = $catItem.Name;
-	$cartItem.CatalogueItemId = $catItem.Id;
-	$cartItem.Parameters = '{"tralala":"tralala"}';
-	return $cartItem;
+	$cartItem.Name = $Name;
+	$cartItem.Description = $Description;
+	$cartItem.CatalogueItemId = $CatalogueItemId;
+	$cartItem.CartId = $CartId;
+	$cartItem.Quantity = $Quantity;
+	$cartItem.Tid = $Tid;
+	$cartItem.Parameters = $Parameters;
+	
+	#ACT create cart item
+	$svc.Core.AddToCartItems($cartItem);
+	$result = $svc.Core.SaveChanges();
+	
+	#get cart item
+	$query = "Id eq {0}" -f $cartItem.Id;
+	$loadedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | Select;
+	
+	#ASSERT cart item
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $loadedCartItem | Should Not Be $null;
+	$bin = $loadedCartItem.Name | Should Be $Name;
+	$bin = $loadedCartItem.Description | Should Be $Description;
+	$bin = $loadedCartItem.Id | Should Not Be $null;
+	$bin = $loadedCartItem.CatalogueItemId |Should Be $CatalogueItemId;
+	$bin = $loadedCartItem.Quantity |Should Be $Quantity;
+	$bin = $loadedCartItem.Tid |Should Be $Tid;
+
+	return $loadedCartItem;
 }
 
 function GetCartOfUser($svc)
 {
-	$user = "{0}\{1}" -f $ENV:USERDOMAIN, $ENV:USERNAME;
-	return $svc.Core.Carts |? CreatedBy -eq $user;
+	#$user = "{0}\{1}" -f $ENV:USERDOMAIN, $ENV:USERNAME;
+	$userId = (Get-ApcUser -Current).Id;
+	return $svc.Core.Carts |? CreatedById -eq $userId;
 }
 
 function GetCartItemsOfCart($svc, $cart)
