@@ -75,45 +75,53 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			#CLEANUP remove cart
 			Remove-ApcEntity -svc $svc -Id $cartId -EntitySetName "Carts" -Confirm:$false;
 		}
-		<#
-		It "DeleteCartDeletesReferdCartItem" -Test {
-			# Get catItem
-			$catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			$catItem | Should Not Be $null;
+		
+		It "DeleteCartDeletesReferreddCartItem" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
 			
-			# Create new cartItem
-			$cartItem = CreateCartItem -catItem $catItem;
-
-			# Add cartItem
-			$svc.Core.AddToCartItems($cartItem);
-			$result = $svc.Core.SaveChanges();
-
-			# Check result
-			$result.StatusCode | Should Be 201;
-			$cartItem.Id | Should Not Be 0;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
 			
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
 			
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.Count | Should Be 1;
-			$cartItems[0].Id | Should Be $cartItem.Id;
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
 			
-			#Check CartItems bevor Cleanup
-			$cartItems = GetCartOfUser -svc $svc;
-			$cartItems | Should Not Be $null;
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItemId = $cartItem.Id;
+			$cartId = $cartItem.CartId;
 			
-			# Cleanup
+			#get cart
+			$filter = "Id eq {0}" -f $cartId;
+			$cart = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
+			
+			#ASSERT cart has cart item
+			$loadedCartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
+			$loadedCartItems.Count | Should Be 1;
+			$loadedCartItems.Id -Contains $catalogueItemId;
+			
+			#ACT delete cart
 			$svc.Core.DeleteObject($cart);
 			$result = $svc.Core.SaveChanges();
+			
+			#ASSERT that cart is deleted
 			$result.StatusCode | Should Be 204;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Be $null;
+			$filter = "Id eq {0}" -f $cartId;
+			$deletedCart = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
+			$deletedCart | Should Be $null;
 			
-			$cartItems = GetCartOfUser -svc $svc;
-			$cartItems | Should Be $null;
-			
+			#ASSERT that cart item is deleted
+			$filter = "Id eq {0}" -f $cartItemId;
+			$deletedCartItem = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
 		}
 		<#
 		It "AddingVdiCartItemTwice-Fails" -Test {
