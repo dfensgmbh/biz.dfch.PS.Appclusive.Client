@@ -7,7 +7,7 @@ Creates a ExternalNode entry in Appclusive.
 .DESCRIPTION
 Creates a ExternalNode entry in Appclusive.
 
-You must specify all three parameters 'Name', 'Username' and 'Password'. If the entry already exists no update of the existing entry is performed.
+You must specify all three parameters 'Name', 'NodeId', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
@@ -15,55 +15,25 @@ You must specify all three parameters 'Name', 'Username' and 'Password'. If the 
 
 
 .EXAMPLE
-New-ExternalNode Srv01 -ExternalType com.swisscom.cms.rhel7
+New-ApcExternalNode -Name TestItem -NodeId 77609 -ExternalType Cimi -ExternalId id-77609
 
-Parameters     : {}
-EntityKindId   : 29
-NodeId       : 1
-Id             : 1442
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : Srv01
-Description    : 
-CreatedById    : 60
-ModifiedById   : 60
-Created        : 05.01.2016 15:35:06 +01:00
-Modified       : 05.01.2016 15:35:06 +01:00
-RowVersion     : {0, 0, 0, 0...}
-Parent         :
-EntityKind     :
-Children       : {}
-IncomingAssocs : {}
-OutgoingAssocs : {}
-Tenant         :
-CreatedBy      :
-ModifiedBy     :
-
-Create a new ExternalNode entry if it not already exists.
-
-
-.EXAMPLE
-New-ExternalNode -Name myName -ExternalType com.swisscom.cms.rhel7 -Description myDescription
-
-Parameters     : {}
-EntityKindId   : 29
-NodeId       : 1
-Id             : 1442
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : myName
-Description    : myDescription
-CreatedById    : 60
-ModifiedById   : 60
-Created        : 05.01.2016 15:35:06 +01:00
-Modified       : 05.01.2016 15:35:06 +01:00
-RowVersion     : {0, 0, 0, 0...}
-Parent         :
-EntityKind     :
-Children       : {}
-IncomingAssocs : {}
-OutgoingAssocs : {}
-Tenant         :
-CreatedBy      :
-ModifiedBy     :
+NodeId       : 77609
+ExternalType : Cimi
+ExternalId   : id-77609
+Id           : 61059
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : TestItem
+Description  :
+CreatedById  : 1
+ModifiedById : 1
+Created      : 22.08.2016 09:27:39 +02:00
+Modified     : 22.08.2016 09:27:39 +02:00
+RowVersion   : {0, 0, 0, 0...}
+Node         :
+Properties   : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
 
 Create a new ExternalNode entry if it not already exists.
 
