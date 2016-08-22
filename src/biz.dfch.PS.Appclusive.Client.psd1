@@ -177,6 +177,10 @@ NestedModules = @(
 	'Remove-Interface.ps1'
 	,
 	'Test-Connect.ps1'
+	,
+	'Set-ManagementUri.ps1'
+	,
+	'New-ManagementUri.ps1'
 )
 
 # Functions to export from this module
