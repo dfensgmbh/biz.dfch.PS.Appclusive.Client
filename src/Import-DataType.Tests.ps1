@@ -89,6 +89,10 @@ Describe "Import-DataType" -Tags "Import-DataType" {
             }
         }
         
+		It "Warmup" -Test {
+			$true | Should Be $true;
+		}
+
 	    It "ImportDataTypes-ShouldImportSimpleProductOne" -Test {
             Import-DataType -FQCN "biz.dfch.Appclusive.Products.Tests.Mock.SimpleProductOne" -svc $svc -RecreateIfExist;
             
