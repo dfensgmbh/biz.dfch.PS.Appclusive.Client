@@ -1,76 +1,68 @@
-function New-Node {
+function Set-ManagementUri {
 <#
 .SYNOPSIS
-Creates a Node entry in Appclusive.
+Sets or creates a ManagementUri entry in Appclusive.
 
 
 .DESCRIPTION
-Creates a Node entry in Appclusive.
+Sets or creates a ManagementUri entry in Appclusive.
 
-You must specify the parameters 'Name' and 'ParentId'. If the entry already exists no update of the existing entry is performed.
+By updating a ManagementUri entry you can specify if you want to update the description, Value or any combination thereof, for a new Name or Type you need to use the Argument '-NewName' or '-NewType'
 
 
 .OUTPUTS
-[biz.dfch.CS.Appclusive.Api.Core.Node]
+default
 
 
 .EXAMPLE
-New-Node Srv01 -EntityKindName com.swisscom.cms.rhel7
+Set-ManagementUri -Name "MyName" -Type "MyType" -svc $svc -CreateIfNotExist
 
-Parameters     : {}
-EntityKindId   : 29
-ParentId       : 1
-Id             : 1442
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : Srv01
-Description    : 
-CreatedById    : 60
-ModifiedById   : 60
-Created        : 05.01.2016 15:35:06 +01:00
-Modified       : 05.01.2016 15:35:06 +01:00
-RowVersion     : {0, 0, 0, 0...}
-Parent         :
-EntityKind     :
-Children       : {}
-IncomingAssocs : {}
-OutgoingAssocs : {}
-Tenant         :
-CreatedBy      :
-ModifiedBy     :
+Type                   : MyType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyName
+Description            :
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-Create a new Node entry if it not already exists.
+Create a new ManagementUri entry if it does not exists.
 
 
 .EXAMPLE
-New-Node -Name myName -ParentId 1 -EntityKindName com.swisscom.cms.rhel7 -Description myDescription
+Set-ManagementUri -Name "MyName" -Type "MyType" -NewName "MyNewName" -NewType "MyNewType" -Description "MyNewDescription" -svc $svc
 
-Parameters     : {}
-EntityKindId   : 29
-ParentId       : 1
-Id             : 1442
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : myName
-Description    : myDescription
-CreatedById    : 60
-ModifiedById   : 60
-Created        : 05.01.2016 15:35:06 +01:00
-Modified       : 05.01.2016 15:35:06 +01:00
-RowVersion     : {0, 0, 0, 0...}
-Parent         :
-EntityKind     :
-Children       : {}
-IncomingAssocs : {}
-OutgoingAssocs : {}
-Tenant         :
-CreatedBy      :
-ModifiedBy     :
+Type                   : MyNewType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyNewName
+Description            : MyNewDescription
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-Create a new Node entry if it not already exists.
+Update an existing ManagementUri with new name, description and type.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Node/
-Set-Node: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Node/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
 .NOTES
@@ -79,47 +71,64 @@ See module manifest for dependencies and further requirements.
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+    SupportsShouldProcess = $false
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Node/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/'
 )]
 Param 
 (
-	# Specifies the name for this entity
+	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
+	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the Parent id for this entity
+	# Specifies the type to modify
 	[Parameter(Mandatory = $true, Position = 1)]
-	[long] $ParentId
+	[ValidateNotNullOrEmpty()]
+	[string] $Type
 	,
-	# Specifies the EntityKind id for this entity
-	[Parameter(Mandatory = $false)]
-	[long] $EntityKindId
+	# Specifies the value
+	[Parameter(Mandatory = $false, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[string] $Value
 	,
-	# Specifies the EntityKind name for this entity
+	# Specifies the new name
 	[Parameter(Mandatory = $false)]
-	[string] $EntityKindName
+	[ValidateNotNullOrEmpty()]
+	[string] $NewName
 	,
-	# Specifies the parameters for this entity
+	# Specifies the new name
 	[Parameter(Mandatory = $false)]
-	[hashtable] $Parameters
+	[ValidateNotNullOrEmpty()]
+	[string] $NewType
 	,
-	# Specifies the description for this entity
+	# Specifies the description
 	[Parameter(Mandatory = $false)]
+	[Alias("d")]
 	[string] $Description
+	,
+	# Specifies the ManagementCredentialId
+	[Parameter(Mandatory = $false)]
+	[long] $ManagementCredentialId
+	,
+	# Specifies to create a entity if it does not exist
+	[Parameter(Mandatory = $false)]
+	[Alias("c")]
+	[switch] $CreateIfNotExist = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
 	[Alias('Services')]
 	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
 	,
-	# Specifies the return method
+	# Specifies the return format of the Cmdlet
+	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
-	[switch] $Async = $false
+	[alias('ReturnFormat')]
+	[string] $As = 'default'
 )
 
 Begin 
@@ -132,46 +141,140 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-	
-	$EntitySetName = 'Nodes';
 }
 # Begin
 
-Process
+Process 
 {
-	trap { Log-Exception $_; break; }
 
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
+# Default test variable for checking function response codes.
+[Boolean] $fReturn = $false;
+# Return values are always and only returned via OutputParameter.
+$OutputParameter = $null;
+$AddedEntity = $null;
 
-	$NodeContents = @($Name);
-	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+try 
+{
+	$exp = @();
 	
-	Contract-Assert (!$entity) 'Entity does already exist'
+	$exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
+	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
 
-	if($PSCmdlet.ShouldProcess($NodeContents))
+	$FilterExpression = [String]::Join(' and ', $exp);
+
+	$entity = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+
+	if(!$CreateIfNotExist -And !$entity) 
 	{
-		$r = Set-Node @PSBoundParameters -CreateIfNotExist:$true;
-		$OutputParameter = $r;
+		$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
+		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		throw($gotoError);
 	}
+	if(!$entity) 
+	{
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.ManagementUri;
+		$svc.Core.AddToManagementUris($entity);
+		$AddedEntity = $entity;
+		$entity.Name = $Name;
+		$entity.Type = $Type;
+		$entity.Created = [System.DateTimeOffset]::Now;
+		$entity.Modified = $entity.Created;
+		$entity.CreatedById = 0;
+		$entity.ModifiedById = 0;
+		$entity.Tid = [guid]::Empty.ToString();
+	}
+	if($PSBoundParameters.ContainsKey('Description'))
+	{
+		$entity.Description = $Description;
+	}
+	if($PSBoundParameters.ContainsKey('ManagementCredentialId'))
+	{
+		$entity.ManagementCredentialId = $ManagementCredentialId;
+	}
+	if($PSBoundParameters.ContainsKey('Value'))
+	{
+		$entity.Value = $Value;
+	}
+	if($NewName) 
+	{ 
+		$entity.Name = $NewName; 
+	}
+	if($NewType)
+	{
+		$entity.Type = $NewType;
+	}
+	
+	$svc.Core.UpdateObject($entity);
+	$r = $svc.Core.SaveChanges();
+
+	$r = $entity;
+	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
+}
+catch 
+{
+	if($gotoSuccess -eq $_.Exception.Message) 
+	{
+		$fReturn = $true;
+	} 
+	else 
+	{
+		[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
+		$ErrorText += (($_ | fl * -Force) | Out-String);
+		$ErrorText += (($_.Exception | fl * -Force) | Out-String);
+		$ErrorText += (Get-PSCallStack | Out-String);
+		
+		if($_.Exception -is [System.Net.WebException]) 
+		{
+			Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
+			Log-Debug $fn $ErrorText -fac 3;
+		}
+		else 
+		{
+			Log-Error $fn $ErrorText -fac 3;
+			if($gotoError -eq $_.Exception.Message) 
+			{
+				Log-Error $fn $e.Exception.Message;
+				$PSCmdlet.ThrowTerminatingError($e);
+			} 
+			elseif($gotoFailure -ne $_.Exception.Message) 
+			{ 
+				Write-Verbose ("$fn`n$ErrorText"); 
+			} 
+			else 
+			{
+				# N/A
+			}
+		}
+		$fReturn = $false;
+		$OutputParameter = $null;
+		
+		if($AddedEntity) { $svc.Core.DeleteObject($AddedEntity); }
+	}
+}
+finally 
+{
+	# Clean up
+	# N/A
+}
+
 }
 # Process
 
 End 
 {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	# Return values are always and only returned via OutputParameter.
-	return $OutputParameter;
+
+$datEnd = [datetime]::Now;
+Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+
+# Return values are always and only returned via OutputParameter.
+return $OutputParameter;
+
 }
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Node; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-ManagementUri; } 
 
 # 
 # Copyright 2014-2015 d-fens GmbH
@@ -192,8 +295,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Node; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKLzMsVlNaDAQhD/ROBV1K1at
-# 7wWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0D72e2zQrxaTY3P8hFo+FL/o
+# zi6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -292,26 +395,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Node; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRDyq5zJfx078eo
-# kpX6/+OCJnk9DjANBgkqhkiG9w0BAQEFAASCAQBD/WcQGuNNKBVRKwM+Pw4jS9+N
-# A1kcyZEHM8CAUIbh8n1bLifTBAUl57gtkUPiioyRHw4WMY3bQyiPjLIxDGUSGjal
-# FkUo/cqwMEbynhXlwUXJ165bXSpcIl9mu0oloV5T5TvH6oSRX0+CQUruLxuRFR6P
-# 62BnbuWOf5Tpfi11utSRVhd/KSnK+FP21cDWFuIVjb8hui9orU7ZIWXfB6BzV8MG
-# CWJFo+psZtVwNQsV5MClF7l1HN7CxbMtFcIsPtJXYCcrYq/DM8qwJpeqvVznAJgr
-# JrsiM4MgYosIYFrGgxm2XtBA8kCBC0VXV4p6ORY0wsscdVfHL31isL2qHE7ooYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSrV+NEzFW4pjfe
+# 61uitVpfcDtsUTANBgkqhkiG9w0BAQEFAASCAQBnG8/Sdw9eI2G3APeaWFh7KUXj
+# 9/K9a2lHrjjSSxan+lJF0X8MKoQtn5RVO5t8xfrWn67zEm/nn5kBnnitMopp4jDh
+# aJO65PZfaPvETlbrAoHg6aqjC9SiSNrbexUcib++/hm6by5phpIAzmEEKa1mL5un
+# EbnbXvnKSO7CHdesKRIqhmX25ObQGm4jSw1vyfy9rZB8OL172C/+OKjs3gQcyYXn
+# 0LuzJgoFIxk6HDVaNDaW2DRw0mTqgjrQHnLHSkB0vDvtHk4EsOMqJFppsWSHXjlp
+# 0WUUZzJvvSElJpd8ZHV5IOruqucrOm3nQ+GbH/0b9s9DbQPZZRGnp8egQC31oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyODEyMDYxM1owIwYJKoZIhvcNAQkEMRYEFNmR/4+wj2i8RiFRJPASkiw086OT
+# MDcyODEyMDYyMFowIwYJKoZIhvcNAQkEMRYEFHh1LeS1bigtBpjNZ0QQdJCpmEJj
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQA5VOEMRvpqcNaDtT2p
-# PDyVwEG+cZZWESO7KfDvEmxLvVUGGEdqwlVpe9upaKu31fmakvz33lmvqD0yNBCD
-# 1jow3PzJpyhmq/OT0Ny6DviQl8v1l7UygDU2CpRPtPzAkGdrhC3aA794+i54YNrY
-# 7nNmcsk5Nlx0yGMgOIiP2at5gro4nzT20fpbxDN0sYSFIQ+hLnEG4l2xZNHCt/Zw
-# szzGaG69x1F14JKDzw4mn5sukCFDufVvkgtu9JzDi05X4xyjFKf5h0GgJLGy0Uxo
-# yz+hZbI+1YaauEe34BwLcDQZTtKMH/JxgsymjySu9mx7pRsbbyegIg5/lKxdQJFJ
-# agA4
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBQdp4iOvHrp2LZvaio
+# 81kEtfgLfd7IoB9ed9il85RP2Tn2xCtfPNE4R+nc6ONSdXw9O0AJkwYYNK+7t0zt
+# 9t+dMSRKpq9aHBwetduA9NAarmMk9W1qP/gR2AXoRA/1MnI2/qUlnZSsnpNnuzO6
+# LuqucTrTiQTYxzndZRzPyVdbTQI9P6R230/Lw4yD2BoTQIgpqOhqLPr5wlG+83Dg
+# vo8Vz8eVaQEnt9ux8xnYuSVivdo68L0NGmI0sMmySFnYYqMxr/ZK4vCIHiFOijuM
+# Kyu45W2LkuKzeqDb7v/ZRJnz6aeE56guVLiXYP0z+lo3TodkXx+KdDVGNPcrgJvQ
+# 5+Rc
 # SIG # End signature block
