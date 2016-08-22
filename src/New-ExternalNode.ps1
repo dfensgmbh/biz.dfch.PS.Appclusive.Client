@@ -63,15 +63,15 @@ Param
 	[string] $Name
 	,
 	# Specifies the Node id for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 1)]
 	[long] $NodeId
 	,
 	# Specifies the External id for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 2)]
 	[string] $ExternalId
 	,
 	# Specifies the EntityKind name for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 3)]
 	[string] $ExternalType
 	,
 	# Specifies the attributes for this entity
@@ -122,7 +122,7 @@ Process
 	$FilterExpression = [String]::Join(' and ', $Exp);
 	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 	
-	Contract-Assert (!$entity) 'Entity does already exist'
+	Contract-Assert (!$entity) 'Entity does already exist';
 
 	if($PSCmdlet.ShouldProcess($ExternalNodeContents))
 	{
