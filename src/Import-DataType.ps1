@@ -98,7 +98,7 @@ Process
     try
     {
         $entityKind = Get-ApcEntityKind -Version $EntityKindVersion -svc $svc;
-        Contract-Assert !!$entityKind ("EntityKindVersion '{0}' must exist" -f $EntityKindVersion);
+        Contract-Assert $entityKind "EntityKindVersion does not exist";
         Log-Debug $fn ("Loaded EntityKind with Version:{0} and Id:{1}" -f $entityKind.Version, $entityKind.Id);
 
         $EntityType = LoadTypeFromLocalAssemblybyFullQualifiedClassName $entityKind.Version;
@@ -184,7 +184,7 @@ End
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-DataType; } 
 
 
-function LoadTypeFromLocalAssemblybyFullQualifiedClassName([string]$FQCN)
+function LoadTypeFromLocalAssemblybyFullQualifiedClassName([string] $FQCN)
 {
     $assemblies = [System.AppDomain]::CurrentDomain.GetAssemblies();
     $foundClasses = @();
@@ -306,7 +306,7 @@ function ApplyUnit([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataTy
 
     if ($attr)
     {
-        $dataType.Unit = $attr.Name;
+        $dataType.Unit = $attr.Unit;
     }
 }
 
