@@ -1,3 +1,5 @@
+#includes tests for CLOUDTCL-1875
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -11,50 +13,12 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Cart.Tests" "Cart.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-
 	. "$here\$sut"
-	. "$here\Catalogue.ps1"
+	. "$here\CatalogueAndCatalogueItems.ps1"
+	. "$here\Product.ps1"
 	
-	Context "#CLOUDTCL-1907-Catalogue.Tests" {
-	
-		# Context wide constants
-		$catName = 'Default DaaS';
-		New-Variable -Name cat -Value 'will-be-used-later';
-		New-Variable -Name catItems -Value 'will-be-used-later';
-		
-		BeforeEach {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
-		}
-		
-		It "Cart-GettingCarts-ReturnsZeroEntities" -Test {
-			# Arrange
-			# N/A
-			
-			# Act
-			$entitySet = $svc.Core.Carts;
-
-			# Assert
-			$entitySet | Should Be $null;
-		}
-
-		It "Cart-GettingCatalogue-Succeeds" -Test {
-			# Arrange
-			
-			# Get catalogue
-			$cat = GetCatalogueByName -svc $svc -catName $catName;
-			$cat | Should Not Be $null;
-			
-			# Get catalogue items
-			$catItems = GetCatalogueItemsOfCatalog -svc $svc -cat $cat;
-			$catItems | Should Not Be $null;
-			$catItems |? Name -eq 'VDI Personal' | Should Not Be $null;
-			$catItems |? Name -eq 'VDI Technical' | Should Not Be $null;
-			$catItems |? Name -eq 'DSWR Autocad 12 Production' | Should Not Be $null;
-		}
-	}
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("CartItems", "CatalogueItems", "Products", "Catalogues", "Carts");
 
 	Context "#CLOUDTCL-1875-CartTests" {
 	
@@ -62,42 +26,56 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
+		
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 	
 		It "Cart-AddingCartItem-CreatesCart" -Test {
-
-			# Get catItem
-			$catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			$catItem | Should Not Be $null;
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
 			
-			# Create new cartItem
-			$cartItem = CreateCartItem -catItem $catItem;
-
-			# Add cartItem
-			$svc.Core.AddToCartItems($cartItem);
-			$result = $svc.Core.SaveChanges();
-
-			# Check result
-			$result.StatusCode | Should Be 201;
-			$cartItem.Id | Should Not Be 0;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
 			
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
 			
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.Count | Should Be 1;
-			$cartItems[0].Id | Should Be $cartItem.Id;
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
 			
-			# Cleanup
-			$svc.Core.DeleteObject($cart);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Be $null;
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItemId = $cartItem.Id;
+			$cartId = $cartItem.CartId;
+			
+			#ASSERT check that the cart Id of the cart Item belongs to a created Cart
+			$carts = $svc.Core.Carts | Select;
+			$carts.Id -Contains $cartId | Should Be $true;
+			
+			#CLEANUP remove cart
+			Remove-ApcEntity -svc $svc -Id $cartId -EntitySetName "Carts" -Confirm:$false;
 		}
-
+		<#
 		It "DeleteCartDeletesReferdCartItem" -Test {
 			# Get catItem
 			$catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
@@ -137,7 +115,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cartItems | Should Be $null;
 			
 		}
-		
+		<#
 		It "AddingVdiCartItemTwice-Fails" -Test {
 			
 			# Get catItem
@@ -334,6 +312,47 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cart | Should Be $null;
 		}
 		
+	}
+	
+	Context "#CLOUDTCL-1907-Catalogue.Tests" {
+	
+		# Context wide constants
+		$catName = 'Default DaaS';
+		New-Variable -Name cat -Value 'will-be-used-later';
+		New-Variable -Name catItems -Value 'will-be-used-later';
+		
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-ApcServer;
+		}
+		
+		It "Cart-GettingCarts-ReturnsZeroEntities" -Test {
+			# Arrange
+			# N/A
+			
+			# Act
+			$entitySet = $svc.Core.Carts;
+
+			# Assert
+			$entitySet | Should Be $null;
+		}
+
+		It "Cart-GettingCatalogue-Succeeds" -Test {
+			# Arrange
+			
+			# Get catalogue
+			$cat = GetCatalogueByName -svc $svc -catName $catName;
+			$cat | Should Not Be $null;
+			
+			# Get catalogue items
+			$catItems = GetCatalogueItemsOfCatalog -svc $svc -cat $cat;
+			$catItems | Should Not Be $null;
+			$catItems |? Name -eq 'VDI Personal' | Should Not Be $null;
+			$catItems |? Name -eq 'VDI Technical' | Should Not Be $null;
+			$catItems |? Name -eq 'DSWR Autocad 12 Production' | Should Not Be $null;
+		}#>
 	}
 }
 
