@@ -42,15 +42,32 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 		
 		# Context wide constants
 		# N/A
-
+		It "Warmup" -Test {
+			$true | Should Be $true;
+		}
+		
 		It "New-ManagementUri-ShouldReturnNewEntity" -Test {
+			# Arrange
+			$name = "{0}-Name{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = New-ManagementUri -svc $svc -Name $name -Type $type;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.Type | Should Be $type;
+		}
+
+		It "New-ManagementUri-ShouldReturnNewEntityWithValue" -Test {
 			# Arrange
 			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$result = New-ManagementUri -svc $svc -Key $type -Name $Name -Value $Value;
+			$result = New-ManagementUri -svc $svc -Type $type -Name $Name -Value $Value;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -84,10 +101,14 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$ManagementCredential = Set-ManagementCredential -Name $Name -CreateIfNotExist;
+			
+			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$Password = "Password-{0}" -f [guid]::NewGuid().ToString();
+
+			$ManagementCredential = Set-ManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password -CreateIfNotExist;
 			
 			# Act
-			$result = New-ManagementUri -svc $svc -Name $Name -type $type -value $value -ManagementCredential $ManagementCredential
+			$result = New-ManagementUri -svc $svc -Name $Name -type $type -value $value -ManagementCredential $ManagementCredential.id
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -103,11 +124,15 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$ManagementCredential = Set-ManagementCredential -Name $Name -CreateIfNotExist;
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
+			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$Password = "Password-{0}" -f [guid]::NewGuid().ToString();
+
+			$ManagementCredential = Set-ManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password -CreateIfNotExist;
+
 			# Act
-			$result = New-ManagementUri -svc $svc -Name $Name -type $type -value $value -ManagementCredentialId $ManagementCredential.Id;
+			$result = New-ManagementUri -svc $svc -Name $Name -type $type -value $value -Description $Description -ManagementCredentialId $ManagementCredential.Id;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -117,6 +142,19 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$result.Value | Should Be $Value;
 			$result.Description | Should Be $Description;
 			$result.ManagementCredentialId | Should Be $ManagementCredential.id;
+		}
+		
+		It "New-ManagementUri-ShouldReturnNull" -Test {
+			# Arrange
+			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
+			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = New-ManagementUri -svc $svc -Type $type -Name $Name -Value $Value;
+			$resultAlreadyExists = New-ManagementUri -svc $svc -Type $type -Name $Name -Value $Value;
+			
+			$resultAlreadyExists | Should Be $null;
 		}
 	}
 }
