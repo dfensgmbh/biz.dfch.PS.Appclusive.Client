@@ -7,7 +7,7 @@ Creates a ExternalNode entry in Appclusive.
 .DESCRIPTION
 Creates a ExternalNode entry in Appclusive.
 
-You must specify all three parameters 'Name', 'NodeId', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
+You must specify all four parameters 'Name', 'NodeId', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
