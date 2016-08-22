@@ -25,9 +25,6 @@ Describe "Import-DataType" -Tags "Import-DataType" {
 
 	Mock Export-ModuleMember { return $null; }
 	
-    Add-Type -Path "C:\GitRepos\biz.dfch.CS.Appclusive\src\biz.dfch.CS.Appclusive.Public\bin\Debug\biz.dfch.CS.Appclusive.Public.dll";
-    Add-Type -Path "C:\GitRepos\biz.dfch.CS.Appclusive.Api\src\biz.dfch.CS.Appclusive.Api\bin\Debug\biz.dfch.CS.Appclusive.Api.dll";
-
 	. "$here\$sut"
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
