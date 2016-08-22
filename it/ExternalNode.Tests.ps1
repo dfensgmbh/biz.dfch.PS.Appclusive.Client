@@ -23,8 +23,11 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+			
 			$svc = Enter-Appclusive;
-			$nodeParentId = (Get-ApcTenant -Current -svc $svc).NodeId;
+			
+			$currentTenant = Get-ApcTenant -Current -Svc $Svc;
+			$nodeParentId = $currentTenant.NodeId;
 		}
 		
 		AfterEach {

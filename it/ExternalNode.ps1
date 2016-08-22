@@ -12,7 +12,7 @@ function Create-ExternalNodeBag {
 		[Parameter(Mandatory=$true)]
 		$ExternalNodeId
 		,
-		$Tid = (Get-ApcTenant -Current -svc $svc).Id
+		$Tid = (Get-ApcTenant -Current -svc $Svc).Id
 	)
 	
 	#add parameters
