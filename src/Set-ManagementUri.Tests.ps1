@@ -87,12 +87,31 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$result1 | Should Not Be $null;
 			
 			# Act
-			$result = Set-ManagementUri -svc $svc -Name $name -Description $newDescription -Type $type -Value $value -NewValue $newValue;
+			$result = Set-ManagementUri -svc $svc -Name $name -Description $newDescription -Type $type -Value $newValue;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Description | Should Be $newDescription;
 			$result.Value | Should Be $newValue;
+		}
+		
+		It "Set-ManagementUriWithNewNameAndType-ShouldReturnUpdatedEntity" -Test {
+			# Arrange
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
+			
+			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$newType = "NewType-{0}" -f [guid]::NewGuid().ToString();
+			
+			Set-ManagementUri -Name $name -Type $type -svc $svc -CreateIfNotExist;
+			
+			# Act
+			$result = Set-ManagementUri -Name $name -Type $type -NewName $newName -newType $newType -svc $svc;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $newName;
+			$result.Type | Should Be $newType;
 		}
 	}
 }

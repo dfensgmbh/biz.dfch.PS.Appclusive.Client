@@ -34,11 +34,11 @@ Tenant                 :
 CreatedBy              :
 ModifiedBy             :
 
-Create a new ManagementCredential entry if it does not exists.
+Create a new ManagementUri entry if it does not exists.
 
 
 .EXAMPLE
-Set-ManagementCredential -Name "MyName" -Type "MyType" -NewName "MyNewName" -NewType "MyNewType" -Description "MyNewDescription" -svc $svc
+Set-ManagementUri -Name "MyName" -Type "MyType" -NewName "MyNewName" -NewType "MyNewType" -Description "MyNewDescription" -svc $svc
 
 Type                   : MyNewType
 Value                  :
@@ -62,7 +62,7 @@ Update an existing ManagementUri with new name, description and type.
 
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
-Set-ManagementCredential: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
+Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
 .NOTES
@@ -75,17 +75,19 @@ See module manifest for dependencies and further requirements.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementCredential/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/'
 )]
 Param 
 (
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
+	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
 	# Specifies the type to modify
-	[Parameter(Mandatory = $true)]
+	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateNotNullOrEmpty()]
 	[string] $Type
 	,
 	# Specifies the value
@@ -94,15 +96,13 @@ Param
 	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false)]
+	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false)]
+	[ValidateNotNullOrEmpty()]
 	[string] $NewType
-	,
-	# Specifies the new name
-	[Parameter(Mandatory = $false)]
-	[string] $NewValue
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
@@ -174,9 +174,8 @@ try
 		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.ManagementUri;
 		$svc.Core.AddToManagementUris($entity);
 		$AddedEntity = $entity;
-		$entity.Type = $Type;
-		$entity.Value = $Value;
 		$entity.Name = $Name;
+		$entity.Type = $Type;
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.Modified = $entity.Created;
 		$entity.CreatedById = 0;
@@ -191,6 +190,10 @@ try
 	{
 		$entity.ManagementCredentialId = $ManagementCredentialId;
 	}
+	if($PSBoundParameters.ContainsKey('Value'))
+	{
+		$entity.Value = $Value;
+	}
 	if($NewName) 
 	{ 
 		$entity.Name = $NewName; 
@@ -198,10 +201,6 @@ try
 	if($NewType)
 	{
 		$entity.Type = $NewType;
-	}
-	if($NewValue)
-	{
-		$entity.Value = $NewValue;
 	}
 	
 	$svc.Core.UpdateObject($entity);
