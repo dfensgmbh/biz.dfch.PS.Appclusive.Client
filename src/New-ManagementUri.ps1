@@ -1,53 +1,67 @@
-function New-KeyNameValue {
+function New-ManagementUri {
 <#
 .SYNOPSIS
-Creates a K/N/V entry in Appclusive.
+Creates a ManagementUri entry in Appclusive.
 
 
 .DESCRIPTION
-Creates a K/N/V entry in Appclusive.
+Creates a ManagementUri entry in Appclusive.
 
-You must specify all three parameters 'Key', 'Name' and 'Value'. If the entry already exists no update of the existing entry is performed.
+You must specify the parameters 'Name' and 'Type'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
 default | json | json-pretty | xml | xml-pretty
 
 .EXAMPLE
-New-KeyNameValue myKey myName myValue
+New-ManagementUri -Name "MyName" -Type "MyType"
 
-Id         : 3131
-Key        : myKey
-Name       : myName
-Value      : myValue
-CreatedBy  : SERVER1\Administrator
-Created    : 11/13/2014 11:08:46 PM +00:00
-ModifiedBy : SERVER1\Administrator
-Modified   : 11/13/2014 11:08:46 PM +00:00
-RowVersion : {0, 0, 0, 0...}
+Type                   : MyType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyName
+Description            :
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-Create a new K/N/V entry if it not already exists.
+Create a new ManagementUri entry if it not already exists.
 
 
 .EXAMPLE
-New-KeyNameValue -Key myKey -Name myName -Value myValue
+New-KeyNameValue -Name "MyName" -Type "MyType" -Value "MyValue" -Description "MyDescription" -ManagementCredentialId 1
 
-Id         : 3131
-Key        : myKey
-Name       : myName
-Value      : myValue
-CreatedBy  : SERVER1\Administrator
-Created    : 11/13/2014 11:08:46 PM +00:00
-ModifiedBy : SERVER1\Administrator
-Modified   : 11/13/2014 11:08:46 PM +00:00
-RowVersion : {0, 0, 0, 0...}
+Type                   : MyType
+Value                  : MyValue
+ManagementCredentialId : 1
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyName
+Description            : MyDescription
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-Create a new K/N/V entry if it not already exists.
+Create a new ManagementUri entry if it not already exists, with description, value,...
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-KeyNameValue/
-Set-KeyNameValue: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-KeyNameValue/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
 .NOTES
@@ -71,7 +85,7 @@ Param
 	[string] $Type
 	,
 	# Specifies the value to modify
-	[Parameter(Mandatory = $true, Position = 1)]
+	[Parameter(Mandatory = $false, Position = 1)]
 	[ValidateNotNullOrEmpty()]
 	[Alias('v')]
 	[string] $Value
@@ -130,21 +144,11 @@ Process
 		$ManagementUriContents = @();
 		
 		$Exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
-		$ManagementUriContents += $Type;
-
-		$Exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
-		$ManagementUriContents += $Value;
-		
 		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-		$ManagementUriContents += $Name;
-		
-		if(!!$ManagementCredentialId)
-		{
-			$Exp += ("(tolower(ManagementCredentialId) eq '{0}')" -f $ManagementCredentialId);
-			$ManagementUriContents += $ManagementCredentialId;		
-		}
-
 		$FilterExpression = [String]::Join(' and ', $Exp);
+		
+		$ManagementUriContents += $Type;
+		$ManagementUriContents += $Name;
 		$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
 
 		$mu = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
@@ -157,21 +161,21 @@ Process
 		}
 		if($PSCmdlet.ShouldProcess($ManagementUriContents))
 		{
-			if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId')
+			if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId'))
 			{
-				$r = Set-ManagementUri -Name $Name -type $type -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc -As $As;
+				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc;
 			}
 			elseif($PSBoundParameters.ContainsKey('Description'))
 			{
-				$r = Set-ManagementUri -Name $Name -type $type -Description $Description -CreateIfNotExist -svc $svc -As $As;
+				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -Description $Description -CreateIfNotExist -svc $svc;
 			}
-			elseif()
+			elseif($PSBoundParameters.ContainsKey('ManagementCredentialId'))
 			{
-				$r = Set-ManagementUri -Name $Name -type $type -ManagementCredentialId $ManagementCredentialId -CreateIfNotExist -svc $svc -As $As;
+				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -CreateIfNotExist -svc $svc;
 			}
 			else
 			{
-				$r = Set-ManagementUri -Name $Name -type $type -CreateIfNotExist -svc $svc -As $As;
+				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -CreateIfNotExist -svc $svc;
 			}
 			$OutputParameter = $r;
 		}
