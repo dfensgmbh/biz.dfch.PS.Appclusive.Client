@@ -177,6 +177,8 @@ NestedModules = @(
 	'Remove-Interface.ps1'
 	,
 	'Test-Connect.ps1'
+	,
+	'Import-DataType.ps1'
 )
 
 # Functions to export from this module
