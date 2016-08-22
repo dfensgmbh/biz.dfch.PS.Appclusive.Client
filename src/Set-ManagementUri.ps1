@@ -1,13 +1,13 @@
 function Set-ManagementUri {
 <#
 .SYNOPSIS
-Sets or creates a ManagementCredential entry in Appclusive.
+Sets or creates a ManagementUri entry in Appclusive.
 
 
 .DESCRIPTION
-Sets or creates a ManagementCredential entry in Appclusive.
+Sets or creates a ManagementUri entry in Appclusive.
 
-By updating a ManagementCredential entry you can specify if you want to update the Name, Username, Password or any combination thereof.
+By updating a ManagementUri entry you can specify if you want to update the description, Value or any combination thereof, for a new Name or Type you need to use the Argument '-NewName' or '-NewType'
 
 
 .OUTPUTS
@@ -15,52 +15,54 @@ default
 
 
 .EXAMPLE
-Set-ManagementCredential myName myUserName myPassword -CreateIfNotExist
+Set-ManagementUri -Name "MyName" -Type "MyType" -svc $svc -CreateIfNotExist
 
-Username          : myUserName
-EncryptedPassword : ***
-Id                : 4
-Tid               : 22222222-2222-2222-2222-222222222222
-Name              : myName
-Description       : 
-CreatedById       : 1
-ModifiedById      : 1
-Created           : 01.12.2015 00:00:00 +01:00
-Modified          : 01.12.2015 00:00:00 +01:00
-RowVersion        : {0, 0, 0, 0...}
-ManagementUris    : {}
-Tenant            :
-CreatedBy         : SYSTEM
-ModifiedBy        : SYSTEM
+Type                   : MyType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyName
+Description            :
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
 Create a new ManagementCredential entry if it does not exists.
 
 
 .EXAMPLE
-Set-ManagementCredential -Name myName -NewName myNewName -Username myNewUserName -Password myNewPassword
+Set-ManagementCredential -Name "MyName" -Type "MyType" -NewName "MyNewName" -NewType "MyNewType" -Description "MyNewDescription" -svc $svc
 
-Username          : myNewUserName
-EncryptedPassword : ***
-Id                : 4
-Tid               : 22222222-2222-2222-2222-222222222222
-Name              : myNewName
-Description       : 
-CreatedById       : 1
-ModifiedById      : 1
-Created           : 01.12.2015 00:00:00 +01:00
-Modified          : 01.12.2015 00:00:00 +01:00
-RowVersion        : {0, 0, 0, 0...}
-ManagementUris    : {}
-Tenant            :
-CreatedBy         : SYSTEM
-ModifiedBy        : SYSTEM
+Type                   : MyNewType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyNewName
+Description            : MyNewDescription
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-Update an existing ManagementCredential with new name, username and password.
+Update an existing ManagementUri with new name, description and type.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementCredential/
-Set-ManagementCredential: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementCredential/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Set-ManagementCredential: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
 .NOTES
@@ -82,17 +84,25 @@ Param
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the value
-	[Parameter(Mandatory = $true)]
-	[string] $Value
-	,
 	# Specifies the type to modify
 	[Parameter(Mandatory = $true)]
 	[string] $Type
 	,
+	# Specifies the value
+	[Parameter(Mandatory = $false)]
+	[string] $Value
+	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false)]
 	[string] $NewName
+	,
+	# Specifies the new name
+	[Parameter(Mandatory = $false)]
+	[string] $NewType
+	,
+	# Specifies the new name
+	[Parameter(Mandatory = $false)]
+	[string] $NewValue
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
@@ -147,7 +157,6 @@ try
 	$exp = @();
 	
 	$exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
-	$exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
 	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
 
 	$FilterExpression = [String]::Join(' and ', $exp);
@@ -185,6 +194,14 @@ try
 	if($NewName) 
 	{ 
 		$entity.Name = $NewName; 
+	}
+	if($NewType)
+	{
+		$entity.Type = $NewType;
+	}
+	if($NewValue)
+	{
+		$entity.Value = $NewValue;
 	}
 	
 	$svc.Core.UpdateObject($entity);
