@@ -91,7 +91,7 @@ Param
 	[string] $Type
 	,
 	# Specifies the value
-	[Parameter(Mandatory = $false), Position = 2]
+	[Parameter(Mandatory = $false, Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Value
 	,
