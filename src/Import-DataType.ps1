@@ -9,6 +9,33 @@ Inspects the .NET Class for all it's properties and will create for every Proper
 .OUTPUTS
 default | json | json-pretty | xml | xml-pretty | PSCredential | Clear
 .EXAMPLE
+Import-DataType -EntityKindVersion biz.dfch.Appclusive.Products.Infrastructure.VirtualMachine.Network.NicCollection.Nic -RecreateIfExist
+
+EntityKindId      : 15194
+ValidateSet       :
+ValidatePattern   :
+ValidateScript    :
+Type              : System.String
+Default           :
+Minimum           :
+Maximum           :
+Increment         :
+IncrementFunction :
+IsRequired        : True
+Unit              :
+Id                : 204
+Tid               : 11111111-1111-1111-1111-111111111111
+Name              : biz.dfch.Appclusive.Products.Infrastructure.VirtualMachine.Network.NicCollection.Nic.Name
+Description       : This string property specifies the name of the virtual Network Interface Card
+CreatedById       : 1
+ModifiedById      : 1
+Created           : 22.08.2016 11:45:01 +02:00
+Modified          : 22.08.2016 11:45:01 +02:00
+RowVersion        : {0, 0, 0, 0...}
+EntityKind        :
+Tenant            :
+CreatedBy         :
+ModifiedBy        :
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Import-DataType/
 .NOTES
@@ -77,6 +104,7 @@ Process
         $EntityType = LoadTypeFromLocalAssemblybyFullQualifiedClassName $entityKind.Version;
         $ClassProperties = $EntityType.GetProperties();
         
+        $r = @();
         
         $dataTypes = $svc.Diagnostics.DataTypes.AddQueryOption('$filter', ("EntityKindId eq {0}" -f $entityKind.Id));
         if ($PSBoundParameters.ContainsKey('RecreateIfExist'))
@@ -106,6 +134,8 @@ Process
             }
 
             $dataType = New-Object biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType;
+            $svc.Diagnostics.AddToDataTypes($dataType);
+
             $dataType.EntityKindId = $entityKind.Id;
             $dataType.Type = $classProperty.PropertyType.FullName;
             
@@ -119,10 +149,12 @@ Process
             ApplyValidatePattern $dataType $classProperty;
             ApplyValidateScript $dataType $classProperty;
             ApplyValidateSet $dataType $classProperty;
+            
+	        $svc.Diagnostics.UpdateObject($dataType);
+            $null = $svc.Diagnostics.SaveChanges();
 
-            $svc.Diagnostics.AddToDataTypes($dataType);
+            $r += $dataType;
         }
-        $svc.Diagnostics.SaveChanges();
 
 	    $OutputParameter = Format-ResultAs $r $As;
 	    $fReturn = $true;
