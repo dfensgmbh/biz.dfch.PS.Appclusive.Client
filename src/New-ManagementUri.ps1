@@ -1,277 +1,197 @@
-#
-# Module manifest for module 'biz.dfch.PS.Appclusive.Client'
-#
+function New-ManagementUri {
+<#
+.SYNOPSIS
+Creates a ManagementUri entry in Appclusive.
 
-@{
 
-# Script module or binary module file associated with this manifest.
-RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
+.DESCRIPTION
+Creates a ManagementUri entry in Appclusive.
 
-# Version number of this module.
-ModuleVersion = '4.5.1.20160815'
+You must specify the parameters 'Name' and 'Type' and 'Value'. If the entry already exists no update of the existing entry is performed.
 
-# ID used to uniquely identify this module
-GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
 
-# Author of this module
-Author = 'Ronald Rink'
+.OUTPUTS
+default | json | json-pretty | xml | xml-pretty
 
-# Company or vendor of this module
-CompanyName = 'd-fens GmbH'
+.EXAMPLE
+New-ManagementUri -Name ArbitraryName -Type ArbitraryType -Value ArbitraryValue
 
-# Copyright statement for this module
-Copyright = '(c) 2014-2016 d-fens GmbH. Distributed under Apache 2.0 license.'
+Type                   : ArbitraryType
+Value                  : ArbitraryValue
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : AritraryName
+Description            :
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-# Description of the functionality provided by this module
-Description = 'PowerShell module for the Appclusive Framework and Middleware'
+Create a new ManagementUri entry if it not already exists.
 
-# Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '3.0'
 
-# Name of the Windows PowerShell host required by this module
-# PowerShellHostName = ''
+.EXAMPLE
+New-ManagementUri -Name ArbitraryName -Type ArbitraryType -Value ArbitraryValue -Description ArbitraryDescription -ManagementCredentialId 1
 
-# Minimum version of the Windows PowerShell host required by this module
-# PowerShellHostVersion = ''
+Type                   : ArbitraryType
+Value                  : ArbitraryValue
+ManagementCredentialId : 1
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : ArbitraryName
+Description            : ArbitraryDescription
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-# Minimum version of the .NET Framework required by this module
-DotNetFrameworkVersion = '4.6'
+Create a new ManagementUri entry if it not already exists, with description, value,...
 
-# Minimum version of the common language runtime (CLR) required by this module
-# CLRVersion = ''
 
-# Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
-# Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-	'biz.dfch.PS.System.Logging'
+
+.NOTES
+See module manifest for dependencies and further requirements.
+
+
+#>
+[CmdletBinding(
+    SupportsShouldProcess = $true
 	,
-	'biz.dfch.PS.System.Utilities'
+    ConfirmImpact = 'Low'
+	,
+	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/ManagementUri/'
+)]
+Param 
+(
+	# Specifies the type to modify
+	[Parameter(Mandatory = $true, Position = 0)]
+	[ValidateNotNullOrEmpty()]
+	[Alias("t")]
+	[string] $Type
+	,
+	# Specifies the Name to modify
+	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateNotNullOrEmpty()]
+	[Alias('n')]
+	[string] $Name
+	,
+	# Specifies the value to modify
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[Alias('v')]
+	[string] $Value
+	,
+	# Specifies the ManagementCredential to modify
+	[Parameter(Mandatory = $false)]
+	[Alias('m')]
+	[long] $ManagementCredentialId
+	,
+	# Specifies the value to modify
+	[Parameter(Mandatory = $false)]
+	[string] $Description
+	,
+	# Service reference to Appclusive
+	[Parameter(Mandatory = $false)]
+	[Alias('Services')]
+	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
+	,
+	# Specifies the return format of the Cmdlet
+	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
+	[Parameter(Mandatory = $false)]
+	[alias('ReturnFormat')]
+	[string] $As = 'default'
 )
 
-# Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @(
-	'biz.dfch.CS.Appclusive.Api.dll'
-	,
-	'System.Net'
-	,
-	'System.Web'
-	,
-	'System.Web.Extensions'
-	,
-	'biz.dfch.CS.Appclusive.Public.dll'
-	,
-	'Newtonsoft.Json.dll'
-)
+Begin 
+{
+	trap { Log-Exception $_; break; }
 
-# Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @(
-	'Import-Module.ps1'
-)
+	$datBegin = [datetime]::Now;
+	[string] $fn = $MyInvocation.MyCommand.Name;
+	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 
-# ModuleToProcess = @()
+	# Parameter validation
+	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+}
+# Begin
 
-# Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
-
-# Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
-
-# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(
-	'Enter-Server.ps1'
-	,
-	'New-KeyNameValue.ps1'
-	,
-	'Get-KeyNameValue.ps1'
-	,
-	'Set-KeyNameValue.ps1'
-	,
-	'Remove-KeyNameValue.ps1'
-	,
-	'New-ManagementCredential.ps1'
-	,
-	'Get-ManagementCredential.ps1'
-	,
-	'Set-ManagementCredential.ps1'
-	,
-	'Remove-ManagementCredential.ps1'
-	,
-	'Remove-Entity.ps1'
-	,
-	'Get-ModuleVariable.ps1'
-	,
-	'Get-Time.ps1'
-	,
-	'Test-Status.ps1'
-	,
-	'Get-Job.ps1'
-	,
-	'Pop-ChangeTracker.ps1'
-	,
-	'Push-ChangeTracker.ps1'
-	,
-	'New-User.ps1'
-	,
-	'Get-User.ps1'
-	,
-	'Set-User.ps1'
-	,
-	'Get-ManagementUri.ps1'
-	,
-	'Get-EntityKind.ps1'
-	,
-	'Format-ResultAs.ps1'
-	,
-	'Get-Node.ps1'
-	,
-	'New-Node.ps1'
-	,
-	'Set-Node.ps1'
-	,
-	'Invoke-NodeAction.ps1'
-	,
-	'Remove-Node.ps1'
-	,
-	'Invoke-EntityAction.ps1'
-	,
-	'Set-Job.ps1'
-	,
-	'Get-ExternalNode.ps1'
-	,
-	'New-ExternalNode.ps1'
-	,
-	'Set-ExternalNode.ps1'
-	,
-	'Get-CimiTarget.ps1'
-	,
-	'Get-Product.ps1'
-	,
-	'Get-CatalogueItem.ps1'
-	,
-	'Get-Tenant.ps1'
-	,
-	'Set-SessionTenant.ps1'
-	,
-	'Get-SessionTenant.ps1'
-	,
-	'Get-Version.ps1'
-	,
-	'Format-Exception.ps1'
-	,
-	'New-Connector.ps1'
-	,
-	'Set-Connector.ps1'
-	,
-	'Get-Connector.ps1'
-	,
-	'Remove-Connector.ps1'
-	,
-	'New-Interface.ps1'
-	,
-	'Set-Interface.ps1'
-	,
-	'Get-Interface.ps1'
-	,
-	'Remove-Interface.ps1'
-	,
-	'Test-Connect.ps1'
-	,
-	'Set-ManagementUri.ps1'
-	,
-	'New-ManagementUri.ps1'
-)
-
-# Functions to export from this module
-FunctionsToExport = '*'
-
-# Cmdlets to export from this module
-CmdletsToExport = '*'
-
-# Variables to export from this module
-VariablesToExport = '*'
-
-# Aliases to export from this module
-AliasesToExport = '*'
-
-# DSC resources to export from this module
-# DscResourcesToExport = @()
-
-# List of all modules packaged with this module.
-# ModuleList = @()
-
-# List of all files packaged with this module
-FileList = @(
-	'LICENSE'
-	,
-	'NOTICE'
-	,
-	'README.md'
-	,
-	'biz.dfch.PS.Appclusive.Client.dll'
-	,
-	'biz.dfch.PS.Appclusive.Client.xml'
-	,
-	'Microsoft.Data.Edm.dll'
-	,
-	'Microsoft.Data.OData.dll'
-	,
-	'Microsoft.Data.Services.Client.dll'
-	,
-	'System.Spatial.dll'
-	,
-	'Import-Module.ps1'
-	,
-    'biz.dfch.CS.Appclusive.Api.dll'
-	,
-	'biz.dfch.CS.Appclusive.Public.dll'
-	,
-    'Newtonsoft.Json.dll'
-	,
-    'System.Net.Http.Formatting.dll'
-	,
-    'System.Web.Http.dll'
-)
-
-# Private data to pass to the module specified in RootModule/ModuleToProcess
-PrivateData = @{
-
-	PSData = @{
-
-        # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @("dfch", "PowerShell", "Appclusive", "Automation", "OData")
-		
-        # A URL to the license for this module.
-        LicenseUri = 'https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/blob/master/LICENSE'
-		
-        # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client'
-		
-        # A URL to an icon representing this module.
-        IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
-		
-        # ReleaseNotes of this module
-        ReleaseNotes = '20160815
-			# Bugfix
-			* Registered Interface and Connector correctly
-			* Fix Pester Tests
-			* Cleanup'
-    } 
+Process
+{
+	trap { Log-Exception $_; break; }
 	
-	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
+	# Default test variable for checking function response codes.
+	[Boolean] $fReturn = $false;
+	# Return values are always and only returned via OutputParameter.
+	$OutputParameter = $null;
+
+	$Exp = @();
+	$ManagementUriContents = @();
+	
+	$Exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
+	$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$FilterExpression = [String]::Join(' and ', $Exp);
+	
+	$ManagementUriContents += $Type;
+	$ManagementUriContents += $Name;
+	$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
+
+	$mgmtUri = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	Contract-Assert (!$mgmtUri) 'Entity does already exist';
+	
+	if($PSCmdlet.ShouldProcess($ManagementUriContents))
+	{
+		if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId'))
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc;
+		}
+		elseif($PSBoundParameters.ContainsKey('Description'))
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -Description $Description -CreateIfNotExist -svc $svc;
+		}
+		elseif($PSBoundParameters.ContainsKey('ManagementCredentialId'))
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -CreateIfNotExist -svc $svc;
+		}
+		else
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -CreateIfNotExist -svc $svc;
+		}
+		$OutputParameter = $r;
+	}
+
+	$fReturn = $true;
 }
+# Process
 
-# HelpInfo URI of this module
-HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/'
-
-# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-DefaultCommandPrefix = 'Apc'
+End 
+{
+	$datEnd = [datetime]::Now;
+	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	# Return values are always and only returned via OutputParameter.
+	return $OutputParameter;
+}
+# End
 
 }
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; } 
 
 # 
-# Copyright 2015-2016 d-fens GmbH
+# Copyright 2014-2015 d-fens GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -289,8 +209,8 @@ DefaultCommandPrefix = 'Apc'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUlW/NAeCnr5sQ6k14+vsmYHpA
-# LaqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrGS+r7CA42q1FvvF14tmAAa/
+# t32gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -389,26 +309,26 @@ DefaultCommandPrefix = 'Apc'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQuNVQP3y1KBKvb
-# rh5hy6dqC10Y8DANBgkqhkiG9w0BAQEFAASCAQAKXwu8kDTyL8H4YjYBcYd+36/v
-# KO9V7RPjZ3x042FhyCzV+AmZFik2SgbwU6qdUQkWxHsLVlewaR+Ktpv9SBOkoSHU
-# j6XxPCvRNU0NLyy3jp9bmslhxMy8uzK3KP6+yxQe/4ELJDfYpkrjJqLi0vCLU7Gs
-# ksYi+bq1mI10sSkCxdobNdsmByRt5GTqz1r203JXpAiaoBS/SZ9o06fik0fTj02z
-# TxlxUJk1zzslat6TTHhpRrLvAT/AKhVtCn4BpJN5bezJnNk2fUlhegJLZbIMJsN6
-# rlmgcYQ7kS9qduNJIaA2no23XNecbfFtCz3oR2UHlIhsTIsAWGf8clNyKobYoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS17DLMz48XrHuV
+# AVM5V3bN4s+0tTANBgkqhkiG9w0BAQEFAASCAQCS2sqdiJFUeW+nvYjD6id7M3Cc
+# L7EOjEVm4yLeVhoBMxrmJTKnNKkjMux27hdf18+qNlG0JyFmjMLXq9mztTOmQGe5
+# NuZJ1w4F38nqZNWuWCztOuZg8+TQcz+v7eTLpTCjKwJ3A6J9dkHyN2iQgwSpr5kM
+# PUWX9ucwUe0Ud9Sb47hESde/nHDIIPejdis3UKtqKGt98TNBkjVCB5TgFRYG4MmY
+# 2pje/sU4PIdPFR5re+u9zgD6/rhEqFD4Ld7WpitV277YpaGSvoGikYcuMVMu/1YA
+# CMqRPiAqDx0x2adi62vT99ZNRacimIsx5YAdJv24h/8ge8gJxugyMzACgXlQoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyODEyMDU1OFowIwYJKoZIhvcNAQkEMRYEFEAwsW6nHgRvrdkEwhza4wCPKZ8p
+# MDcyODEyMDYxMlowIwYJKoZIhvcNAQkEMRYEFCdEgrrp7VGX4+HkpMubo6Ir7DAL
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBMjeHCiDtkhQDEkRDM
-# JD+vhArLjWf2m2gGerlvRK+iIJu1vAx4D3uM429EZL7jt68djt331s0kMmFhuOEj
-# q1Kklt9MMaD7FMnc/mWPYIDFUhP2vRFiBiW1jacl2u2WebN0SbYqIPmiJ7eDoGzb
-# MG50EJfIACfm63Tqa06lg5ZK+BGv61fgGUt0uMkcGPTgLJLqVbcrWWZil6hCfuUd
-# tjS/rFhoJCckL/TJaGmiyDiM7zePbO6N2MvV1tX9JxJ3ngP7YH2UEWDxt8PHd+mv
-# 5ojTFze9jRarpvCaHuM3Nbvx7X96COQivavIKAo6eMT8VLFm18mMFJfzW6kL1p8e
-# LRnk
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBBKF/aOp5S8Mr7ldaE
+# 3/Pr1L3AxyxNhZUd0qfkrvqm8g0GLe+dUvw2U2yYMFok9h9AbZMDJKwhc+G9XDbt
+# Bzgh2vBnVM/2SICzs4jiYyGxaSTwXpUlwyjV2Orgn+/inqn3Ty6K1zUU2KmJpstS
+# ZSXPJV9GxQj5tEqnuSIDWPe4JNj5HaN5eNXiz9SwTNzIbV9DC0phVe+vY42BWy50
+# Tcf7kTlWRJ+0GSI7qWSrPkuVbAho0LSKFMHHi20P483lhFo32sfrHdOLIzQV8tBL
+# T0yHHnLSw2rFMH5IYkvZJRfmumV+zeHwyXQwC3RZanhjFkMZZHM8EZMGtOFAWzlr
+# WbsA
 # SIG # End signature block
