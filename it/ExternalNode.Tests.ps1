@@ -16,7 +16,6 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes", "ExternalNodes", "ExternalNodeBags");
 	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 	
 	Context "#CLOUDTCL-2199-ExternalNodeTests" {
 		
@@ -25,6 +24,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
 			$svc = Enter-Appclusive;
+			$nodeParentId = (Get-ApcTenant -Current -svc $svc).NodeId;
 		}
 		
 		AfterEach {
