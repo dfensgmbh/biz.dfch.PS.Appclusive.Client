@@ -11,7 +11,7 @@ function Create-Product {
 		,
 		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Product.value__
 		,
-		$TenantId = (Get-ApcTenant -Current).Id
+		$TenantId = (Get-ApcTenant -Current -Svc $Svc).Id
 		,
 		$ValidFrom = [DateTimeOffset]::Now
 		,

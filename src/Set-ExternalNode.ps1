@@ -148,7 +148,7 @@ Begin
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 	Contract-Requires ($NodeId -ne $null)
-	Contract-Requires ($NodeId -ne 0)
+	Contract-Requires ($NodeId -gt 0)
 	Contract-Requires (![string]::IsNullOrWhiteSpace($ExternalId))
 	
 	$EntitySetName = 'ExternalNodes';

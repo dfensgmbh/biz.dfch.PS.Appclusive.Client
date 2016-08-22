@@ -11,7 +11,7 @@ function Create-Catalogue {
 		,
 		$Version = 1
 		,
-		$TenantId = (Get-ApcTenant -Current).Id
+		$TenantId = (Get-ApcTenant -Current -svc $Svc).Id
 	)
 	
 	#create catalog object
@@ -40,7 +40,7 @@ function Create-Catalogue {
 	$bin = $catalogue.Id | Should Not Be $null;
 	$bin = $catalogue.Status |Should Be $status;
 	$bin = $catalogue.Version |Should Be $version;
-	$bin = $catalogue.Tid |Should Be $tenantId;
+	$bin = $catalogue.Tid |Should Be $TenantId;
 	
 	return $catalogue;
 }

@@ -18,7 +18,6 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes", "Aces", "Acls");
 	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 	
 	Context "#CLOUDTCL-1871-AclTests" {
 		
@@ -26,7 +25,11 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+			
 			$svc = Enter-Appclusive;
+			
+			$currentTenant = Get-ApcTenant -Current -Svc $svc;
+			$nodeParentId = $currentTenant.NodeId;
 		}
 		
 		AfterEach {
@@ -173,7 +176,11 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+			
 			$svc = Enter-Appclusive;
+			
+			$currentTenant = Get-ApcTenant -Current -Svc $svc;
+			$nodeParentId = $currentTenant.NodeId;
 		}
 		
 		AfterEach {

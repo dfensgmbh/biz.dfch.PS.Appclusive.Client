@@ -17,14 +17,17 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
     $entityPrefix = "TestItem-";
 	$usedEntitySets = @("Assocs","Nodes", "ExternalNodes", "Acls", "Aces", "EntityBags");
 	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 
 	Context "#CLOUDTCL-2190-DeleteNode" {
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+			
 			$svc = Enter-Appclusive;
+			
+			$currentTenant = Get-ApcTenant -Current -Svc $Svc;
+			$nodeParentId = $currentTenant.NodeId;
 		}
 		
 		AfterEach {

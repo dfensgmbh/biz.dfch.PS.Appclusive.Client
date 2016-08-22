@@ -93,7 +93,7 @@ Param
 	[string] $Name
 	,
 	# Specifies the Parent id for this entity
-	[Parameter(Mandatory = $true)]
+	[Parameter(Mandatory = $true, Position = 1)]
 	[long] $ParentId
 	,
 	# Specifies the EntityKind id for this entity
