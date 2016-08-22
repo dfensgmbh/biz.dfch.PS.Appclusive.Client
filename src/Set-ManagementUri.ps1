@@ -91,7 +91,8 @@ Param
 	[string] $Type
 	,
 	# Specifies the value
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false), Position = 2]
+	[ValidateNotNullOrEmpty()]
 	[string] $Value
 	,
 	# Specifies the new name
