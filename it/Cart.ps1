@@ -48,17 +48,32 @@ function Create-CartItem
 	return $loadedCartItem;
 }
 
-function GetCartOfUser($svc)
+function Delete-CartItem
 {
-	#$user = "{0}\{1}" -f $ENV:USERDOMAIN, $ENV:USERNAME;
-	$userId = (Get-ApcUser -Current).Id;
-	return $svc.Core.Carts |? CreatedById -eq $userId;
+	Param
+	(
+		$svc
+		,
+		$cartItemId
+	)
+		
+	#get the cart Item
+	$query = "Id eq {0}" -f $cartItemId;
+	$cartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#delete the cart Item
+	$svc.Core.DeleteObject($cartItem);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted cartItem
+	$query = "Id eq {0}" -f $cartItemId;
+	$deletedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT cart Item is deleted
+	$bin = $deletedCartItem | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
 }
 
-function GetCartItemsOfCart($svc, $cart)
-{
-	return $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-}
 
 #
 # Copyright 2015 d-fens GmbH
