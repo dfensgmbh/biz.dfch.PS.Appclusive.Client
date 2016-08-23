@@ -154,6 +154,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cartItem2 = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem;
 			$cartItem2.Name = $cartItemName;
 			$cartItem2.CatalogueItemId = $catalogueItemId;
+			$cartItem2.Quantity = 1;
 			$svc.Core.AddToCartItems($cartItem2);
 			{ $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 404};
 		}
