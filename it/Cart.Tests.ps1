@@ -123,41 +123,6 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$filter = "Id eq {0}" -f $cartItemId;
 			$deletedCartItem = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
 		}
-		
-		It "AddSameCartItemTwice-ShouldFail" -Test {
-			#ARRANGE
-			$catalogueName = $entityPrefix + "Catalogue";
-			$productName = $entityPrefix + "Product";
-			$catalogueItemName = $entityPrefix + "CatalogueItem";
-			$cartItemName = $entityPrefix + "CartItem";
-			
-			#ACT create catalogue
-			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
-			$catalogueId = $newCatalogue.Id;
-			
-			#ACT create product
-			$newProduct = Create-Product -svc $svc -name $productName;
-			$productId = $newProduct.Id;
-			
-			#ACT create catalogue item
-			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
-			$catalogueItemId = $newCatalogueItem.Id;
-			
-			#ACT create new cart item
-			$cartItem1 = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
-			$cartItemId = $cartItem1.Id;
-			$cartId = $cartItem1.CartId;
-			
-			#ACT create second cart item, same as the previous
-			{$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId} | Should Throw;
-			
-			$cartItem2 = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem;
-			$cartItem2.Name = $cartItemName;
-			$cartItem2.CatalogueItemId = $catalogueItemId;
-			$cartItem2.Quantity = 1;
-			$svc.Core.AddToCartItems($cartItem2);
-			{ $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 404};
-		}
 	}
 	
 	Context "#CLOUDTCL-1876-CartItemTests" {	
