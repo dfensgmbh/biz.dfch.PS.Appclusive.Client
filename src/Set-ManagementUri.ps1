@@ -7,7 +7,7 @@ Sets or creates a ManagementUri entry in Appclusive.
 .DESCRIPTION
 Sets or creates a ManagementUri entry in Appclusive.
 
-By updating a ManagementUri entry you can specify if you want to update the description, Value or any combination thereof, for a new Name or Type you need to use the Argument '-NewName' or '-NewType'
+By updating a ManagementUri entry you can specify if you want to update the name, type or description or any combination thereof. For a new name or type you need to use the Argument '-NewName' or '-NewType'
 
 
 .OUTPUTS
