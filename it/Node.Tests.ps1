@@ -14,7 +14,6 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Nodes");
 	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 
 	Context "#CLOUDTCL-1873-NodeTests" {
 		
@@ -23,6 +22,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
 			$svc = Enter-Appclusive;
+			$nodeParentId = (Get-ApcTenant -Current -svc $svc).NodeId;
 		}
 		
 		AfterEach {
@@ -39,7 +39,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
                 }
             }
         }
-		<#
+		
 		It "CreateNode" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
@@ -196,7 +196,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
 		}
 		
-		<# will be deployed on next release
+		<# it fails now, will be deployed on next release
 		It "SetNodeAsItsOwnParent-ThrowsError" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
@@ -236,7 +236,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$svc = Enter-Appclusive;
 				Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
 			}
-		} #>
+		}#>
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
 			# Arrange
@@ -303,13 +303,13 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$conditionParams = @{Msg = "tralala"};
 			
 			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -Parameters @{} -svc $svc;
-			Write-Host ($node | Out-String);
+			
 			$query = "RefId eq '{0}'" -f $node.Id;
 			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			Write-Host ($job | Out-String);
+			
 			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
-			$null = Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
-			Write-Host ($job | Out-String);
+			Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
+			
 			# Act
 			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName "InvokeAction" -InputName $condition -InputParameters $conditionParams;
 			
@@ -353,10 +353,6 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			$configurationNode = Get-ApcNode -Name $nodeName -ParentId $configurationRootNodeId;
 			$configurationNodeJob = Get-ApcNode -Id $configurationNode.Id -ExpandJob;
-			#Write-Host ($configurationNode | Out-String);
-			#Write-Host ($configurationNodeJob | Out-String);
-			#$configurationNodeJob = Get-ApcJob -Id $configurationNode.Id;
-			#$configurationNode = Get-ApcNode -Id $configurationNodeJob.RefId;
 			
 			try 
 			{
@@ -409,7 +405,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			# Act
 			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($rootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-			#Write-Host ($assignablePermissions.Name | Out-String);
+			
 			# Assert
 			$assignablePermissions | Should Not Be $null;
 			# All product related permissions + permissions for
