@@ -47,7 +47,7 @@ EntityKindId    : 1
 ProtectionLevel : 0
 Id              : 159
 Tid             : 11111111-1111-1111-1111-111111111111
-Description     :
+Description     : updatedDescription
 CreatedById     : 1
 ModifiedById    : 1
 Created         : 23.08.2016 11:08:14 +02:00
