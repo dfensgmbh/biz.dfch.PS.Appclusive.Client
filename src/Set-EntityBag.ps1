@@ -1,13 +1,13 @@
-function Set-ManagementUri {
+function Set-EntityBag {
 <#
 .SYNOPSIS
-Sets or creates a ManagementUri entry in Appclusive.
+Sets or creates a EntityBag entry in Appclusive.
 
 
 .DESCRIPTION
-Sets or creates a ManagementUri entry in Appclusive.
+Sets or creates a EntityBag entry in Appclusive.
 
-By updating a ManagementUri entry you can specify if you want to update the name, type or description or any combination thereof. For a new name or type you need to use the Argument '-NewName' or '-NewType'
+By updating an EntityBag entry you can specify if you want to update the description, protectionLevel or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
 
 
 .OUTPUTS
@@ -15,54 +15,54 @@ default
 
 
 .EXAMPLE
-Set-ManagementUri -Name "MyName" -Type "MyType" -svc $svc -CreateIfNotExist
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc -CreateIfNotExist;
 
-Type                   : MyType
-Value                  :
-ManagementCredentialId :
-Id                     : 180
-Tid                    : 11111111-1111-1111-1111-111111111111
-Name                   : MyName
-Description            :
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 22.08.2016 10:26:53 +02:00
-Modified               : 22.08.2016 10:31:00 +02:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              :
-ModifiedBy             :
+Name            : ArbitraryName
+Value           : ArbitraryValue
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 0
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     :
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
 
-Create a new ManagementUri entry if it does not exists.
+Create a new EntityBag entry if it does not exists.
 
 
 .EXAMPLE
-Set-ManagementUri -Name "MyName" -Type "MyType" -NewName "MyNewName" -NewType "MyNewType" -Description "MyNewDescription" -svc $svc
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
 
-Type                   : MyNewType
-Value                  :
-ManagementCredentialId :
-Id                     : 180
-Tid                    : 11111111-1111-1111-1111-111111111111
-Name                   : MyNewName
-Description            : MyNewDescription
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 22.08.2016 10:26:53 +02:00
-Modified               : 22.08.2016 10:31:00 +02:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              :
-ModifiedBy             :
+Name            : ArbitraryName
+Value           : Arbitrary updated value
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 0
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     : updatedDescription
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
 
-Update an existing ManagementUri with new name, description and type.
+Update an existing EntityBag with new value and description.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
-Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
+Set-EntityBag: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
 
 
 .NOTES
@@ -75,7 +75,7 @@ See module manifest for dependencies and further requirements.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/'
 )]
 Param 
 (
@@ -85,34 +85,28 @@ Param
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the type to modify
+	# Specifies the value to modify
 	[Parameter(Mandatory = $true, Position = 1)]
-	[ValidateNotNullOrEmpty()]
-	[string] $Type
-	,
-	# Specifies the value
-	[Parameter(Mandatory = $false, Position = 2)]
-	[ValidateNotNullOrEmpty()]
 	[string] $Value
 	,
-	# Specifies the new name
-	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[string] $NewName
+	# Specifies the EntityId
+	[Parameter(Mandatory = $true, Position = 2)]
+	[long] $EntityId
 	,
-	# Specifies the new name
-	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[string] $NewType
+	# Specifies the EntityKindId
+	[Parameter(Mandatory = $true, Position = 3)]
+	[long] $EntityKindId
 	,
-	# Specifies the description
+	# Specifies the new value
 	[Parameter(Mandatory = $false)]
-	[Alias("d")]
+	[string] $NewValue
+	,
+	[Parameter(Mandatory = $false)]
 	[string] $Description
 	,
-	# Specifies the ManagementCredentialId
+	# Specifies the ProtectionLevel
 	[Parameter(Mandatory = $false)]
-	[long] $ManagementCredentialId
+	[long] $ProtectionLevel
 	,
 	# Specifies to create a entity if it does not exist
 	[Parameter(Mandatory = $false)]
@@ -157,12 +151,13 @@ try
 {
 	$exp = @();
 	
-	$exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
 	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$exp += ("(EntityId eq {0})" -f $EntityId);
+	$exp += ("(EntityKindId eq {0})" -f $EntityKindId);
 
 	$FilterExpression = [String]::Join(' and ', $exp);
 
-	$entity = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	$entity = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 
 	if(!$CreateIfNotExist -And !$entity) 
 	{
@@ -172,11 +167,13 @@ try
 	}
 	if(!$entity) 
 	{
-		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.ManagementUri;
-		$svc.Core.AddToManagementUris($entity);
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityBag;
+		$svc.Core.AddToEntityBags($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
-		$entity.Type = $Type;
+		$entity.Value = $Value;
+		$entity.EntityId = $EntityId;
+		$entity.EntityKindId = $EntityKindId;
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.Modified = $entity.Created;
 		$entity.CreatedById = 0;
@@ -187,23 +184,15 @@ try
 	{
 		$entity.Description = $Description;
 	}
-	if($PSBoundParameters.ContainsKey('ManagementCredentialId'))
+	if($PSBoundParameters.ContainsKey('ProtectionLevel'))
 	{
-		$entity.ManagementCredentialId = $ManagementCredentialId;
+		$entity.ProtectionLevel = $ProtectionLevel;
 	}
-	if($PSBoundParameters.ContainsKey('Value'))
+	if($PSBoundParameters.ContainsKey('NewValue'))
 	{
-		$entity.Value = $Value;
+		$entity.Value = $NewValue;
 	}
-	if($NewName) 
-	{ 
-		$entity.Name = $NewName; 
-	}
-	if($NewType)
-	{
-		$entity.Type = $NewType;
-	}
-	
+
 	$svc.Core.UpdateObject($entity);
 	$r = $svc.Core.SaveChanges();
 
@@ -277,10 +266,13 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-ManagementUri; } 
+if($MyInvocation.ScriptName) 
+{ 
+	Export-ModuleMember -Function Set-EntityBag; 
+} 
 
 # 
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
