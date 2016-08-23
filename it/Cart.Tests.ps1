@@ -76,7 +76,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			Remove-ApcEntity -svc $svc -Id $cartId -EntitySetName "Carts" -Confirm:$false;
 		}
 		
-		It "DeleteCartDeletesReferreddCartItem" -Test {
+		It "DeleteCartDeletesReferredCartItem" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
@@ -149,16 +149,13 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cartId = $cartItem1.CartId;
 			
 			#ACT create second cart item, same as the previous
-			try
-			{
-				$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
-			}
-			catch
-			{
-				$(Format-ApcException) | Should Not Be $null;
-				$_.Exception.Message | Should Not Be $null;
-				$_.FullyQualifiedErrorId | Should Not Be $null;
-			}
+			{$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId} | Should Throw;
+			
+			$cartItem2 = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem;
+			$cartItem2.Name = $cartItemName;
+			$cartItem2.CatalogueItemId = $catalogueItemId;
+			$svc.Core.AddToCartItems($cartItem2);
+			{ $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 404};
 		}
 	}
 	
