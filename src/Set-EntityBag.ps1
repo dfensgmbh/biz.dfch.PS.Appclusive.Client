@@ -7,7 +7,7 @@ Sets or creates a EntityBag entry in Appclusive.
 .DESCRIPTION
 Sets or creates a EntityBag entry in Appclusive.
 
-By updating an EntityBag entry you can specify if you want to update the description or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
+By updating an EntityBag entry you can specify if you want to update the description, protectionLevel or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
 
 
 .OUTPUTS
