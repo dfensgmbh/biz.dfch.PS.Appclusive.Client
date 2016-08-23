@@ -103,7 +103,8 @@ function Update-CartItem {
 	{	
 		$cartItem.Description = $Description;
 	}
-	if ($Quantity) {
+	if ($Quantity) 
+	{
 		$cartItem.Quantity = $Quantity;
 	}
 	
