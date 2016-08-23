@@ -124,7 +124,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$deletedCartItem = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
 		}
 		
-		It "AddSameCartItemTwice-Fails" -Test {
+		It "AddSameCartItemTwice-ShouldFail" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
@@ -168,51 +168,53 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "AddAndRemoveItemToCart" -Test {
-			# Get catItem
-			$catItem1 = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			$catItem2 = GetCatalogueItemByName -svc $svc -name 'DSWR Autocad 12 Production';
-			$catItem1 | Should Not Be $null;
-			$catItem2 | Should Not Be $null;
-			
-			# Create new VDI cartItem
-			$cartItem1 = CreateCartItem -catItem $catItem1;
-			$cartItem2 = CreateCartItem -catItem $catItem2;
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
-			# Add two cartItem
-			$svc.Core.AddToCartItems($cartItem1);
-			$svc.Core.AddToCartItems($cartItem2);
-			$result = $svc.Core.SaveChanges();
-
-			# Check result
-			$result.StatusCode | Should Be 201;
-						
-			# Get Cart of User and Items
-			$cart = GetCartOfUser -svc $svc;
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.count | Should be 2;
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
+		It "CartItem-CreateAndDelete" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
 			
-			# Remove CartItem VDI
-			$svc.core.DeleteObject($cartItem1)
-			$result2 = $svc.Core.SaveChanges();
-			$result2.StatusCode | Should Be 204;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
 			
-			$cartItem1 = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItem1.count | Should be 1;
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
 			
-			# Cleanup
-			$svc.Core.DeleteObject($cart);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Be $null;
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
+			
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItemId = $cartItem.Id;
+			$cartId = $cartItem.CartId;
+			
+			#ACT Remove CartItem
+			Delete-CartItem -svc $svc -cartItemId $cartItemId;
 		}
-		<#
-		It "Cart-SetCartItemDescription" -Test {
+		
+		It "CartItem-Update" -Test {
 			# Assert
 			$newDescription = "Updated"
 			
@@ -251,7 +253,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cart = GetCartOfUser -svc $svc;
 			$cart | Should Be $null;
 		}
-		
+		<#
 		It "AddingNonVdiCartItemTwice-IncreasesCount" -Test {
 			
 			# Get catItem
