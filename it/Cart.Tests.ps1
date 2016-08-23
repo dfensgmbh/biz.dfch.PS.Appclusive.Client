@@ -1,4 +1,4 @@
-#includes tests for CLOUDTCL-1875
+#includes tests for CLOUDTCL-1875 and CLOUDTCL-1876
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -123,55 +123,42 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$filter = "Id eq {0}" -f $cartItemId;
 			$deletedCartItem = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
 		}
-		<#
-		It "AddingVdiCartItemTwice-Fails" -Test {
+		
+		It "AddSameCartItemTwice-Fails" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
 			
-			# Get catItem
-			$catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			$catItem | Should Not Be $null;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
 			
-			# Create new VDI cartItem
-			$cartItem = CreateCartItem -catItem $catItem;
-
-			# Add VDI cartItem
-			$svc.Core.AddToCartItems($cartItem);
-			$result = $svc.Core.SaveChanges();
-
-			# Check result
-			$result.StatusCode | Should Be 201;
-			$cartItem.Id | Should Not Be 0;
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
 			
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
 			
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.Count | Should Be 1;
-			$cartItems[0].Id | Should Be $cartItem.Id;
+			#ACT create new cart item
+			$cartItem1 = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItemId = $cartItem1.Id;
+			$cartId = $cartItem1.CartId;
 			
-			# Create second VDI cartItem
-			$cartItem2 = CreateCartItem -catItem $catItem;
-
-			# Add second VDI cartItem
-			$svc.Core.AddToCartItems($cartItem2);
-			try 
+			#ACT create second cart item, same as the previous
+			try
 			{
-				$svc.Core.SaveChanges();
-			} catch 
-			{
-				$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
-				$exception.'odata.error'.message.value | Should Be 'There can only be one VDI in the cart.';
+				$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
 			}
-
-			$svc = Enter-ApcServer;
-			$cart = GetCartOfUser -svc $svc;
-			
-			# Cleanup
-			$svc.Core.DeleteObject($cart);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Be $null;
+			catch
+			{
+				$(Format-ApcException) | Should Not Be $null;
+				$_.Exception.Message | Should Not Be $null;
+				$_.FullyQualifiedErrorId | Should Not Be $null;
+			}
 		}
 	}
 	
@@ -224,7 +211,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cart = GetCartOfUser -svc $svc;
 			$cart | Should Be $null;
 		}
-		
+		<#
 		It "Cart-SetCartItemDescription" -Test {
 			# Assert
 			$newDescription = "Updated"
