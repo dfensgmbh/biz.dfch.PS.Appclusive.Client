@@ -2,8 +2,10 @@ function Create-CartItem
 {
 	Param
 	(
+		[Parameter(Mandatory=$true)]
 		$Svc
 		,
+		[Parameter(Mandatory=$true)]
 		$Name
 		,
 		$Description = "Description"
@@ -93,9 +95,17 @@ function Update-CartItem {
 	$cartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
 	
 	#Set new name and description for the Cart Item
-	if ($Name){$cartItem.Name = $Name;}
-	if ($Description) {$cartItem.Description = $Description;}
-	if ($Quantity) {$cartItem.Quantity = $Quantity;}
+	if ($Name)
+	{
+		$cartItem.Name = $Name;
+	}
+	if ($Description)
+	{	
+		$cartItem.Description = $Description;
+	}
+	if ($Quantity) {
+		$cartItem.Quantity = $Quantity;
+	}
 	
 	#save changes
 	$svc.Core.UpdateObject($cartItem)
@@ -105,9 +115,18 @@ function Update-CartItem {
 	$updatedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT - update
-	if ($Name){$bin = $updatedCartItem.Name | Should Be $Name;}
-	if ($Description) {$bin = $updatedCartItem.Description | Should Be $Description;}
-	if ($Quantity) {$bin = $updatedCartItem.Quantity | Should Not Be $Quantity;}
+	if ($Name)
+	{
+		$bin = $updatedCartItem.Name | Should Be $Name;
+	}
+	if ($Description) 
+	{
+		$bin = $updatedCartItem.Description | Should Be $Description;
+	}
+	if ($Quantity) 
+	{
+		$bin = $updatedCartItem.Quantity | Should Not Be $Quantity;
+	}
 	$bin = $updatedCartItem.Id | Should Be $Id;
 	
 	return $updatedCartItem;

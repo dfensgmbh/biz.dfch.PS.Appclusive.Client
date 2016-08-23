@@ -268,7 +268,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			#ACT create new cart item
 			$cartItem1 = Create-CartItem -svc $svc -Name $cartItemName1 -CatalogueItemId $catalogueItem1Id;
 			$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName2 -CatalogueItemId $catalogueItem2Id;
-		
+			
 			#ASSERT cart from the items, should be the same
 			$cartItem1.CartId | Should Be $cartItem2.CartId;
 		}
