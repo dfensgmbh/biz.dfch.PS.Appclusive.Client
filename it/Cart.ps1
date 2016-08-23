@@ -52,13 +52,13 @@ function Delete-CartItem
 {
 	Param
 	(
-		$svc
+		$Svc
 		,
-		$cartItemId
+		$CartItemId
 	)
 		
 	#get the cart Item
-	$query = "Id eq {0}" -f $cartItemId;
+	$query = "Id eq {0}" -f $CartItemId;
 	$cartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
 	
 	#delete the cart Item
@@ -66,12 +66,51 @@ function Delete-CartItem
 	$result = $svc.Core.SaveChanges();
 	
 	#get the deleted cartItem
-	$query = "Id eq {0}" -f $cartItemId;
+	$query = "Id eq {0}" -f $CartItemId;
 	$deletedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
 	
 	#ASSERT cart Item is deleted
 	$bin = $deletedCartItem | Should Be $null;
 	$bin = $result.StatusCode | Should Be 204;
+}
+
+function Update-CartItem {
+	Param
+	(
+		$Svc
+		,
+		$Id
+		,
+		$Name
+		,
+		$Description
+		,
+		$Quantity
+	)
+	
+	#get the CartItem 
+	$query = "Id eq {0}" -f $Id;
+	$cartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#Set new name and description for the Cart Item
+	if ($Name){$cartItem.Name = $Name;}
+	if ($Description) {$cartItem.Description = $Description;}
+	if ($Quantity) {$cartItem.Quantity = $Quantity;}
+	
+	#save changes
+	$svc.Core.UpdateObject($cartItem)
+	$result = $svc.core.SaveChanges();	
+				
+	#get the updated Cart Item 
+	$updatedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	if ($Name){$bin = $updatedCartItem.Name | Should Be $Name;}
+	if ($Description) {$bin = $updatedCartItem.Description | Should Be $Description;}
+	if ($Quantity) {$bin = $updatedCartItem.Quantity | Should Not Be $Quantity;}
+	$bin = $updatedCartItem.Id | Should Be $Id;
+	
+	return $updatedCartItem;
 }
 
 
