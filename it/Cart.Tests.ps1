@@ -215,141 +215,63 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 		}
 		
 		It "CartItem-Update" -Test {
-			# Assert
-			$newDescription = "Updated"
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
+			$newDescription = "Description Updated";
 			
-			# Get catItem
-			$catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			$catItem | Should Not Be $null;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
 			
-			# Create new cartItem
-			$cartItem = CreateCartItem -catItem $catItem;
-
-			# Add cartItem
-			$svc.Core.AddToCartItems($cartItem);
-			$result = $svc.Core.SaveChanges();
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
 			
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
 			
-			# Update description
-			$cartItem.Description = $newDescription;
-			$svc.Core.UpdateObject($cartItem);
-			$result = $svc.Core.SaveChanges();
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItemId = $cartItem.Id;
 			
-			$cartItemUpdated = $svc.Core.CartItems.AddQueryOption('$filter', "Id eq {0}" -f $cartItem.Id) | Select;
-			
-			#Check Update
-			$result.StatusCode | Should Be 204;
-			$cartItemUpdated | Should Not Be $null;
-			$cartItemUpdated.Id | Should Be $cartItem.Id;
-			$cartItemUpdated.Description | Should Be $newDescription;
-			
-			# Cleanup
-			$svc.Core.DeleteObject($cart);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Be $null;
-		}
-		<#
-		It "AddingNonVdiCartItemTwice-IncreasesCount" -Test {
-			
-			# Get catItem
-			$catItem = GetCatalogueItemByName -svc $svc -name 'DSWR Autocad 12 Production';
-			$catItem | Should Not Be $null;
-			
-			# Create new cartItem
-			$cartItem = CreateCartItem -catItem $catItem;
-
-			# Add cartItem
-			$svc.Core.AddToCartItems($cartItem);
-			$result = $svc.Core.SaveChanges();
-
-			# check result
-			$result.StatusCode | Should Be 201;
-			$cartItem.Id | Should Not Be 0;
-			
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
-			
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.Count | Should Be 1;
-			$cartItems[0].Id | Should Be $cartItem.Id;
-			$cartItems[0].Quantity | Should Be 1;
-			
-			$svc = Enter-ApcServer;
-			
-			# Create second cartItem
-			$cartItem2 = CreateCartItem -catItem $catItem;
-			
-			# Add second VDI cartItem
-			$svc.Core.AddToCartItems($cartItem2);
-			$result = $svc.Core.SaveChanges();
-			
-			# Check result
-			$result.StatusCode | Should Be 201;
-			$cartItem.Id | Should Not Be 0;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
-			
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.Count | Should Be 1;
-			$cartItems[0].Id | Should Be $cartItem.Id;
-			$cartItems[0].Quantity | Should Be 2;
-			
-			# Cleanup
-			$svc.Core.DeleteObject($cart);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Be $null;
+			#ACT update cart item
+			$cartItemUpdated = Update-CartItem -svc $svc -Id $cartItemId -Description $newDescription;
 		}
 		
-	}
-	
-	Context "#CLOUDTCL-1907-Catalogue.Tests" {
-	
-		# Context wide constants
-		$catName = 'Default DaaS';
-		New-Variable -Name cat -Value 'will-be-used-later';
-		New-Variable -Name catItems -Value 'will-be-used-later';
+		It "AddMoreThanOneCartItemsInCart" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName1 = $entityPrefix + "CatalogueItem1";
+			$catalogueItemName2 = $entityPrefix + "CatalogueItem2";
+			$cartItemName1 = $entityPrefix + "CartItem1";
+			$cartItemName2 = $entityPrefix + "CartItem2";
+			
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue item
+			$newCatalogueItem1 = Create-CatalogueItem -svc $svc -name $catalogueItemName1 -catalogueId $catalogueId -productId $productId;
+			$catalogueItem1Id = $newCatalogueItem1.Id;
+			$newCatalogueItem2 = Create-CatalogueItem -svc $svc -name $catalogueItemName2 -catalogueId $catalogueId -productId $productId;
+			$catalogueItem2Id = $newCatalogueItem2.Id;
+			
+			#ACT create new cart item
+			$cartItem1 = Create-CartItem -svc $svc -Name $cartItemName1 -CatalogueItemId $catalogueItem1Id;
+			$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName2 -CatalogueItemId $catalogueItem2Id;
 		
-		BeforeEach {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			#ASSERT cart from the items, should be the same
+			$cartItem1.CartId | Should Be $cartItem2.CartId;
 		}
-		
-		It "Cart-GettingCarts-ReturnsZeroEntities" -Test {
-			# Arrange
-			# N/A
-			
-			# Act
-			$entitySet = $svc.Core.Carts;
-
-			# Assert
-			$entitySet | Should Be $null;
-		}
-
-		It "Cart-GettingCatalogue-Succeeds" -Test {
-			# Arrange
-			
-			# Get catalogue
-			$cat = GetCatalogueByName -svc $svc -catName $catName;
-			$cat | Should Not Be $null;
-			
-			# Get catalogue items
-			$catItems = GetCatalogueItemsOfCatalog -svc $svc -cat $cat;
-			$catItems | Should Not Be $null;
-			$catItems |? Name -eq 'VDI Personal' | Should Not Be $null;
-			$catItems |? Name -eq 'VDI Technical' | Should Not Be $null;
-			$catItems |? Name -eq 'DSWR Autocad 12 Production' | Should Not Be $null;
-		}#>
 	}
 }
 
