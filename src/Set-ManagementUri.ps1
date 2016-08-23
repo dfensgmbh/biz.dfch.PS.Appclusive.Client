@@ -61,7 +61,7 @@ Update an existing ManagementUri with new name, description and type.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
