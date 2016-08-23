@@ -7,7 +7,7 @@ Sets or creates a ManagementUri entry in Appclusive.
 .DESCRIPTION
 Sets or creates a ManagementUri entry in Appclusive.
 
-By updating a ManagementUri entry you can specify if you want to update the description, Value or any combination thereof, for a new Name or Type you need to use the Argument '-NewName' or '-NewType'
+By updating a ManagementUri entry you can specify if you want to update the name, type or description or any combination thereof. For a new name or type you need to use the Argument '-NewName' or '-NewType'
 
 
 .OUTPUTS
@@ -61,7 +61,7 @@ Update an existing ManagementUri with new name, description and type.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
@@ -249,7 +249,10 @@ catch
 		$fReturn = $false;
 		$OutputParameter = $null;
 		
-		if($AddedEntity) { $svc.Core.DeleteObject($AddedEntity); }
+		if($AddedEntity) 
+		{ 
+			$svc.Core.DeleteObject($AddedEntity); 
+		}
 	}
 }
 finally 

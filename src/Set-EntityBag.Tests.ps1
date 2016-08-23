@@ -8,9 +8,15 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-Job.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Get-Tenant.ps1"
+	. "$here\Get-Node.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\New-Node.ps1"
 
 	$entityPrefix = "Set-EntityBag";
-	$usedEntitySets = @("EntityBags");
+	$usedEntitySets = @("EntityBags", "Nodes");
 	
 
 	Context "Set-EntityBag" {
@@ -21,6 +27,13 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
+
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$value = "value-{0}" -f [guid]::NewGuid().ToString();
+			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+
+			$currentTenant = Get-Tenant -Current -svc $svc;
+			$testNode = New-Node -Name $name -ParentId $currentTenant.NodeId -EntityKindId $entityKindId -svc $svc;
 		}
 		
 		AfterAll {
@@ -46,33 +59,26 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 
 		It "Set-EntityBag-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$value = "value-{0}" -f [guid]::NewGuid().ToString();
-			$entityId = 2; #Replace with dynamically long
-			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+			# N/A (Declared in BeforeEach)
 			
 			# Act
-			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
+			$result = Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.Value | Should Be $value;
-			$result.EntityId | Should Be $entityId;
+			$result.EntityId | Should Be $testNode.Id;
 			$result.EntityKindId| Should Be $entityKindId;
 		}
 	
 		It "Set-EntityBag-ShouldReturnNewEntityWithDescriptionAndProtectionLevel" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$entityId = 2; #Replace with dynamically long
-			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;	
 				
 			# Act
-			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
+			$result = Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -82,25 +88,19 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 
 		It "Set-EntityBag-WithNewDescriptionAndProtectionLevel-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			#Replace with dynamically long (create node)
-			$entityId = 2;
-			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;
 			
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
-			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			$newProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__;
 			
-			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
+			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			$result1.Description | Should Be $description;
 			$result1.ProtectionLevel | Should Be $protectionLevel;
 			
 			# Act
-			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -Description $newDescription -ProtectionLevel $newProtectionLevel -svc $svc;
+			$result = Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -Description $newDescription -ProtectionLevel $newProtectionLevel -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -111,23 +111,18 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 		
 		It "Set-EntityBag-ShouldReturnUpdatedValue" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$value = "value-{0}" -f [guid]::NewGuid().ToString();
-			$entityId = 2; #Replace with dynamically long
-			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 
-			$newValue = "Newvalue-{0}" -f [guid]::NewGuid().ToString();
-
-			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
+			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -NewValue $newValue;
+			$result = Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -NewValue $newValue;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Value | Should Be $newValue;
-			$result.EntityId | Should Be $entityId;
+			$result.EntityId | Should Be $testNode.Id;
 			$result.EntityKindId| Should Be $entityKindId;
 		}	
 	}
