@@ -196,7 +196,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
 		}
 		
-		<# it fails now, will be deployed on next release
+		<# it fails now, will be fixed and deployed on next release
 		It "SetNodeAsItsOwnParent-ThrowsError" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
@@ -215,27 +215,13 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			#ACT set node as its own parent
 			$svc.Core.SetLink($node, "Parent", $node);
-				
-			try
-			{
-				$updateResult = $Svc.Core.SaveChanges();
-			}
 			
-			catch
-			{
-				$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
-				$exception.'odata.error'.message.value | Should Be "An error has occurred.";
-				$_.Exception.Message | Should Not Be $null;
-				$_.FullyQualifiedErrorId | Should Not Be $null;
-				Write-Host ($_.Exception.Message | Out-String);
-				Write-Host ($_.FullyQualifiedErrorId | Out-String);
-			}
-			finally
-			{
-				#CLEANUP
-				$svc = Enter-Appclusive;
-				Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
-			}
+			{$updateResult = $Svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 404};
+			
+			#CLEANUP
+			$svc = Enter-Appclusive;
+			Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
+			
 		}#>
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
