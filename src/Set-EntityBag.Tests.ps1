@@ -40,6 +40,9 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 		
 		# Context wide constants
 		# N/A
+		It "Warmup" -Test {
+			$true | Should Be $true;
+		}
 
 		It "Set-EntityBag-ShouldReturnNewEntity" -Test {
 			# Arrange
@@ -58,7 +61,7 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			$result.EntityId | Should Be $entityId;
 			$result.EntityKindId| Should Be $entityKindId;
 		}
-		
+	
 		It "Set-EntityBag-ShouldReturnNewEntityWithDescriptionAndProtectionLevel" -Test {
 			# Arrange
 			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
@@ -66,7 +69,7 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			$entityId = 2; #Replace with dynamically long
 			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			$protectionLevel = 1 # Replace with dynamically long	
+			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;	
 				
 			# Act
 			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
@@ -81,81 +84,57 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			# Arrange
 			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$entityId = 2; #Replace with dynamically long
+			#Replace with dynamically long (create node)
+			$entityId = 2;
 			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			$protectionLevel = 1 # Replace with dynamically long
+			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;
 			
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
-			$newProtectionLevel = 1 # Replace with dynamically long	
 			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
+			$newProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__;
 			
-			$result1 = Set-EntityBag -Name $name -Value $value -Entityid $entityId -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
+			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			$result1.Description | Should Be $description;
 			$result1.ProtectionLevel | Should Be $protectionLevel;
 			
 			# Act
-			$result = Set-EntityBag -Name $name -Value $value -Entityid $entityId -EntityKindId $entityKindId -Description $newDescription -ProtectionLevel $newProtectionLevel -svc $svc;
+			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -Description $newDescription -ProtectionLevel $newProtectionLevel -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Description | Should Be $newDescription;
+			$result.ProtectionLevel | Should Be $newProtectionLevel;
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-EntityBag-ShouldReturnUpdatedNameAndValue" -Test {
+		It "Set-EntityBag-ShouldReturnUpdatedValue" -Test {
 			# Arrange
 			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$value = "value-{0}" -f [guid]::NewGuid().ToString();
 			$entityId = 2; #Replace with dynamically long
 			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 
-			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$newValue = "Newvalue-{0}" -f [guid]::NewGuid().ToString();
 
 			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -NewName $newName -NewValue $newValue;
+			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -NewValue $newValue;
 			
 			# Assert
 			$result | Should Not Be $null;
-			$result.Name | Should Be $newName;
 			$result.Value | Should Be $newValue;
 			$result.EntityId | Should Be $entityId;
 			$result.EntityKindId| Should Be $entityKindId;
-		}
-		
-		It "Set-EntityBag-ShouldReturnUpdatedEntityIdAndEntityKindId" -Test {
-			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$value = "value-{0}" -f [guid]::NewGuid().ToString();
-			$entityId = 2; #Replace with dynamically long
-			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-
-			$newEntityId = 4; #Replace with dynamically long
-			$newEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__ + 1;
-
-			$result1 = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
-			$result1 | Should Not Be $null;
-			
-			# Act
-			$result = Set-EntityBag -Name $name -Value $value -EntityId $entityId -EntityKindId $entityKindId -svc $svc -NewEntityKindId $newEntityKindId -NewEntityId $newEntityId;
-			
-			# Assert
-			$result | Should Not Be $null;
-			$result.Name | Should Be $name;
-			$result.Value | Should Be $value;
-			$result.EntityId | Should Be $newEntityId;
-			$result.EntityKindId| Should Be $newEntityKindId;
-		}
+		}	
 	}
 }
 
 #
-# Copyright 2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
