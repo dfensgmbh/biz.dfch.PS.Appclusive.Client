@@ -15,12 +15,12 @@ default
 
 
 .EXAMPLE
-Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 1 -EntityKindId 2 -svc $svc -CreateIfNotExist;
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc -CreateIfNotExist;
 
 Name            : ArbitraryName
 Value           : ArbitraryValue
-EntityId        : 1
-EntityKindId    : 2
+EntityId        : 2
+EntityKindId    : 1
 ProtectionLevel : 0
 Id              : 159
 Tid             : 11111111-1111-1111-1111-111111111111
@@ -38,12 +38,12 @@ Create a new EntityBag entry if it does not exists.
 
 
 .EXAMPLE
-Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 1 -EntityKindId 2 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc -CreateIfNotExist;
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
 
 Name            : ArbitraryName
 Value           : Arbitrary updated value
-EntityId        : 1
-EntityKindId    : 2
+EntityId        : 2
+EntityKindId    : 1
 ProtectionLevel : 0
 Id              : 159
 Tid             : 11111111-1111-1111-1111-111111111111
@@ -57,12 +57,12 @@ Tenant          :
 CreatedBy       :
 ModifiedBy      :
 
-Update an existing EntityBag with new name, description and type.
+Update an existing EntityBag with new value and description.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-EntityBag/
-Set-ManagementCredential: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
+Set-EntityBag: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
 
 
 .NOTES
@@ -91,12 +91,10 @@ Param
 	,
 	# Specifies the EntityId
 	[Parameter(Mandatory = $true, Position = 2)]
-	[ValidateNotNullOrEmpty()]
 	[long] $EntityId
 	,
 	# Specifies the EntityKindId
 	[Parameter(Mandatory = $true, Position = 3)]
-	[ValidateNotNullOrEmpty()]
 	[long] $EntityKindId
 	,
 	# Specifies the new value
@@ -265,7 +263,10 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-EntityBag; } 
+if($MyInvocation.ScriptName) 
+{ 
+	Export-ModuleMember -Function Set-EntityBag; 
+} 
 
 # 
 # Copyright 2016 d-fens GmbH
