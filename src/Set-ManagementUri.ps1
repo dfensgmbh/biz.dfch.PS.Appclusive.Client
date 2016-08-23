@@ -249,7 +249,10 @@ catch
 		$fReturn = $false;
 		$OutputParameter = $null;
 		
-		if($AddedEntity) { $svc.Core.DeleteObject($AddedEntity); }
+		if($AddedEntity) 
+		{ 
+			$svc.Core.DeleteObject($AddedEntity); 
+		}
 	}
 }
 finally 
