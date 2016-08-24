@@ -11,30 +11,52 @@ Describe "New-User" -Tags "New-User" {
 	. "$here\Get-Tenant.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
-    BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-
-        $svc = Enter-ApcServer;
-    }
+	$entityNamePrefix = "New-User-";
+	$usedEntitySets = @("Users");
 
 	Context "New-User" {
+
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+		}
+	
+		AfterAll {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityNamePrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
 	
 		# Context wide constants
 		# N/A
 
 		It "New-UserDuplicate-ShouldReturnNull" -Test {
 			# Arrange
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Mail = "Mail-{0}@appclusive.net" -f [guid]::NewGuid().ToString();
-			$ExternalId = "{0}" -f [guid]::NewGuid();
-			$result1 = New-User -svc $svc -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType Internal;
+			$name = "{0}Name-{1}" -f $entityNamePrefix, [guid]::NewGuid().ToString();
+			$mail = "Mail-{0}@appclsusive.net" -f [guid]::NewGuid().ToString();
+			$externalId = "{0}" -f [guid]::NewGuid();
+			$result1 = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType Internal;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			{ $result = New-User -svc $svc -Name $Name -Mail $Mail -ExternalId $ExternalId; } | Should Throw 'Precondition failed'
-			{ $result = New-User -svc $svc -Name $Name -Mail $Mail -ExternalId $ExternalId; } | Should Throw 'Entity does already exist'
+			{ $result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId; } | Should Throw 'Precondition failed'
+			{ $result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId; } | Should Throw 'Entity does already exist'
 
 			# Assert
 			$result | Should Be $null;

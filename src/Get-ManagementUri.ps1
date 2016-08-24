@@ -135,7 +135,7 @@ PARAM
 (
 	# Specifies the name of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
-	[int] $Id
+	[long] $Id
 	,
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'name')]
 	[Alias('n')]
@@ -321,7 +321,7 @@ Process
 				{
 					if ( $item.ManagementCredentialId )
 					{
-						$Response_ = Get-ManagementCredential -Id $Response.ManagementCredentialId;
+						$Response_ = Get-ManagementCredential -svc $svc -Id $Response.ManagementCredentialId;
 						$null = $ResponseTemp.Add($Response_);
 					}
 				}

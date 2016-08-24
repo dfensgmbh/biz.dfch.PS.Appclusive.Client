@@ -99,7 +99,7 @@ Param
 	,
 	# Specifies the Parent id for this entity
 	[Parameter(Mandatory = $false)]
-	[int] $NodeId
+	[long] $NodeId
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
@@ -148,7 +148,7 @@ Begin
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 	Contract-Requires ($NodeId -ne $null)
-	Contract-Requires ($NodeId -ne 0)
+	Contract-Requires ($NodeId -gt 0)
 	Contract-Requires (![string]::IsNullOrWhiteSpace($ExternalId))
 	
 	$EntitySetName = 'ExternalNodes';
@@ -281,7 +281,10 @@ catch
 		$fReturn = $false;
 		$OutputParameter = $null;
 		
-		if($AddedEntity) { $svc.Core.DeleteObject($AddedEntity); }
+		if($AddedEntity) 
+		{ 
+			$svc.Core.DeleteObject($AddedEntity); 
+		}
 	}
 }
 finally 

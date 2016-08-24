@@ -19,8 +19,9 @@ Describe "Test-Status" -Tags "Test-Status" {
 		
 		BeforeEach {
 			$error.Clear();
-			Remove-Module biz.dfch.PS.Appclusive.Client -ErrorAction:SilentlyContinue;
-			Import-Module biz.dfch.PS.Appclusive.Client -ErrorAction:SilentlyContinue;
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
 			
 			$biz_dfch_PS_Appclusive_Client.DataContext = New-Object System.Collections.Stack;
 		}
@@ -56,18 +57,6 @@ Describe "Test-Status" -Tags "Test-Status" {
 			
 			# Assert
 			$result | Should Be $true;
-		}
-
-		It "Test-StatusAuthenticatedReturnsUnauthorised" -Test {
-			# Arrange
-			$cred = New-Object System.Net.NetworkCredential('invalid-user', 'invalid-password');
-			$svc = Enter-ApcServer -Credential $cred;
-
-			# Act
-			$result = Test-Status -Authenticate -svc $svc -ErrorAction:SilentlyContinue;
-			
-			# Assert
-			$result | Should Be $false;
 		}
 
 		It "Test-StatusEchoSucceeds" -Test {

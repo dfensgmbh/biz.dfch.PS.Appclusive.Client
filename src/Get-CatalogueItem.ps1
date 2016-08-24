@@ -190,7 +190,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-CatalogueItem/
 .NOTES
 See module manifest for required software versions and dependencies.
 #>
-# Requires biz.dfch.PS.Appclusive.Client
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
@@ -205,7 +204,7 @@ PARAM
 	# Id of the catalogue item
 	[Parameter(Mandatory = $false, ParameterSetName = 'Id')]
 	[ValidateNotNullOrEmpty()]
-	[Int] $Id = $null
+	[long] $Id = $null
 	,
 	# Full name or part of it, for the item you want to search - this is not case sensitive
 	[Parameter(Mandatory = $false, ParameterSetName = 'SearchByName')]

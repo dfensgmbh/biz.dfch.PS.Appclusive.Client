@@ -1,13 +1,13 @@
-function Set-Node {
+function Set-ManagementUri {
 <#
 .SYNOPSIS
-Sets or creates a Node entry in Appclusive.
+Sets or creates a ManagementUri entry in Appclusive.
 
 
 .DESCRIPTION
-Sets or creates a Node entry in Appclusive.
+Sets or creates a ManagementUri entry in Appclusive.
 
-By updating a Node entry you can specify if you want to update the Name.
+By updating a ManagementUri entry you can specify if you want to update the name, type or description or any combination thereof. For a new name or type you need to use the Argument '-NewName' or '-NewType'
 
 
 .OUTPUTS
@@ -15,63 +15,54 @@ default
 
 
 .EXAMPLE
-Set-Node Srv01 -EntityKindName com.swisscom.cms.rhel7 -CreateIfNotExist
+Set-ManagementUri -Name "MyName" -Type "MyType" -svc $svc -CreateIfNotExist
 
-Parameters     : {}
-EntityKindId   : 29
-ParentId       : 1
-Id             : 1442
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : Srv01
-Description    : 
-CreatedById    : 60
-ModifiedById   : 60
-Created        : 05.01.2016 15:35:06 +01:00
-Modified       : 05.01.2016 15:35:06 +01:00
-RowVersion     : {0, 0, 0, 0...}
-Parent         :
-EntityKind     :
-Children       : {}
-IncomingAssocs : {}
-OutgoingAssocs : {}
-Tenant         :
-CreatedBy      :
-ModifiedBy     :
+Type                   : MyType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyName
+Description            :
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-
-Create a new Node entry if it does not exists.
+Create a new ManagementUri entry if it does not exists.
 
 
 .EXAMPLE
-Set-Node -Name Srv01 -NewName Srv02
+Set-ManagementUri -Name "MyName" -Type "MyType" -NewName "MyNewName" -NewType "MyNewType" -Description "MyNewDescription" -svc $svc
 
-Parameters     : {}
-EntityKindId   : 29
-ParentId       : 1
-Id             : 1442
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : Srv02
-Description    : 
-CreatedById    : 60
-ModifiedById   : 60
-Created        : 05.01.2016 15:35:06 +01:00
-Modified       : 05.01.2016 15:35:06 +01:00
-RowVersion     : {0, 0, 0, 0...}
-Parent         :
-EntityKind     :
-Children       : {}
-IncomingAssocs : {}
-OutgoingAssocs : {}
-Tenant         :
-CreatedBy      :
-ModifiedBy     :
+Type                   : MyNewType
+Value                  :
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : MyNewName
+Description            : MyNewDescription
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
 
-Update an existing Node with new name.
+Update an existing ManagementUri with new name, description and type.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Node/
-Set-Node: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Node/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
+Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
 
 
 .NOTES
@@ -84,39 +75,44 @@ See module manifest for dependencies and further requirements.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Node/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/'
 )]
 Param 
 (
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
+	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
+	# Specifies the type to modify
+	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateNotNullOrEmpty()]
+	[string] $Type
+	,
+	# Specifies the value
+	[Parameter(Mandatory = $false, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[string] $Value
+	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false)]
+	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
-	# Specifies the Parent id for this entity
+	# Specifies the new name
 	[Parameter(Mandatory = $false)]
-	[long] $ParentId = 1
+	[ValidateNotNullOrEmpty()]
+	[string] $NewType
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
 	[Alias("d")]
 	[string] $Description
 	,
-	# Specifies the EntityKind id for this entity
-	[Parameter(Mandatory = $true, ParameterSetName = 'id')]
-	[long] $EntityKindId
-	,
-	# Specifies the EntityKind name for this entity
-	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
-	[string] $EntityKindName
-	,
-	# Specifies the parameters for this entity
+	# Specifies the ManagementCredentialId
 	[Parameter(Mandatory = $false)]
-	[hashtable] $Parameters = @{}
+	[long] $ManagementCredentialId
 	,
 	# Specifies to create a entity if it does not exist
 	[Parameter(Mandatory = $false)]
@@ -133,10 +129,6 @@ Param
 	[Parameter(Mandatory = $false)]
 	[alias('ReturnFormat')]
 	[string] $As = 'default'
-	,
-	# Specifies the return method
-	[Parameter(Mandatory = $false)]
-	[switch] $Async = $false
 )
 
 Begin 
@@ -149,8 +141,6 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-	
-	$EntitySetName = 'Nodes';
 }
 # Begin
 
@@ -165,8 +155,15 @@ $AddedEntity = $null;
 
 try 
 {
-	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	$exp = @();
+	
+	$exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
+	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+
+	$FilterExpression = [String]::Join(' and ', $exp);
+
+	$entity = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+
 	if(!$CreateIfNotExist -And !$entity) 
 	{
 		$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
@@ -174,63 +171,45 @@ try
 		throw($gotoError);
 	}
 	if(!$entity) 
-	{		
-		if($PSCmdlet.ParameterSetName -eq 'id')
-		{
-			$entityKind = Get-EntityKind -Id $EntityKindId -svc $svc;
-			$entityKey = "Id '{0}'" -f $EntityKindId;
-		}
-		else
-		{
-			$entityKind = Get-EntityKind -Name $EntityKindName -svc $svc;
-			$entityKey = "Name '{0}'" -f $EntityKindName;
-		}
-		if(!$entityKind) 
-		{
-			$msg = "Name: Parameter validation FAILED. EntityKind does not exist: {0} " -f $entityKey;
-			$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $entityKey;
-			throw($gotoError);
-		}
-	
-		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Node;
-		$svc.Core.AddToNodes($entity);
+	{
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.ManagementUri;
+		$svc.Core.AddToManagementUris($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
+		$entity.Type = $Type;
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.Modified = $entity.Created;
 		$entity.CreatedById = 0;
 		$entity.ModifiedById = 0;
 		$entity.Tid = [guid]::Empty.ToString();
-		$entity.Parameters = $Parameters | ConvertTo-Json -Compress;
-		$entity.EntityKindId = $entityKind.Id;
-		$entity.ParentId = $ParentId;
 	}
 	if($PSBoundParameters.ContainsKey('Description'))
 	{
 		$entity.Description = $Description;
 	}
-	if($PSBoundParameters.ContainsKey('Parameters'))
+	if($PSBoundParameters.ContainsKey('ManagementCredentialId'))
 	{
-		$entity.Parameters = $Parameters | ConvertTo-Json -Compress;
+		$entity.ManagementCredentialId = $ManagementCredentialId;
 	}
-	if($NewName)
+	if($PSBoundParameters.ContainsKey('Value'))
+	{
+		$entity.Value = $Value;
+	}
+	if($NewName) 
 	{ 
 		$entity.Name = $NewName; 
+	}
+	if($NewType)
+	{
+		$entity.Type = $NewType;
 	}
 	
 	$svc.Core.UpdateObject($entity);
 	$r = $svc.Core.SaveChanges();
-	$r = $entity | Select @{ Name="JobUri"; Expression={$_.Name.Replace('http://','https://').Replace('JobResponses','Jobs')} }, @{ Name="JobId"; Expression={$_.Id} };
 
-	if ( !$Async )
-	{
-		$r = Get-Job -Id $r.JobId -svc $svc -ExpandNode;
-		# DFTODO retry handling
-	}
-
+	$r = $entity;
 	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
-
 }
 catch 
 {
@@ -298,7 +277,7 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Node; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-ManagementUri; } 
 
 # 
 # Copyright 2014-2015 d-fens GmbH
@@ -319,8 +298,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Node; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5sc67pkPpSB5HA74UEEOhGHF
-# JyOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0D72e2zQrxaTY3P8hFo+FL/o
+# zi6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -419,26 +398,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Node; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRuQI++Ob1AANwV
-# PKFXt/4gmTf/5jANBgkqhkiG9w0BAQEFAASCAQCld0KB9ROMfl69xXXtZ69Re3l0
-# D+NChE3WzFPJ0m1h3EL2JS2U1JQeqHFDO10NBwkNe9v9Kikd9K9A4WLPm30vV0sg
-# 92v5LapEy/bWnwoo/P48uwkWoz7ud9FqitX4AFEedqcd9xd3QK4t0pcFyTUR0+U4
-# hk4dJEadRNuu3BCN3tyPGx/nIcMnoIDcG+QEovxJrmzdA40tIxucvVmmoni15tRG
-# 8wCoX6y7SJ6jskcAZqayX7/r5O+p2dtgB712aLzqKrdxnOE5VxG7FKoT3wDx2IQ8
-# h4acCiepK0oFFj9RHEaqfn8Drv0iDhZ5n6ETCbVxYbgLRQuq/75Jz4GofbdQoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSrV+NEzFW4pjfe
+# 61uitVpfcDtsUTANBgkqhkiG9w0BAQEFAASCAQBnG8/Sdw9eI2G3APeaWFh7KUXj
+# 9/K9a2lHrjjSSxan+lJF0X8MKoQtn5RVO5t8xfrWn67zEm/nn5kBnnitMopp4jDh
+# aJO65PZfaPvETlbrAoHg6aqjC9SiSNrbexUcib++/hm6by5phpIAzmEEKa1mL5un
+# EbnbXvnKSO7CHdesKRIqhmX25ObQGm4jSw1vyfy9rZB8OL172C/+OKjs3gQcyYXn
+# 0LuzJgoFIxk6HDVaNDaW2DRw0mTqgjrQHnLHSkB0vDvtHk4EsOMqJFppsWSHXjlp
+# 0WUUZzJvvSElJpd8ZHV5IOruqucrOm3nQ+GbH/0b9s9DbQPZZRGnp8egQC31oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyODEyMDYyMVowIwYJKoZIhvcNAQkEMRYEFO2BmZjtRBU4R8tDlfSc3IWzBCyj
+# MDcyODEyMDYyMFowIwYJKoZIhvcNAQkEMRYEFHh1LeS1bigtBpjNZ0QQdJCpmEJj
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAs1VFKZW7dB8nbx8IW
-# ZQMlMpJNaKThO5do+1zvR8DyDqnEM8ji659G4aFJmswri6R0XAmI8ksDIEtzfSMc
-# TEWZ8/KrnwmUhiODbntYSkiKFvCOUSCbqTPi8Pl7oc6XoT/w8ZxdByuGSfG47796
-# J7SoXO5hnyW9i25jhpi8FG+XUcBJvVEiGxITGXhOvv99FN1bUmN449u+XMoyx9oW
-# bo72GILqGnk91m7dGH99h6DwfFW4hVQmJOg6I3UiQhVepzeFh2umpwTOy1jT4onF
-# sM4XplwcWnsUuWXg+LNsxHkCFLzJt1QZooWCpNc7iDSLu95hf4hk2lUZ/NQFhTA5
-# Xzgg
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBQdp4iOvHrp2LZvaio
+# 81kEtfgLfd7IoB9ed9il85RP2Tn2xCtfPNE4R+nc6ONSdXw9O0AJkwYYNK+7t0zt
+# 9t+dMSRKpq9aHBwetduA9NAarmMk9W1qP/gR2AXoRA/1MnI2/qUlnZSsnpNnuzO6
+# LuqucTrTiQTYxzndZRzPyVdbTQI9P6R230/Lw4yD2BoTQIgpqOhqLPr5wlG+83Dg
+# vo8Vz8eVaQEnt9ux8xnYuSVivdo68L0NGmI0sMmySFnYYqMxr/ZK4vCIHiFOijuM
+# Kyu45W2LkuKzeqDb7v/ZRJnz6aeE56guVLiXYP0z+lo3TodkXx+KdDVGNPcrgJvQ
+# 5+Rc
 # SIG # End signature block

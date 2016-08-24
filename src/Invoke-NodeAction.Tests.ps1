@@ -20,6 +20,8 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 	. "$here\Remove-Node.ps1"
 	. "$here\Get-EntityKind.ps1"
 	. "$here\Get-Job.ps1"
+	. "$here\Invoke-EntityAction.ps1"
+	. "$here\Format-Exception.ps1"
 	
     BeforeEach {
         $moduleName = 'biz.dfch.PS.Appclusive.Client';
@@ -28,13 +30,30 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
         
 	    $svc = Enter-ApcServer;
 	
-	    $NodeName = "Name-{0}" -f [guid]::NewGuid().ToString();
-        $ekId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__
-        $NodeEntity = Set-Node -Name $NodeName -EntityKindId $ekId -CreateIfNotExist -svc $svc;
-	    $EntityId = $NodeEntity.Id;
+		# Create new node for tests
+	    $nodeName = "Name-{0}" -f [guid]::NewGuid().ToString();
+		$query = "Id gt {0}" -f [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::ReservationEnd.value__;
+		$ekId = ($svc.Core.EntityKinds.AddQueryOption('$filter', $query) | Select -First 1).id;
+        $nodeEntity = Set-Node -Name $nodeName -EntityKindId $ekId -CreateIfNotExist -svc $svc;
+		Contract-Assert($nodeEntity);
+		
+		# Finish initial state transition of newly created node
+		$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $nodeEntity.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+		$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+		Contract-Assert($nodeJob);
+		$jobResult = @{Version = "1"; Message = "Arbitrary message"; Succeeded = $true};
+		$null = Invoke-EntityAction -InputObject $nodeJob -EntityActionName "JobResult" -InputParameters $jobResult -svc $svc;
+		
+	    $entityId = $nodeEntity.Id;
 	
-	    if ( !$EntityId ) { Stop-Pester; }
+	    if ( !$entityId ) { Stop-Pester; }
     }
+	
+	AfterEach {
+		$svc = Enter-ApcServer;
+		
+		$null = Remove-Node -Id $entityId -Confirm:$false -svc $svc;
+	}
 
 	Context "Invoke-NodeAction" {
 	
@@ -43,30 +62,37 @@ Describe "Invoke-NodeAction" -Tags "Invoke-NodeAction" {
 
 		It "Invoke-NodeAction-ShouldReturnStatus" -Test {
 			# Arrange
-			$InputName = (Get-Node -Id $EntityId -ExpandAvailableActions -svc $svc)[0];
+			$inputName = (Get-Node -Id $entityId -ExpandAvailableActions -svc $svc) | Select -First 1;
 			
 			# Act
-			Invoke-NodeAction -EntityId $EntityId -InputName $InputName -svc $svc;
-			$result = Get-Node -Id $EntityId -svc $svc -ExpandStatus;
+			$actionInvocationResult = Invoke-NodeAction -EntityId $entityId -InputName $inputName -svc $svc;
+			$svc = Enter-ApcServer;
+			$node = Get-Node -Id $entityId -svc $svc -ExpandStatus;
 
 			# Assert
-			$result.Status | Should Be $InputName;
+			$actionInvocationResult.InputName | Should Be $inputName;
+			$node.Condition | Should Be $inputName;
 		}
 
-		It "Invoke-UnkownNodeAction-ShouldThrow" -Test {
+		It "Invoke-UnkownNodeAction-ResultsInBadRequest" -Test {
 			# Arrange
-			$InputName = "NotExistingAction";
+			$inputName = "NotExistingAction";
 			
 			# Act			
-			Invoke-NodeAction -EntityId $EntityId -InputName $InputName -svc $svc;
-			$result = Get-Node -Id $EntityId -svc $svc -ExpandStatus;
-
-			# Assert
-			$result.Status | Should Not Be $InputName;
+			try 
+			{
+				Invoke-NodeAction -EntityId $entityId -InputName $inputName -svc $svc;
+				
+				# Assert
+				"An Exception " | Should Be " thrown when invoking unknown action";
+			}
+			catch
+			{
+				# Assert
+				$_.Exception.InnerException.InnerException.StatusCode | Should Be 400;
+			}
 		}
 	}
-	
-	$r = Remove-Node -Id $EntityId -Confirm:$false -svc $svc;
 }
 
 #

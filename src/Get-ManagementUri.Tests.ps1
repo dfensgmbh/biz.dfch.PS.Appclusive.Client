@@ -200,7 +200,7 @@ Describe "Get-ManagementUri" -Tags "Get-ManagementUri" {
 			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-ManagementUri -svc $svc -First $showFirst;
+			$resultFirst = Get-ManagementUri -Name "biz.dfch.CS.Appclusive.Core.OdataServices.Csm.IncidentsController" -svc $svc;
 			$result = Get-ManagementUri -svc $svc -Id $resultFirst.Id -ExpandManagementCredential;
 
 			# Assert

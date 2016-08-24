@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>biz.dfch.PS.Appclusive.Client</id>
-    <version>4.5.1</version>
+    <version>4.6.0</version>
     <title>biz.dfch.PS.Appclusive.Client</title>
     <authors>d-fens GmbH</authors>
     <owners>Ronald Rink</owners>
@@ -27,11 +27,11 @@ Third party (and Microsoft) DLLs are not part of this Apache 2.0 licensed projec
 See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detailed description on how to use the Cmdlets in this module.
 </description>
     <summary>This Microsoft PowerShell module contains Cmdlets to perform various base actions and utilties/convenience functions with the our open-source based automation framework "Appclusive".</summary>
-    <releaseNotes>20160815
-# Bugfix
-* Registered Interface and Connector correctly
-* Fix Pester Tests
-* Cleanup
+    <releaseNotes>20160824
+# Features
+* updated API to 3.9.0
+* added DataType endpoint
+* added NetworkAddresses endpoint
 	</releaseNotes>
     <copyright>(c) 2015-2016 d-fens GmbH</copyright>
     <language>en-US</language>
@@ -87,7 +87,6 @@ See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detail
 	<file src="New-ExternalNode.ps1" target="tools\New-ExternalNode.ps1" />
 	<file src="Set-ExternalNode.ps1" target="tools\Set-ExternalNode.ps1" />
 	<file src="Get-CimiTarget.ps1" target="tools\Get-CimiTarget.ps1" />
-	<file src="New-Order.ps1" target="tools\New-Order.ps1" />
 	<file src="Get-Product.ps1" target="tools\Get-Product.ps1" />
 	<file src="Get-CatalogueItem.ps1" target="tools\Get-CatalogueItem.ps1" />
 	<file src="Get-Tenant.ps1" target="tools\Get-Tenant.ps1" />
@@ -104,14 +103,17 @@ See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detail
 	<file src="Remove-Interface.ps1" target="tools\Remove-Interface.ps1" />		
 	<file src="Test-Connect.ps1" target="tools\Test-Connect.ps1" />		
 	<file src="Format-Exception.ps1" target="tools\Format-Exception.ps1" />
+    <file src="New-ManagementUri.ps1" target="tools\New-ManagementUri.ps1" />
+    <file src="Set-ManagementUri.ps1" target="tools\Set-ManagementUri.ps1" />
+    <file src="Set-EntityBag.ps1" target="tools\Set-EntityBag.ps1" />
     <file src="..\packages\Microsoft.Data.Edm.5.6.4\lib\net40\Microsoft.Data.Edm.dll" target="tools\Microsoft.Data.Edm.dll" />
     <file src="..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll" target="tools\Microsoft.Data.OData.dll" />
     <file src="..\packages\Microsoft.Data.Services.Client.5.6.4\lib\net40\Microsoft.Data.Services.Client.dll" target="tools\Microsoft.Data.Services.Client.dll" />
     <file src="..\packages\System.Spatial.5.6.4\lib\net40\System.Spatial.dll" target="tools\System.Spatial.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Api.4.3.0\lib\biz.dfch.CS.Appclusive.Api.dll" target="tools\biz.dfch.CS.Appclusive.Api.dll" />
-	<file src="..\packages\biz.dfch.CS.Appclusive.Public.3.7.5\lib\biz.dfch.CS.Appclusive.Public.dll" target="tools\biz.dfch.CS.Appclusive.Public.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.7.5\lib\Newtonsoft.Json.dll" target="tools\Newtonsoft.Json.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.7.5\lib\System.Net.Http.Formatting.dll" target="tools\System.Net.Http.Formatting.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.7.5\lib\System.Web.Http.dll" target="tools\System.Web.Http.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Api.4.5.0\lib\biz.dfch.CS.Appclusive.Api.dll" target="tools\biz.dfch.CS.Appclusive.Api.dll" />
+	<file src="..\packages\biz.dfch.CS.Appclusive.Public.3.9.0\lib\biz.dfch.CS.Appclusive.Public.dll" target="tools\biz.dfch.CS.Appclusive.Public.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.9.0\lib\Newtonsoft.Json.dll" target="tools\Newtonsoft.Json.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.9.0\lib\System.Net.Http.Formatting.dll" target="tools\System.Net.Http.Formatting.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.9.0\lib\System.Web.Http.dll" target="tools\System.Web.Http.dll" />
   </files>
 </package>

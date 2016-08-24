@@ -1,4 +1,3 @@
-
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -9,13 +8,13 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	
-    BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-
-        $svc = Enter-ApcServer;
-    }
+	BeforeEach {
+		$moduleName = 'biz.dfch.PS.Appclusive.Client';
+		Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+		Import-Module $moduleName;
+	
+		$svc = Enter-ApcServer;
+	}
 
 	Context "Get-Tenant" {
 	
@@ -101,7 +100,8 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -svc $svc -ParentId '11111111-1111-1111-1111-111111111111';
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
+			$result = Get-Tenant -svc $svc -ParentId $systemTenantId;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -114,7 +114,8 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -svc $svc -Id '11111111-1111-1111-1111-111111111111' -ExternalType:External;
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
+			$result = Get-Tenant -svc $svc -Id $systemTenantId -ExternalType:External;
 
 			# Assert
 			$result | Should Be $null;
@@ -125,7 +126,8 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -svc $svc -Id '11111111-1111-1111-1111-111111111111' -ExternalType:External;
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
+			$result = Get-Tenant -svc $svc -Id $systemTenantId -ExternalType:External;
 
 			# Assert
 			$result | Should Be $null;
@@ -139,10 +141,10 @@ Describe "Get-Tenant" -Tags "Get-Tenant" {
 			# N/A
 			
 			# Act
-			$result = Get-Tenant -Current;
+			$result = Get-Tenant -svc $svc -Current;
 
 			# Assert
-			$result | Should Be $null;
+			$result | Should Not Be $null;
 			$result.GetType().FullName | Should Be 'biz.dfch.CS.Appclusive.Core.Managers.TenantManagerInformation':
 			$result.BuiltInRoles.GetType().FullName | Should Be 'biz.dfch.CS.Appclusive.Core.Managers.BuiltInRoles';
 		}

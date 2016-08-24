@@ -10,6 +10,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 	. "$here\Get-ModuleVariable.ps1"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-SessionTenant.ps1"
+	. "$here\Get-Tenant.ps1"
 	
     BeforeEach {
         $moduleName = 'biz.dfch.PS.Appclusive.Client';
@@ -39,7 +40,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			$true | Should Be $true;
 		}
 		
-		It "SetSessionTenantWithInvalidId-Throws" -Test {
+		It "SetSessionTenantWithInvalidId-ThrowsContractException" -Test {
 		
 			# Arrange
 			$tenantId = [Guid]::NewGuid()
@@ -54,7 +55,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 		It "SetSessionTenantWithValidId-Throws" -Test {
 		
 			# Arrange
-			$tenantId = '11111111-1111-1111-1111-111111111111'
+			$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
 			
 			# Act
 			$result = Set-SessionTenant $tenantId -svc $svc;
