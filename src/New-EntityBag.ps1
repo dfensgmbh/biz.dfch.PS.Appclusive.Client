@@ -1,11 +1,11 @@
-function New-ManagementUri {
+function New-EntityBag {
 <#
 .SYNOPSIS
-Creates a ManagementUri entry in Appclusive.
+Creates a EntityBag entry in Appclusive.
 
 
 .DESCRIPTION
-Creates a ManagementUri entry in Appclusive.
+Creates a EntityBag entry in Appclusive.
 
 You must specify the parameters 'Name' and 'Type'. If the entry already exists no update of the existing entry is performed.
 
@@ -14,7 +14,7 @@ You must specify the parameters 'Name' and 'Type'. If the entry already exists n
 default | json | json-pretty | xml | xml-pretty
 
 .EXAMPLE
-New-ManagementUri -Name "MyName" -Type "MyType"
+New-EntityBag -Name "MyName" -Type "MyType"
 
 Type                   : MyType
 Value                  :
@@ -33,7 +33,7 @@ Tenant                 :
 CreatedBy              :
 ModifiedBy             :
 
-Create a new ManagementUri entry if it not already exists.
+Create a new EntityBag entry if it not already exists.
 
 
 .EXAMPLE
@@ -56,12 +56,12 @@ Tenant                 :
 CreatedBy              :
 ModifiedBy             :
 
-Create a new ManagementUri entry if it not already exists, with description, value,...
+Create a new EntityBag entry if it not already exists, with description, value,...
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
-Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-EntityBag/
+Set-EntityBag: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
 
 
 .NOTES
@@ -78,29 +78,29 @@ See module manifest for dependencies and further requirements.
 )]
 Param 
 (
-	# Specifies the type to modify
+	# Specifies the Name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
-	[Alias("t")]
-	[string] $Type
-	,
-	# Specifies the value to modify
-	[Parameter(Mandatory = $false, Position = 1)]
-	[ValidateNotNullOrEmpty()]
-	[Alias('v')]
-	[string] $Value
-	,
-	# Specifies the Name to modify
-	[Parameter(Mandatory = $true, Position = 2)]
-	[ValidateNotNullOrEmpty()]
-	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the ManagementCredential to modify
-	[Parameter(Mandatory = $false)]
-	[Alias('m')]
-	[long] $ManagementCredentialId
+	# Specifies the Value to modify
+	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateNotNullOrEmpty()]
+	[string] $Value
 	,
+	# Specifies the value to modify
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[long] $EntityKindId
+	,
+	# Specifies the ManagementCredential to modify
+	[Parameter(Mandatory = $true, Position = 3)]
+	[long] $EntityId
+	,
+	# Specifies the value to modify
+	[Parameter(Mandatory = $false)]
+	[long] $ProtectionLevel
+	,	
 	# Specifies the value to modify
 	[Parameter(Mandatory = $false)]
 	[string] $Description
@@ -137,96 +137,45 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	try 
+	$Exp = @();
+	$EntityBagContents = @();
+	
+	$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$Exp += ("(EntityId eq {0})" -f $EntityId);
+	$Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+	$FilterExpression = [String]::Join(' and ', $Exp);
+	
+	$EntityBagContents += $Name;
+	$EntityBagContents += $Value;
+	$EntityBagContents += $EntityId;
+	$EntityBagContents += $EntityKindId;
+	$EntityBagContentsString = [String]::Join(',', $EntityBagContents);
+
+	$entBag = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	Contract-Assert (!$entBag) 'Entity does already exist';
+	
+	if($PSCmdlet.ShouldProcess($EntityBagContents))
 	{
-
-		$Exp = @();
-		$ManagementUriContents = @();
-		
-		$Exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
-		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-		$FilterExpression = [String]::Join(' and ', $Exp);
-		
-		$ManagementUriContents += $Type;
-		$ManagementUriContents += $Name;
-		$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
-
-		$mu = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-		if($mu) 
+		if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ProtectionLevel'))
 		{
-			$msg = "Value: Parameter validation FAILED. Entity does already exist: '{0}'." -f $ManagementUriContentsString;
-			Log-Error $fn $msg;
-			$e = New-CustomErrorRecord -m $msg -cat ResourceExists -o $ManagementUriContentsString;
-			throw($gotoError);
+			$r = Set-EntityBag -Name $Name -Value $Value -EntityId $EntityId -EntityKindId $EntityKindId -ProtectionLevel $ProtectionLevel -Description $Description -CreateIfNotExist -svc $svc;
 		}
-		if($PSCmdlet.ShouldProcess($ManagementUriContents))
+		elseif($PSBoundParameters.ContainsKey('Description'))
 		{
-			if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId'))
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc;
-			}
-			elseif($PSBoundParameters.ContainsKey('Description'))
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -Description $Description -CreateIfNotExist -svc $svc;
-			}
-			elseif($PSBoundParameters.ContainsKey('ManagementCredentialId'))
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -CreateIfNotExist -svc $svc;
-			}
-			else
-			{
-				$r = Set-ManagementUri -Name $Name -type $type -Value $Value -CreateIfNotExist -svc $svc;
-			}
-			$OutputParameter = $r;
+			$r = Set-EntityBag -Name $Name -Value $Value -EntityId $EntityId -EntityKindId $EntityKindId -Description $Description -CreateIfNotExist -svc $svc;
 		}
-
-		$fReturn = $true;
-
-	}
-	catch 
-	{
-		if($gotoSuccess -eq $_.Exception.Message) 
+		elseif($PSBoundParameters.ContainsKey('ProtectionLevel'))
 		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
-			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
-			}
-			else 
-			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -ne $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					# N/A
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
+			$r = Set-EntityBag -Name $Name -Value $Value -EntityId $EntityId -EntityKindId $EntityKindId -ProtectionLevel $ProtectionLevel -CreateIfNotExist -svc $svc;
 		}
+		else
+		{
+			$r = Set-EntityBag -Name $Name -Value $Value -EntityId $EntityId -EntityKindId $EntityKindId -CreateIfNotExist -svc $svc;
+		}
+		$OutputParameter = $r;
 	}
-	finally 
-	{
-		# Clean up
-		# N/A
-	}
+
+	$fReturn = $true;
 }
 # Process
 
@@ -240,7 +189,10 @@ End
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; } 
+if($MyInvocation.ScriptName) 
+{
+	Export-ModuleMember -Function New-EntityBag; 
+} 
 
 # 
 # Copyright 2014-2015 d-fens GmbH
