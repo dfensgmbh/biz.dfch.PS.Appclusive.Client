@@ -1,3 +1,4 @@
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -7,15 +8,20 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
-	. "$here\Set-ManagementUri.ps1"
-	. "$here\Set-ManagementCredential.ps1"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Set-EntityBag.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\Get-Job.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Get-Tenant.ps1"
+	. "$here\Get-Node.ps1"
+	. "$here\New-Node.ps1"
 	
-	$entityPrefix = "New-ManagementUri";
-	$usedEntitySets = @("ManagementUris", "ManagementCredentials");
+	$entityPrefix = "New-EntityBag";
+	$usedEntitySets = @("EntityBags");
 	
 
-	Context "New-ManagementUri" {
+	Context "New-EntityBag" {
 	
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
@@ -23,6 +29,13 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
+			
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$value = "value-{0}" -f [guid]::NewGuid().ToString();
+			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+
+			$currentTenant = Get-Tenant -Current -svc $svc;
+			$testNode = New-Node -Name $name -ParentId $currentTenant.NodeId -EntityKindId $entityKindId -svc $svc;
 		}
 		
 		AfterAll {
@@ -46,116 +59,47 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			$true | Should Be $true;
 		}
 		
-		It "New-ManagementUri-ShouldReturnNewEntity" -Test {
+		It "New-EntityBag-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
+			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::Default.value__;
 			
 			# Act
-			$result = New-ManagementUri -svc $svc -Name $name -Type $type;
+			$result = New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -EntityId $testNode.Id;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
-			$result.Type | Should Be $type;
+			$result.Value | Should Be $value;
+			$result.EntityKindId | Should Be $entityKindId;
+			$result.EntityId | Should Be $testNode.Id;
+			$result.ProtectionLevel | Should Be $protectionLevel;
 		}
 
-		It "New-ManagementUri-ShouldReturnNewEntityWithValue" -Test {
+		It "New-EntityBag-ShouldReturnNewEntityWithDescriptionAndProtectionLevel" -Test {
 			# Arrange
-			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
+			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
+			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;
 			
 			# Act
-			$result = New-ManagementUri -svc $svc -Type $type -Name $Name -Value $Value;
+			$result = New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -EntityId $testNode.Id -Description $description -ProtectionLevel $protectionLevel;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Id | Should Not Be 0;
-			$result.type | Should Be $type;
 			$result.Value | Should Be $Value;
 			$result.Name | Should Be $Name;
+			$result.Description | Should Be $description;
+			$result.ProtectionLevel | Should Be $protectionLevel;
 		}
 
-		It "New-ManagementUriWithDescription-ShouldReturnNewEntity" -Test {
+		It "New-EntityBag-ShouldThrowContractError" -Test {
 			# Arrange
-			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
+			#N/A
 			
-			# Act
-			$result = New-ManagementUri -svc $svc -type $type -Name $Name -Value $Value -Description $Description;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result.Tid | Should Not Be $null;
-			$result.Id | Should Not Be 0;
-			$result.Name | Should Be $Name;
-			$result.Value | Should Be $Value;
-			$result.Description | Should Be $Description;
-		}
-
-		It "New-ManagementUriWithoutDescripionAndWithManagementCredential-ShouldReturnNewEntity" -Test {
-			# Arrange
-			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			
-			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$Password = "Password-{0}" -f [guid]::NewGuid().ToString();
-
-			$ManagementCredential = Set-ManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password -CreateIfNotExist;
-			
-			# Act
-			$result = New-ManagementUri -svc $svc -Name $Name -type $type -value $value -ManagementCredential $ManagementCredential.id
-			
-			# Assert
-			$result | Should Not Be $null;
-			$result.Tid | Should Not Be $null;
-			$result.Id | Should Not Be 0;
-			$result.Name | Should Be $Name;
-			$result.Value | Should Be $Value;
-			$result.ManagementCredentialId | Should Be $ManagementCredential.id
-		}
-		
-		It "New-ManagementUriWithDescripionAndWithManagementCredentialId-ShouldReturnNewEntity" -Test {
-			# Arrange
-			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			
-			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$Password = "Password-{0}" -f [guid]::NewGuid().ToString();
-
-			$ManagementCredential = Set-ManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password -CreateIfNotExist;
-
-			# Act
-			$result = New-ManagementUri -svc $svc -Name $Name -type $type -value $value -Description $Description -ManagementCredentialId $ManagementCredential.Id;
-			
-			# Assert
-			$result | Should Not Be $null;
-			$result.Tid | Should Not Be $null;
-			$result.Id | Should Not Be 0;
-			$result.Name | Should Be $Name;
-			$result.Value | Should Be $Value;
-			$result.Description | Should Be $Description;
-			$result.ManagementCredentialId | Should Be $ManagementCredential.id;
-		}
-		
-		It "New-ManagementUri-ShouldReturnNull" -Test {
-			# Arrange
-			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			
-			# Act
-			$result = New-ManagementUri -svc $svc -Type $type -Name $Name -Value $Value;
-			$resultAlreadyExists = New-ManagementUri -svc $svc -Type $type -Name $Name -Value $Value;
-			
-			$resultAlreadyExists | Should Be $null;
-		}
+			# Act / Assert
+			$result = New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -EntityId $testNode.Id;
+			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -EntityId $testNode.Id } | Should ThrowErrorId 'Contract';
+		}	
 	}
 }
 
