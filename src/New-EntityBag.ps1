@@ -37,7 +37,7 @@ Create a new EntityBag entry if it not already exists.
 
 
 .EXAMPLE
-New-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc -Description "ArbitraryDescription" -ProtectionLevel 1
+New-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc -Description "ArbitraryDescription" -ProtectionLevel [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::Default.value__
 
 Name            : ArbitraryName
 Value           : ArbitraryValue
@@ -74,7 +74,7 @@ See module manifest for dependencies and further requirements.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-KeyNameValue/'
+	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-EntityBag/'
 )]
 Param 
 (
@@ -149,8 +149,8 @@ Process
 	$EntityBagContents += $EntityKindId;
 	$EntityBagContentsString = [String]::Join(',', $EntityBagContents);
 
-	$entBag = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-	Contract-Assert (!$entBag) 'Entity does already exist';
+	$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', 1) | Select;
+	Contract-Assert (!$entityBag) 'Entity does already exist';
 	
 	if($PSCmdlet.ShouldProcess($EntityBagContents))
 	{
