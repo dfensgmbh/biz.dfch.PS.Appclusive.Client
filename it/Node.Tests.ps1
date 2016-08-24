@@ -218,12 +218,11 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$node | Should Not Be $null;
 			$node.Id | Should Not Be $null;
 			$node.Name | Should Be $nodeName;
-			$node.Description | Should Be $nodeDescription;
 			
 			#ACT set node as its own parent
 			$svc.Core.SetLink($node, "Parent", $node);
 			
-			{$updateResult = $Svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 400};
+			{$updateResult = $Svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 500};
 			
 			#CLEANUP
 			$svc = Enter-Appclusive;
@@ -325,15 +324,16 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 		
 		It "GetAssignablePermissionsForConfigurationNode-ReturnsIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
-			$currentTenant = Get-Tenant -svc $svc -Current;
+			$currentTenant = Get-ApcTenant -svc $svc -Current;
 			$tenantConfigurationNode = Get-ApcNode -Id $currentTenant.ConfigurationId -svc $svc;
-			$tenantConfigurationNodeJob = Get-ApcNode -Id $tenantConfigurationNode.Id -svc $svc -ExpandJob;
+			#$tenantConfigurationNodeJob = Get-ApcNode -Id $tenantConfigurationNode.Id -svc $svc -ExpandJob;
 			
 			try 
 			{
 				# Act
 				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantConfigurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
 				Write-Host ($assignablePermissions.Count | Out-String);
+				#Write-Host ($assignablePermissions | Out-String);
 				# Assert
 				$assignablePermissions | Should Not Be $null;
 				# All permissions for EntityKinds except CRUD permissions for
@@ -347,8 +347,8 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			finally
 			{
 				# Cleanup
-				$null = Remove-ApcEntity -Id $tenantConfigurationNodeJob.Id -EntitySetName "Jobs" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $tenantConfigurationNode.Id -EntitySetName "Nodes" -Confirm:$false;
+				#$null = Remove-ApcEntity -Id $tenantConfigurationNodeJob.Id -EntitySetName "Jobs" -Confirm:$false;
+				#$null = Remove-ApcEntity -Id $tenantConfigurationNode.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
 		
@@ -380,7 +380,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			# Act
 			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantRootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-			
+			Write-Host ($assignablePermissions.Count | Out-String);
 			# Assert
 			$assignablePermissions | Should Not Be $null;
 			# All product related permissions + permissions for
