@@ -18,7 +18,7 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 	. "$here\New-Node.ps1"
 	
 	$entityPrefix = "New-EntityBag";
-	$usedEntitySets = @("EntityBags");
+	$usedEntitySets = @("EntityBags" , "Nodes");
 	
 
 	Context "New-EntityBag" {
