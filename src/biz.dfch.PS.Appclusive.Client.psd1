@@ -178,6 +178,12 @@ NestedModules = @(
 	,
 	'Test-Connect.ps1'
 	,
+	'Set-ManagementUri.ps1'
+	,
+	'New-ManagementUri.ps1'
+	,
+	'Set-EntityBag.ps1'
+	,
 	'Import-DataType.ps1'
 )
 
