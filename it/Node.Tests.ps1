@@ -323,8 +323,21 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 		
 		It "GetAssignablePermissionsForConfigurationNode-ReturnsIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
+			$nodeName = $entityPrefix + "node";
 			$currentTenant = Get-ApcTenant -svc $svc -Current;
 			$tenantConfigurationNode = Get-ApcNode -Id $currentTenant.ConfigurationId -svc $svc;
+			
+			$configurationNode = New-Object biz.dfch.CS.Appclusive.Api.Core.Node;
+			$configurationNode.Name = $nodeName;
+			$configurationNode.EntityId = 42;
+			$configurationNode.EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::KeyNameValue.value__;
+			$configurationNode.ParentId = $tenantConfigurationNode.Id;
+			$configurationNode.Parameters = "{}";
+  			
+			$svc.Core.AddToNodes($configurationNode);
+			$null = $svc.Core.SaveChanges();
+			
+			$configurationNode = New-ApcNode -Name $nodeName -ParentId $tenantConfigurationNode.Id -EntityKindId $nodeEntityKindId -Parameters @{} -svc $svc;
 			
 			try 
 			{
