@@ -7,16 +7,65 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-Job.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Get-Tenant.ps1"
+	. "$here\Get-Node.ps1"
+	. "$here\Get-User.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\Set-EntityBag.ps1"
+	. "$here\New-Node.ps1"
 	
-	BeforeEach {
-		$moduleName = 'biz.dfch.PS.Appclusive.Client';
-		Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-		Import-Module $moduleName;
-	
-		$svc = Enter-ApcServer;
-	}
+	$entityPrefix = "Get-EntityBag";
+	$usedEntitySets = @("EntityBags", "Nodes");
 	
 	Context "Get-EntityBag" {
+		
+		BeforeAll {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+		
+			$svc = Enter-ApcServer;
+		
+			# Create Test Data
+			for ($i = 0; $i -le 5; $i++)
+			{
+				$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+				$value = "value-{0}" -f [guid]::NewGuid().ToString();
+				$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+
+				$currentTenant = Get-Tenant -Current -svc $svc;
+				$testNode = New-Node -Name $name -ParentId $currentTenant.NodeId -EntityKindId $entityKindId -svc $svc;
+				
+				Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
+			}
+		}
+		
+		BeforeEach {
+			
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+		
+			$svc = Enter-ApcServer;
+		}
+		
+		AfterAll {
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			# Delete Test Data
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
 	
 		# Context wide constants
 		# N/A
@@ -31,7 +80,7 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			
 			# Act
 			$result = Get-EntityBag -svc $svc -ListAvailable;
-
+			
 			# Assert
 			$result | Should Not Be $null;
 			$result -is [Array] | Should Be $true;
