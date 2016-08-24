@@ -59,7 +59,7 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			$true | Should Be $true;
 		}
 		
-		It "New-EntityBag-ShouldReturnNewEntity" -Test {
+		It "New-EntityBagWithMandatoryParameters-ShouldReturnNewEntity" -Test {
 			# Arrange
 			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::Default.value__;
 			
@@ -90,9 +90,11 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			$result.Name | Should Be $Name;
 			$result.Description | Should Be $description;
 			$result.ProtectionLevel | Should Be $protectionLevel;
+			$result.EntityId | Should Be $testNode.Id;
+			$result.EntityKindId | Should Be $entityKindId;
 		}
 
-		It "New-EntityBag-ShouldThrowContractError" -Test {
+		It "New-EntityBag-CreateTwiceTheSameEntityBagShouldThrowContractException" -Test {
 			# Arrange
 			#N/A
 			
