@@ -7,56 +7,56 @@ Creates a EntityBag entry in Appclusive.
 .DESCRIPTION
 Creates a EntityBag entry in Appclusive.
 
-You must specify the parameters 'Name' and 'Type'. If the entry already exists no update of the existing entry is performed.
+You must specify the parameters 'Name', 'Value', 'EntityId' and 'EntityKindId'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
 default | json | json-pretty | xml | xml-pretty
 
 .EXAMPLE
-New-EntityBag -Name "MyName" -Type "MyType"
+New-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc
 
-Type                   : MyType
-Value                  :
-ManagementCredentialId :
-Id                     : 180
-Tid                    : 11111111-1111-1111-1111-111111111111
-Name                   : MyName
-Description            :
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 22.08.2016 10:26:53 +02:00
-Modified               : 22.08.2016 10:31:00 +02:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              :
-ModifiedBy             :
+Name            : ArbitraryName
+Value           : ArbitraryValue
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 0
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     :
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
 
 Create a new EntityBag entry if it not already exists.
 
 
 .EXAMPLE
-New-KeyNameValue -Name "MyName" -Type "MyType" -Value "MyValue" -Description "MyDescription" -ManagementCredentialId 1
+New-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc -Description "ArbitraryDescription" -ProtectionLevel 1
 
-Type                   : MyType
-Value                  : MyValue
-ManagementCredentialId : 1
-Id                     : 180
-Tid                    : 11111111-1111-1111-1111-111111111111
-Name                   : MyName
-Description            : MyDescription
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 22.08.2016 10:26:53 +02:00
-Modified               : 22.08.2016 10:31:00 +02:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              :
-ModifiedBy             :
+Name            : ArbitraryName
+Value           : ArbitraryValue
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 1
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     : ArbitraryDescription
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
 
-Create a new EntityBag entry if it not already exists, with description, value,...
+Create a new EntityBag entry if it not already exists, with description and protectionLevel...
 
 
 .LINK
@@ -88,20 +88,20 @@ Param
 	[ValidateNotNullOrEmpty()]
 	[string] $Value
 	,
-	# Specifies the value to modify
+	# Specifies the EntityKindId to modify
 	[Parameter(Mandatory = $true, Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[long] $EntityKindId
 	,
-	# Specifies the ManagementCredential to modify
+	# Specifies the EntityId to modify
 	[Parameter(Mandatory = $true, Position = 3)]
 	[long] $EntityId
 	,
-	# Specifies the value to modify
+	# Specifies the ProtectionLevel to modify
 	[Parameter(Mandatory = $false)]
 	[long] $ProtectionLevel
 	,	
-	# Specifies the value to modify
+	# Specifies the Description to modify
 	[Parameter(Mandatory = $false)]
 	[string] $Description
 	,
