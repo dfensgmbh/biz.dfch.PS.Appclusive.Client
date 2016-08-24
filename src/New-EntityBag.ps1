@@ -87,13 +87,13 @@ Param
 	[Parameter(Mandatory = $true, Position = 1)]
 	[string] $Value
 	,
-	# Specifies the EntityKindId to modify
-	[Parameter(Mandatory = $true, Position = 2)]
-	[long] $EntityKindId
-	,
 	# Specifies the EntityId to modify
 	[Parameter(Mandatory = $true, Position = 3)]
 	[long] $EntityId
+	,
+	# Specifies the EntityKindId to modify
+	[Parameter(Mandatory = $true, Position = 2)]
+	[long] $EntityKindId
 	,
 	# Specifies the ProtectionLevel to modify
 	[Parameter(Mandatory = $false)]
