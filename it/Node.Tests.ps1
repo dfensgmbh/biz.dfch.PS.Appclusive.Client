@@ -337,6 +337,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$svc.Core.AddToNodes($configurationNode);
 			$null = $svc.Core.SaveChanges();
 			
+			$configurationNode = Get-ApcNode -name $nodeName -svc $svc;
 			try 
 			{
 				# Act
@@ -352,6 +353,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				$assignablePermissions.Name -notcontains "Apc:NetworksCanRead" | Should Be $true;
 				$assignablePermissions.Name -notcontains "Apc:FoldersCanDelete" | Should Be $true;
 				$assignablePermissions.Name -notcontains "Apc:MachinesCanRead" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:ScheduledJobsCanCreate" | Should Be $true;
 			}
 			finally
 			{
