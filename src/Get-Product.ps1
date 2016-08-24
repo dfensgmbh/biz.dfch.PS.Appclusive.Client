@@ -169,7 +169,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Product/
 .NOTES
 See module manifest for required software versions and dependencies.
 #>
-# Requires biz.dfch.PS.Appclusive.Client
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
@@ -184,7 +183,7 @@ PARAM
 	# Id of the product
 	[Parameter(Mandatory = $false, ParameterSetName = 'Id')]
 	[ValidateNotNullOrEmpty()]
-	[Int] $Id = $null
+	[long] $Id = $null
 	,
 	# Name of the product
 	[Parameter(Mandatory = $false, ParameterSetName = 'Parameter')]

@@ -15,6 +15,10 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
 	
 	. "$here\$sut"
 	. "$here\Get-Node.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\Remove-Node.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Get-Job.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
     BeforeEach {
@@ -23,13 +27,32 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
         Import-Module $moduleName;
 
         $svc = Enter-ApcServer;
-        
-        $NodeEntity = Get-Node -First 1 -svc $svc;
-	    $EntityId = $NodeEntity.Id;
 	
-	    if ( !$EntityId ) { Stop-Pester; }
+		# Create new node for tests
+	    $nodeName = "Name-{0}" -f [guid]::NewGuid().ToString();
+		$query = "Id gt {0}" -f [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::ReservationEnd.value__;
+		$ekId = ($svc.Core.EntityKinds.AddQueryOption('$filter', $query) | Select -First 1).id;
+        $nodeEntity = Set-Node -Name $nodeName -EntityKindId $ekId -CreateIfNotExist -svc $svc;
+		Contract-Assert(!!$nodeEntity);
+		
+		# Finish initial state transition of newly created node
+		$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $nodeEntity.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+		$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+		Contract-Assert($nodeJob);
+		$jobResult = @{Version = "1"; Message = "Arbitrary message"; Succeeded = $true};
+		$null = Invoke-EntityAction -InputObject $nodeJob -EntityActionName "JobResult" -InputParameters $jobResult -svc $svc;
+		
+		$entityId = $nodeEntity.id;
+	
+	    if ( !$entityId ) { Stop-Pester; }
     }
 
+	AfterEach {
+		$svc = Enter-ApcServer;
+		
+		$null = Remove-Node -Id $entityId -Confirm:$false -svc $svc;
+	}
+	
 	Context "Invoke-EntityAction" {
 	
 		# Context wide constants
@@ -41,8 +64,8 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
 			$EntityActionName = 'Status';
 			$ExpectedResult = 'single';
 			
-			# Act			
-			$result = Invoke-EntityAction -EntityId $EntityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc;
+			# Act
+			$result = Invoke-EntityAction -EntityId $entityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -55,7 +78,7 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
 			$ExpectedResult = 'list';
 			
 			# Act			
-			$result = Invoke-EntityAction -EntityId $EntityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc;
+			$result = Invoke-EntityAction -EntityId $entityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -68,7 +91,7 @@ Describe "Invoke-EntityAction" -Tags "Invoke-EntityAction" {
 			$ExpectedResult = 'single';
 			
 			# Act / Assert
-			{ Invoke-EntityAction -EntityId $EntityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc} | Should Throw
+			{ Invoke-EntityAction -EntityId $entityId -EntitySetName $EntitySetName -EntityActionName $EntityActionName -ExpectedResult $ExpectedResult -svc $svc} | Should Throw
 
 			# Assert
 			#N/A

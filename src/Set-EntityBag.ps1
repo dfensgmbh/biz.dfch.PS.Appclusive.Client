@@ -1,92 +1,117 @@
-function New-Order {
+function Set-EntityBag {
 <#
 .SYNOPSIS
-Place a new order in orch
+Sets or creates a EntityBag entry in Appclusive.
+
 
 .DESCRIPTION
-Place a new order in orch
+Sets or creates a EntityBag entry in Appclusive.
 
-You can create a new order for a product in the Appclusive.
+By updating an EntityBag entry you can specify if you want to update the description, protectionLevel or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
 
-.INPUTS
-See PARAMETERS section on possible inputs.
 
 .OUTPUTS
-default | json | json-pretty | xml | xml-pretty
+default
+
 
 .EXAMPLE
-New-ApcOrder -CatalogueItemId 12 -ProductParmeters ($parameterCart | ConvertTo-Json -Compress)
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId 1 -EntityId 2 -svc $svc -CreateIfNotExist;
 
-Status              : Approval
-RefId               : 408
-Token               : optional
-TenantId            : 00000000-0000-0000-0000-000000000000
-EntityKindId        : 20
-Parameters          : optional
-Condition           :
-ConditionParameters :
-Error               :
-EndTime             :
-ParentId            : 1647
-Id                  : 4436
-Tid                 : 9e210b40-3b9c-466a-bc4d-9f9243933350
-Name                : InitialStateInitialise succeeded
-Description         : InitialStateInitialise succeeded
-CreatedById         : 1014
-ModifiedById        : 1014
-Created             : 23.02.2016 16:20:05 +01:00
-Modified            : 23.02.2016 16:20:05 +01:00
-RowVersion          : {0, 0, 0, 0...}
-EntityKind          :
-Parent              :
-Children            : {}
-Tenant              :
-CreatedBy           :
-ModifiedBy          :
+Name            : ArbitraryName
+Value           : ArbitraryValue
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 0
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     :
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
 
-This order return the job that is created 
+Create a new EntityBag entry if it does not exists.
+
+
+.EXAMPLE
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId  1 -EntityId 2 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
+
+Name            : ArbitraryName
+Value           : Arbitrary updated value
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 0
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     : updatedDescription
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
+
+Update an existing EntityBag with new value and description.
+
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Order/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
+Set-EntityBag: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
+
 
 .NOTES
-See module manifest for required software versions and dependencies.
+See module manifest for dependencies and further requirements.
+
+
 #>
-# Requires biz.dfch.PS.Appclusive.Client
 [CmdletBinding(
-    SupportsShouldProcess = $true
+    SupportsShouldProcess = $false
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Order/'
-
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/'
 )]
-PARAM 
+Param 
 (
-	# Id of the catalogue item, which should be orderd
-	[Parameter(Mandatory = $true)]
+	# Specifies the name to modify
+	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
-	[Int] $CatalogueItemId = $null
+	[Alias('n')]
+	[string] $Name
 	,
-	# JSON-String with all from the product required parameters
-	[Parameter(Mandatory = $true, ParameterSetName = 'JSON')]
-	[ValidateNotNullOrEmpty()]
-	[String] $ProductParmeters = $null
+	# Specifies the value to modify
+	[Parameter(Mandatory = $true, Position = 1)]
+	[string] $Value
 	,
-	# Id from the folder to place the object to
+	# Specifies the EntityKindId
+	[Parameter(Mandatory = $true, Position = 2)]
+	[long] $EntityKindId
+	,
+	# Specifies the EntityId
+	[Parameter(Mandatory = $true, Position = 3)]
+	[long] $EntityId
+	,
+	# Specifies the new value
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[Int] $FolderId = $Null
+	[string] $NewValue
 	,
-	# Id from the owner to owner of the system, if it has to be changed 
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[Int] $OwnerId = $Null
+	[string] $Description
 	,
-	# Id from the tenant to place the order to, if it has to be changed 
+	# Specifies the ProtectionLevel
 	[Parameter(Mandatory = $false)]
-	[ValidateNotNullOrEmpty()]
-	[Int] $TenantId = $Null
+	[long] $ProtectionLevel
+	,
+	# Specifies to create a entity if it does not exist
+	[Parameter(Mandatory = $false)]
+	[Alias("c")]
+	[switch] $CreateIfNotExist = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -107,122 +132,147 @@ Begin
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
-	
+
+	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 }
 # Begin
 
 Process 
 {
-	trap { Log-Exception $_; break; }
-	
-	If (!(Get-ApcCatalogueItem -Id $CatalogueItemId))
-	{
-		Write-Warning ("No Catalogue Item with Id {0} found. Abort..." -f $CatalogueItemId);
-		Return;
-	}
-	
-	try {
-		$testJSON = ConvertFrom-Json $ProductParmeters;
-	} catch {
-		write-warning "Input is not an JSON-String. Abort..."
-		Return
-	}
-	
-	$cartItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem
-	$cartItem.Quantity = 1;
-	$cartItem.CatalogueItemId = $CatalogueItemId;
-	$cartItem.Parameters = $ProductParmeters;
-	$cartItem.Id = "0"
-	$cartItem.Name = "Migration"
-	$cartItem.Description = "Migration"
-	
-	write-host ($cartItem  | Out-String) ;
-	
-	$result = $svc.Core.AddToCartItems($cartItem);
-	$result = $svc.Core.SaveChanges()
-	
-	$cart = $svc.Core.Carts
 
-	$parameterOrder = @{}
-	If($FolderId)
-	{
-		$parameterOrder.NodeID = $FolderId;
-	} 
-	else
-	{
-		$entityRoot = Get-ApcEntityKind -Name biz.dfch.CS.Appclusive.Core.General.TenantRoot
-		
-		If ($svc.Core.TenantID)
-		{
-			$nodeId = $svc.Core.Nodes.AddQueryOption('$filter',("(Tid eq GUID'{0}') and (EntityKindId eq {1})" -f $svc.Core.TenantID,$entityRoot.Id))
-		}
-		else
-		{
-			$nodeId = $svc.Core.Nodes.AddQueryOption('$filter',("EntityKindId eq {0}" -f $entityRoot.Id)).AddQueryOption('$top','1')
-		}
-		
-		$parameterOrder.NodeID = $nodeId.Id;
-	}
-	
-	write-host (($parameterOrder | ConvertTo-Json -Compress).ToString())
-	
-	$order = New-Object biz.dfch.CS.Appclusive.Api.Core.Order
-	$order.Parameters = (($parameterOrder | ConvertTo-Json -Compress).ToString())
-	$order.Name = "test taahaga1"
-	$order.Description = "test taahaga1"
-	
-	$result = $svc.Core.AddToOrders($order)
-	$orderResult = $svc.Core.SaveChanges()
-	
-	write-host (($orderResult | ConvertTo-Json).ToString())
-	# Get the Job from the request return
-	$jobUri = [uri] $orderResult.Headers.Location
-	If (($jobUri.Segments[-1] -match '^Jobs\((?<JobId>\d+)L?\)$'))
-	{
-		$job = Get-Job -Id $Matches.JobId
-	}
-	else
-	{
-		Write-Warning "Something went wrong - no Job ist created. Abort..."
-		Return;
-	}
-	
-	$orderitemJob = Get-ApcJob -ParentId $job.Id -EntityKindId 21;
-	$nodeJob = Get-ApcJob -ParentId $orderitemJob.Id -EntityKindId 1;
-	$node = Get-ApcNode -Id $nodeJob.RefId;
-	
-	# If ($OwnerId)
-	# {
-		# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetCreatedBy" , @{EntityId=$node.id;EntitySet="biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node";CreatedById=$OwnerId})
-	# }
+# Default test variable for checking function response codes.
+[Boolean] $fReturn = $false;
+# Return values are always and only returned via OutputParameter.
+$OutputParameter = $null;
+$AddedEntity = $null;
 
-	# If ($TenantId)
-	# {
-		# $svc.Core.InvokeEntitySetActionWithVoidResult("SpecialOperations", "SetTenant" , @{EntityId=$node.id;EntitySet="biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node";TenantId=$TenantId})
-		# $svc.Core.Tenants.AddQueryOption('$filter','Name eq "Manage Customer Tenant"')
-	# }
+try 
+{
+	$exp = @();
 	
-	$OutputParameter = Format-ResultAs $nodeJob $As
+	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$exp += ("(EntityId eq {0})" -f $EntityId);
+	$exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+
+	$FilterExpression = [String]::Join(' and ', $exp);
+
+	$entity = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+
+	if(!$CreateIfNotExist -And !$entity) 
+	{
+		$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
+		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		throw($gotoError);
+	}
+	if(!$entity) 
+	{
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityBag;
+		$svc.Core.AddToEntityBags($entity);
+		$AddedEntity = $entity;
+		$entity.Name = $Name;
+		$entity.Value = $Value;
+		$entity.EntityId = $EntityId;
+		$entity.EntityKindId = $EntityKindId;
+		$entity.Created = [System.DateTimeOffset]::Now;
+		$entity.Modified = $entity.Created;
+		$entity.CreatedById = 0;
+		$entity.ModifiedById = 0;
+		$entity.Tid = [guid]::Empty.ToString();
+	}
+	if($PSBoundParameters.ContainsKey('Description'))
+	{
+		$entity.Description = $Description;
+	}
+	if($PSBoundParameters.ContainsKey('ProtectionLevel'))
+	{
+		$entity.ProtectionLevel = $ProtectionLevel;
+	}
+	if($PSBoundParameters.ContainsKey('NewValue'))
+	{
+		$entity.Value = $NewValue;
+	}
+
+	$svc.Core.UpdateObject($entity);
+	$r = $svc.Core.SaveChanges();
+
+	$r = $entity;
+	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
+}
+catch 
+{
+	if($gotoSuccess -eq $_.Exception.Message) 
+	{
+		$fReturn = $true;
+	} 
+	else 
+	{
+		[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
+		$ErrorText += (($_ | fl * -Force) | Out-String);
+		$ErrorText += (($_.Exception | fl * -Force) | Out-String);
+		$ErrorText += (Get-PSCallStack | Out-String);
+		
+		if($_.Exception -is [System.Net.WebException]) 
+		{
+			Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
+			Log-Debug $fn $ErrorText -fac 3;
+		}
+		else 
+		{
+			Log-Error $fn $ErrorText -fac 3;
+			if($gotoError -eq $_.Exception.Message) 
+			{
+				Log-Error $fn $e.Exception.Message;
+				$PSCmdlet.ThrowTerminatingError($e);
+			} 
+			elseif($gotoFailure -ne $_.Exception.Message) 
+			{ 
+				Write-Verbose ("$fn`n$ErrorText"); 
+			} 
+			else 
+			{
+				# N/A
+			}
+		}
+		$fReturn = $false;
+		$OutputParameter = $null;
+		
+		if($AddedEntity) 
+		{ 
+			$svc.Core.DeleteObject($AddedEntity); 
+		}
+	}
+}
+finally 
+{
+	# Clean up
+	# N/A
+}
+
 }
 # Process
 
 End 
 {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	
-	# Return values are always and only returned via OutputParameter.
-	return $OutputParameter;
+
+$datEnd = [datetime]::Now;
+Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+
+# Return values are always and only returned via OutputParameter.
+return $OutputParameter;
+
 }
+# End
 
-} # function
-
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Order; } 
+}
+if($MyInvocation.ScriptName) 
+{ 
+	Export-ModuleMember -Function Set-EntityBag; 
+} 
 
 # 
-# Copyright 2015-2016 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -240,8 +290,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Order; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0Jq8Pz/vTCLQpppxB8aPgjvL
-# bECgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0D72e2zQrxaTY3P8hFo+FL/o
+# zi6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -340,26 +390,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Order; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS4eR8LJ4uNMN3L
-# cDCjcm+mdyfI8DANBgkqhkiG9w0BAQEFAASCAQBX1bjR8/3ZSldZX5C0sBfiItku
-# OI/K9CjkAV7X/IeYQ8y+vgzcRhi20np1UByqHbvJT6UPwGRO4LAicS+7BaPKp7ob
-# fIUc4H4yQ+DA89Wz5AL0nm8gWQw2QtocH6YEeW8YFkBnJi4HvR4HuadlApB8FjPs
-# i03H6VoMGkHpqUiWllpTVm4BRvuiMbb7ubx1Yvww/WbB2m9CLhy+g/gH3L09K980
-# EuQddreqYVYYH300s+kTTQXpUntxl/01uag6sFXTELG8GgQKk7nVQ+N5viDISHlG
-# ILZ1f2dbtdErq/elM8R81SIWQeMqvgyUUVINvJBL3dgFt+7KcQDkwmXN8bBWoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSrV+NEzFW4pjfe
+# 61uitVpfcDtsUTANBgkqhkiG9w0BAQEFAASCAQBnG8/Sdw9eI2G3APeaWFh7KUXj
+# 9/K9a2lHrjjSSxan+lJF0X8MKoQtn5RVO5t8xfrWn67zEm/nn5kBnnitMopp4jDh
+# aJO65PZfaPvETlbrAoHg6aqjC9SiSNrbexUcib++/hm6by5phpIAzmEEKa1mL5un
+# EbnbXvnKSO7CHdesKRIqhmX25ObQGm4jSw1vyfy9rZB8OL172C/+OKjs3gQcyYXn
+# 0LuzJgoFIxk6HDVaNDaW2DRw0mTqgjrQHnLHSkB0vDvtHk4EsOMqJFppsWSHXjlp
+# 0WUUZzJvvSElJpd8ZHV5IOruqucrOm3nQ+GbH/0b9s9DbQPZZRGnp8egQC31oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyODEyMDYxNFowIwYJKoZIhvcNAQkEMRYEFLOoIIvToroS5TCYJgk/9yegH4wi
+# MDcyODEyMDYyMFowIwYJKoZIhvcNAQkEMRYEFHh1LeS1bigtBpjNZ0QQdJCpmEJj
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBG0SOMvtXH+Pu5uU6O
-# v08lCpYwXXRka6Rz1Jwi1MIcw1X8jjeTxUdqsWh42dBEm4LuZhqP1xlF6n3+WWXV
-# oAK0vpGGJg7EEothAVj4XydyhqFc3FJR00I8jEcVxEGrtO/YSUMsUmPVA8nCaUwn
-# +KvoAhColM4kVRETWwXtkGaRmFg9Ey8EnCq8fP9qHMDX3ykBpZ+Xqh+cBhny25e2
-# 5v/V9L2+vDs27UuPO2I561KW0sfAS9hzuWxceog8UFAaMVTkBI1k+4qz0x5WSFiJ
-# ptAfofDSPjb3P/yb0A++9lsYvRb/bZ4cOof4vWFdV/p3tSCtNHjkuR0HT9D5GWbQ
-# uKKC
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBQdp4iOvHrp2LZvaio
+# 81kEtfgLfd7IoB9ed9il85RP2Tn2xCtfPNE4R+nc6ONSdXw9O0AJkwYYNK+7t0zt
+# 9t+dMSRKpq9aHBwetduA9NAarmMk9W1qP/gR2AXoRA/1MnI2/qUlnZSsnpNnuzO6
+# LuqucTrTiQTYxzndZRzPyVdbTQI9P6R230/Lw4yD2BoTQIgpqOhqLPr5wlG+83Dg
+# vo8Vz8eVaQEnt9ux8xnYuSVivdo68L0NGmI0sMmySFnYYqMxr/ZK4vCIHiFOijuM
+# Kyu45W2LkuKzeqDb7v/ZRJnz6aeE56guVLiXYP0z+lo3TodkXx+KdDVGNPcrgJvQ
+# 5+Rc
 # SIG # End signature block

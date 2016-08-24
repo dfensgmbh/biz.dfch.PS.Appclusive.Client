@@ -55,7 +55,7 @@ PARAM
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
 	[Alias('NodeId')]
-	[int] $EntityId
+	[long] $EntityId
 	,
 	# Specifies the name of the entity action
 	[Parameter(Mandatory = $true, Position = 1)]

@@ -1,3 +1,5 @@
+#includes tests for test cases CLOUDTCL-2190
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
@@ -13,16 +15,19 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 	. "$here\Acl_Ace.ps1"
 
     $entityPrefix = "TestItem-";
-	$usedEntitySets = @("Nodes", "ExternalNodes", "Acls", "Aces", "EntityBags");
+	$usedEntitySets = @("Assocs","Nodes", "ExternalNodes", "Acls", "Aces", "EntityBags");
 	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-	$nodeParentId = (Get-ApcTenant -Current).NodeId;
 
-	Context "#CLOUDTCL-2190-DeleteNodeWithChildNode" {
+	Context "#CLOUDTCL-2190-DeleteNode" {
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+			
 			$svc = Enter-Appclusive;
+			
+			$currentTenant = Get-ApcTenant -Current -Svc $Svc;
+			$nodeParentId = $currentTenant.NodeId;
 		}
 		
 		AfterEach {
@@ -40,7 +45,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
             }
         }
 		
-		It "DeleteNodeWithChildNode" -Test {
+		It "DeleteNodeWithChildNode-ThrowsError" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
 			$childName = $entityPrefix + "childnode";
@@ -72,6 +77,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			{
 				#get the parent node
 				$parentNode = Get-ApcNode -Id $nodeId -svc $svc;
+				$svc.Core.DeleteObject($parentNode);
 				#remove Node, but it's supposed to fail as we have Children
 				$svc.Core.SaveChanges();
 			}
@@ -118,7 +124,7 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			
 			#get the job of the node
 			$job = Get-ApcNode -Id $nodeId -ExpandJob;
-			$jobId = [int] $job.Id;
+			$jobId = [long] $job.Id;
 			
 			#create external node
 			$extNode = New-ApcExternalNode -name $extName -NodeId $nodeId -ExternalId $nodeId -ExternalType "ArbitraryType" -svc $svc | select;
@@ -190,6 +196,93 @@ Describe -Tags "DeleteNode.Tests" "DeleteNode.Tests" {
 			$query = "Id eq {0}" -f $entityBagId;
 			$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $query) | select;
 			$entityBag | Should Be $null;
+		}
+		
+		It "DeleteNodeWithChildNode-ThrowsError" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$nodeChildren = 4;
+			
+			#ACT create node
+			$newNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $newNode.Id;
+			
+			$ids = @();
+			#ACT create chilren nodes
+			for ($i =1; $i -le $nodeChildren; $i++)
+			{
+				$newChildNode = New-ApcNode -Name ("{0}-{1}" -f $nodeName,$i) -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+				$ids += $newChildNode.Id;
+			}
+			
+			#CLEANUP delete chilren nodes
+			foreach ($id in $ids)
+			{
+				Remove-ApcNode -Id $id -Confirm:$false -svc $svc;
+			}
+		}
+		
+		It "DeleteNodeWithAssoc" -Test {
+			#ARRANGE
+			$nodeName1 = $entityPrefix + "node1";
+			$nodeName2 = $entityPrefix + "node2";
+			$assocName = $entityPrefix + "assoc";
+			
+			#ACT create node
+			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the nodes
+			$node1Id = $node1.Id;
+			$node2Id = $node2.Id;
+			
+			#create Assoc that has node as destination
+			$newassoc = New-Object biz.dfch.CS.Appclusive.Api.Core.Assoc;
+            $newassoc.SourceId = $node2Id;
+			$newassoc.DestinationId = $node1Id;
+            $newassoc.Order = $node2Id + $node1Id;
+            $newassoc.Name = $assocName;
+			$svc.Core.AddToAssocs($newassoc);
+			$svc.Core.SaveChanges();
+			
+			#get the assoc
+			$query = "Name eq '{0}'" -f $assocName;
+			$assoc = $svc.core.Assocs.AddQueryOption('$filter', $query) | Select;
+			
+			#get the id of the assoc
+			$assocId = $assoc.Id;
+			
+			#ASSERT that assoc has been created
+			$assoc.Id | Should Not Be $null;
+			$assoc.Name | Should Be $assocName;
+			
+			try
+			{
+				#get the  node1 and try to delete it
+				$node1 = Get-ApcNode -Id $node1Id -svc $svc;
+				$svc.Core.DeleteObject($node1);
+				#it is supposed to fail because the node1 is the Destination of the Assoc
+				$svc.Core.SaveChanges();
+			}
+			catch
+			{
+				$(Format-ApcException) | Should Not Be $null;
+				$_.Exception.Message | Should Not Be $null;
+				$_.FullyQualifiedErrorId | Should Not Be $null;
+			}
+			finally
+			{
+				#when we delete the node2, the assoc should be deleted because node2 is its source
+				$svc = Enter-Appclusive;
+				Remove-ApcNode -Id $node2Id -Confirm:$false -svc $svc;
+				
+				#ASSERT get the assoc and check that it does not exist anymore
+				$query = "Id eq {0}" -f $assocId;
+				$assoc = $svc.core.Assocs.AddQueryOption('$filter', $query) | Select;
+				$assoc | Should be $null;
+			}
 		}
 	}
 }

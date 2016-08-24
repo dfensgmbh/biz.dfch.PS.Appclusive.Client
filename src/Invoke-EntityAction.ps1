@@ -124,7 +124,7 @@ PARAM
 	,
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
-	[int] $EntityId
+	[long] $EntityId
 	,
 	# Specifies the entitiyset name of the entity
 	[Parameter(Mandatory = $true, Position = 1, ParameterSetName = 'id')]

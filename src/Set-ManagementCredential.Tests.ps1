@@ -9,22 +9,40 @@ Describe "Set-ManagementCredential" -Tags "Set-ManagementCredential" {
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	
-    BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-
-        $svc = Enter-ApcServer;
-    }
-
+	$entityPrefix = "Set-ManagementCredential";
+	$usedEntitySets = @("ManagementCredentials");
+	
 	Context "Set-ManagementCredential" {
+	
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+		}
+	
+		AfterAll {
+            $svc = Enter-ApcServer;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 	
 		# Context wide constants
 		# N/A
 
 		It "Set-ManagementCredential-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$Password = "Password-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -41,7 +59,7 @@ Describe "Set-ManagementCredential" -Tags "Set-ManagementCredential" {
 
 		It "Set-ManagementCredentialWithNewUsernameAndDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$NewDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
 			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();

@@ -1,73 +1,216 @@
-function GetCatalogueByName($svc, $catName) 
+function New-ManagementUri {
+<#
+.SYNOPSIS
+Creates a ManagementUri entry in Appclusive.
+
+
+.DESCRIPTION
+Creates a ManagementUri entry in Appclusive.
+
+You must specify the parameters 'Name' and 'Type' and 'Value'. If the entry already exists no update of the existing entry is performed.
+
+
+.OUTPUTS
+default | json | json-pretty | xml | xml-pretty
+
+.EXAMPLE
+New-ManagementUri -Name ArbitraryName -Type ArbitraryType -Value ArbitraryValue
+
+Type                   : ArbitraryType
+Value                  : ArbitraryValue
+ManagementCredentialId :
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : AritraryName
+Description            :
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
+
+Create a new ManagementUri entry if it not already exists.
+
+
+.EXAMPLE
+New-ManagementUri -Name ArbitraryName -Type ArbitraryType -Value ArbitraryValue -Description ArbitraryDescription -ManagementCredentialId 1
+
+Type                   : ArbitraryType
+Value                  : ArbitraryValue
+ManagementCredentialId : 1
+Id                     : 180
+Tid                    : 11111111-1111-1111-1111-111111111111
+Name                   : ArbitraryName
+Description            : ArbitraryDescription
+CreatedById            : 1
+ModifiedById           : 1
+Created                : 22.08.2016 10:26:53 +02:00
+Modified               : 22.08.2016 10:31:00 +02:00
+RowVersion             : {0, 0, 0, 0...}
+ManagementCredential   :
+Tenant                 :
+CreatedBy              :
+ModifiedBy             :
+
+Create a new ManagementUri entry if it not already exists, with description, value,...
+
+
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ManagementUri/
+Set-ManagementUri: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/
+
+
+.NOTES
+See module manifest for dependencies and further requirements.
+
+
+#>
+[CmdletBinding(
+    SupportsShouldProcess = $true
+	,
+    ConfirmImpact = 'Low'
+	,
+	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/ManagementUri/'
+)]
+Param 
+(
+	# Specifies the type to modify
+	[Parameter(Mandatory = $true, Position = 0)]
+	[ValidateNotNullOrEmpty()]
+	[Alias("t")]
+	[string] $Type
+	,
+	# Specifies the Name to modify
+	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateNotNullOrEmpty()]
+	[Alias('n')]
+	[string] $Name
+	,
+	# Specifies the value to modify
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[Alias('v')]
+	[string] $Value
+	,
+	# Specifies the ManagementCredential to modify
+	[Parameter(Mandatory = $false)]
+	[Alias('m')]
+	[long] $ManagementCredentialId
+	,
+	# Specifies the value to modify
+	[Parameter(Mandatory = $false)]
+	[string] $Description
+	,
+	# Service reference to Appclusive
+	[Parameter(Mandatory = $false)]
+	[Alias('Services')]
+	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
+	,
+	# Specifies the return format of the Cmdlet
+	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
+	[Parameter(Mandatory = $false)]
+	[alias('ReturnFormat')]
+	[string] $As = 'default'
+)
+
+Begin 
 {
-	return $svc.Core.Catalogues |? Name -eq $catName;
-}
+	trap { Log-Exception $_; break; }
 
-function GetCatalogueItemsOfCatalog($svc, $cat) {
-	return $svc.Core.LoadProperty($cat, 'CatalogueItems') | Select;
-}
+	$datBegin = [datetime]::Now;
+	[string] $fn = $MyInvocation.MyCommand.Name;
+	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 
-function GetCatalogueItemByName($svc, $name) 
+	# Parameter validation
+	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+}
+# Begin
+
+Process
 {
-	return $svc.Core.CatalogueItems |? Name -eq $name;
-}
+	trap { Log-Exception $_; break; }
+	
+	# Default test variable for checking function response codes.
+	[Boolean] $fReturn = $false;
+	# Return values are always and only returned via OutputParameter.
+	$OutputParameter = $null;
 
-function CreateCatalogueItem($catalogue, $product) 
+	$Exp = @();
+	$ManagementUriContents = @();
+	
+	$Exp += ("(tolower(Type) eq '{0}')" -f $Type.ToLower());
+	$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$FilterExpression = [String]::Join(' and ', $Exp);
+	
+	$ManagementUriContents += $Type;
+	$ManagementUriContents += $Name;
+	$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
+
+	$mgmtUri = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	Contract-Assert (!$mgmtUri) 'Entity does already exist';
+	
+	if($PSCmdlet.ShouldProcess($ManagementUriContents))
+	{
+		if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ManagementCredentialId'))
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -Description $Description -CreateIfNotExist -svc $svc;
+		}
+		elseif($PSBoundParameters.ContainsKey('Description'))
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -Description $Description -CreateIfNotExist -svc $svc;
+		}
+		elseif($PSBoundParameters.ContainsKey('ManagementCredentialId'))
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -ManagementCredentialId $ManagementCredentialId -CreateIfNotExist -svc $svc;
+		}
+		else
+		{
+			$r = Set-ManagementUri -Name $Name -type $type -Value $Value -CreateIfNotExist -svc $svc;
+		}
+		$OutputParameter = $r;
+	}
+
+	$fReturn = $true;
+}
+# Process
+
+End 
 {
-	$catItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CatalogueItem;
-	$catItem.Tid = "1";
-	$catItem.CreatedBy = $ENV:USERNAME;
-	$catItem.ModifiedBy = $catItem.CreatedBy;
-	$catItem.Created = [DateTimeOffset]::Now;
-	$catItem.Modified = $catItem.Created;
-	$catItem.Name = 'Arbitrary Item';
-	$catItem.CatalogueId = $catalogue.Id;
-	$catItem.ProductId = $product.Id;
-	$catItem.ValidFrom = [DateTimeOffset]::Now;
-	$catItem.ValidUntil = [DateTimeOffset]::Now;
-	$catItem.EndOfSale = [DateTimeOffset]::Now;
-	$catItem.EndOfLife = [DateTimeOffset]::Now;
-	$catItem.Parameters = '{}';
-	return $catItem;
+	$datEnd = [datetime]::Now;
+	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	# Return values are always and only returned via OutputParameter.
+	return $OutputParameter;
 }
+# End
 
-function CreateCatalogue($catName)
-{
-	$cat = New-Object biz.dfch.CS.Appclusive.Api.Core.Catalogue;
-	$cat.Status = "Published";
-	$cat.Version = 1;
-	$cat.Name = $catName;
-	$cat.Description = "Default catalogue for the test run";
-	$cat.Created = [System.DateTimeOffset]::Now;
-	$cat.Modified = $cat.Created;
-	$cat.CreatedBy = $ENV:USERNAME;;
-	$cat.ModifiedBy = $ENV:USERNAME;;
-	$cat.Tid = "1";
-	$cat.Id = 0;
-	return $cat;
 }
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; } 
 
-#
-# Copyright 2015 d-fens GmbH
-#
+# 
+# Copyright 2014-2015 d-fens GmbH
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+# 
 # http://www.apache.org/licenses/LICENSE-2.0
-#
+# 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+# 
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9cZu5nTmUYwJLaKsJbg8aWIl
-# M/GgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUrGS+r7CA42q1FvvF14tmAAa/
+# t32gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -166,26 +309,26 @@ function CreateCatalogue($catName)
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQqKjI/PJrI6k65
-# 8dfLfud4LGsORDANBgkqhkiG9w0BAQEFAASCAQCH4mUxf2ovm1Aauedt63gWumy4
-# 55P9u9YWPzZFhHxWWxK3WLgt/umquCApw0tRFXZ+jpYcoesECSI9H5D4dq6nnN3q
-# mi+5x9mguo0I6ly5Z8xlRBGwOuc9Qkmvrgj857KpU+7OA2Q0P40gAB4uAnJ668Pg
-# LbiL3vTpS07lBZgA3Ggci9M3K1kcd3eva9R4DgmYhqMzFLF5/r01StqeBEcP21K4
-# 4rIdd79ErR1CQv/pCtxyH46plMc3ARqV0Pnycdx7dNRgrOKCUn8hoaX2Wy8LbN8s
-# fX+IyfPPpcJiAQeYaD08gRTcSA2oscTHTZRM0CjdBOFTCJWXAgYEv8z1i6XgoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS17DLMz48XrHuV
+# AVM5V3bN4s+0tTANBgkqhkiG9w0BAQEFAASCAQCS2sqdiJFUeW+nvYjD6id7M3Cc
+# L7EOjEVm4yLeVhoBMxrmJTKnNKkjMux27hdf18+qNlG0JyFmjMLXq9mztTOmQGe5
+# NuZJ1w4F38nqZNWuWCztOuZg8+TQcz+v7eTLpTCjKwJ3A6J9dkHyN2iQgwSpr5kM
+# PUWX9ucwUe0Ud9Sb47hESde/nHDIIPejdis3UKtqKGt98TNBkjVCB5TgFRYG4MmY
+# 2pje/sU4PIdPFR5re+u9zgD6/rhEqFD4Ld7WpitV277YpaGSvoGikYcuMVMu/1YA
+# CMqRPiAqDx0x2adi62vT99ZNRacimIsx5YAdJv24h/8ge8gJxugyMzACgXlQoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcwNDExMjIxMFowIwYJKoZIhvcNAQkEMRYEFHQafVe27DXFB9SOpe4T4jguI4RQ
+# MDcyODEyMDYxMlowIwYJKoZIhvcNAQkEMRYEFCdEgrrp7VGX4+HkpMubo6Ir7DAL
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQB2zWYd9d/Jz9jqgMTn
-# mz8vgKqB4qtQepyPbl+Rkk2s4TGjcqRQc0ZzLAuEr7fTBgMRMPVMy8VtDcyXNSln
-# u7436DwCMrbtyecdp9osEQ4SLqSVS5bFVmXkvKSdCpDEbMsfxOa9Te72HDWnNZ9D
-# UymvZgJGzWbtmeEVxyBNGwggNASsOgzoytcI8+Y7KMKYwfYdBd2SZdSlawfsUGsL
-# 0yhLxNTUAo5mWlo9Me6xvtP2IXWrQ2Wro1RUAYsdf1L4g17695j7lV3vqHOVnyOx
-# fNtZRzbihFXS96J6E2IYbhWgD5k7Bpha4OV+CUo1Noh2acvxy1BgXe6leaanJvgR
-# 1YHV
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBBKF/aOp5S8Mr7ldaE
+# 3/Pr1L3AxyxNhZUd0qfkrvqm8g0GLe+dUvw2U2yYMFok9h9AbZMDJKwhc+G9XDbt
+# Bzgh2vBnVM/2SICzs4jiYyGxaSTwXpUlwyjV2Orgn+/inqn3Ty6K1zUU2KmJpstS
+# ZSXPJV9GxQj5tEqnuSIDWPe4JNj5HaN5eNXiz9SwTNzIbV9DC0phVe+vY42BWy50
+# Tcf7kTlWRJ+0GSI7qWSrPkuVbAho0LSKFMHHi20P483lhFo32sfrHdOLIzQV8tBL
+# T0yHHnLSw2rFMH5IYkvZJRfmumV+zeHwyXQwC3RZanhjFkMZZHM8EZMGtOFAWzlr
+# WbsA
 # SIG # End signature block

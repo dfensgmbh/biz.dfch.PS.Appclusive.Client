@@ -162,7 +162,7 @@ PARAM
 (
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
-	[int] $Id
+	[long] $Id
 	,
 	# Specifies the name of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'name')]
@@ -175,7 +175,7 @@ PARAM
 	,
 	# Filter by external id
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[int] $NodeId
+	[long] $NodeId
 	,
 	# Filter by type
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]

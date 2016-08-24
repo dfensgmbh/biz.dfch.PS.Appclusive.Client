@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.5.0.20160807'
+ModuleVersion = '4.5.1.20160815'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -146,8 +146,6 @@ NestedModules = @(
 	,
 	'Get-CimiTarget.ps1'
 	,
-	'New-Order.ps1'
-	,
 	'Get-Product.ps1'
 	,
 	'Get-CatalogueItem.ps1'
@@ -179,6 +177,12 @@ NestedModules = @(
 	'Remove-Interface.ps1'
 	,
 	'Test-Connect.ps1'
+	,
+	'Set-ManagementUri.ps1'
+	,
+	'New-ManagementUri.ps1'
+	,
+	'Set-EntityBag.ps1'
 )
 
 # Functions to export from this module
@@ -250,12 +254,11 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20160728
-			#BUGFIXES 
-			Enter-Server
-			* fixed endpoint extraction due to changed base class
-			* installation base path is "$env:ProgramFiles\WindowsPowerShell\Modules" and can be manually set as input parameter'
-
+        ReleaseNotes = '20160815
+			# Bugfix
+			* Registered Interface and Connector correctly
+			* Fix Pester Tests
+			* Cleanup'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"

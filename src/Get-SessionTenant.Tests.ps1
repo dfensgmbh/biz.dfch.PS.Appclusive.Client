@@ -10,6 +10,7 @@ Describe "Get-SessionTenant.Tests" -Tags "Get-SessionTenant.Tests" {
 	. "$here\Get-ModuleVariable.ps1"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Set-SessionTenant.ps1"
+	. "$here\Get-Tenant.ps1"
 	
 	Context "Get-SessionTenant.Tests" {
 	
@@ -18,6 +19,12 @@ Describe "Get-SessionTenant.Tests" -Tags "Get-SessionTenant.Tests" {
 		
 		BeforeEach {
 			$error.Clear();
+			
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			
+			$svc = Enter-ApcServer;
 		}
 		
 		AfterEach {
@@ -40,25 +47,22 @@ Describe "Get-SessionTenant.Tests" -Tags "Get-SessionTenant.Tests" {
 			$result = Get-SessionTenant -svc $svc;
 			
 			# Assert
-			Write-Host ($result | Out-String);
 			$result | Should Be $null;
 		}
 		
-		It "GetSessionTenantWithIdDefined-ReturnsNull" -Test {
+		It "GetSessionTenantWithIdDefined-ReturnsCurrentSessionTenant" -Test {
 		
 			# Arrange
-			$tenantId = '11111111-1111-1111-1111-111111111111'
+			$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
 			$null = Set-SessionTenant $tenantId -svc $svc;
 			
 			# Act
 			$result = Get-SessionTenant -svc $svc;
 			
 			# Assert
-			Write-Host ($result | Out-String);
 			$result | Should Not Be $null;
 			$result.Id | Should Be $tenantId;
-		}
-		
+		}	
 	}
 }
 

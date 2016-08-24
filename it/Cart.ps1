@@ -1,23 +1,138 @@
-function CreateCartItem($catItem) 
+function Create-CartItem
 {
+	Param
+	(
+		[Parameter(Mandatory=$true)]
+		$Svc
+		,
+		[Parameter(Mandatory=$true)]
+		$Name
+		,
+		$Description = "Description"
+		,
+		[Parameter(Mandatory=$true)]
+		$CatalogueItemId
+		,
+		$CartId
+		,
+		$Quantity = 1
+		,
+		$Tid = (Get-ApcTenant -Current -svc $Svc).Id
+	)
+	
 	$cartItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem;
-	$cartItem.Quantity = 1;
-	$cartItem.Name = $catItem.Name;
-	$cartItem.CatalogueItemId = $catItem.Id;
-	$cartItem.Parameters = '{"tralala":"tralala"}';
-	return $cartItem;
+	$cartItem.Name = $Name;
+	$cartItem.Description = $Description;
+	$cartItem.CatalogueItemId = $CatalogueItemId;
+	$cartItem.CartId = $CartId;
+	$cartItem.Quantity = $Quantity;
+	$cartItem.Tid = $Tid;
+	$cartItem.Parameters = $Parameters;
+	
+	#ACT create cart item
+	$svc.Core.AddToCartItems($cartItem);
+	$result = $svc.Core.SaveChanges();
+	
+	#get cart item
+	$query = "Id eq {0}" -f $cartItem.Id;
+	$loadedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | Select;
+	
+	#ASSERT cart item
+	$bin = $result.StatusCode | Should Be 201;
+	$bin = $loadedCartItem | Should Not Be $null;
+	$bin = $loadedCartItem.Name | Should Be $Name;
+	$bin = $loadedCartItem.Description | Should Be $Description;
+	$bin = $loadedCartItem.Id | Should Not Be $null;
+	$bin = $loadedCartItem.CatalogueItemId |Should Be $CatalogueItemId;
+	$bin = $loadedCartItem.Quantity |Should Be $Quantity;
+	$bin = $loadedCartItem.Tid |Should Be $Tid;
+
+	return $loadedCartItem;
 }
 
-function GetCartOfUser($svc)
+function Delete-CartItem
 {
-	$user = "{0}\{1}" -f $ENV:USERDOMAIN, $ENV:USERNAME;
-	return $svc.Core.Carts |? CreatedBy -eq $user;
+	Param
+	(
+		$Svc
+		,
+		$CartItemId
+	)
+		
+	#get the cart Item
+	$query = "Id eq {0}" -f $CartItemId;
+	$cartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#delete the cart Item
+	$svc.Core.DeleteObject($cartItem);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted cartItem
+	$query = "Id eq {0}" -f $CartItemId;
+	$deletedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT cart Item is deleted
+	$bin = $deletedCartItem | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
 }
 
-function GetCartItemsOfCart($svc, $cart)
-{
-	return $svc.Core.LoadProperty($cart, 'CartItems') | Select;
+function Update-CartItem {
+	Param
+	(
+		$Svc
+		,
+		$Id
+		,
+		$Name
+		,
+		$Description
+		,
+		$Quantity
+	)
+	
+	#get the CartItem 
+	$query = "Id eq {0}" -f $Id;
+	$cartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#Set new name and description for the Cart Item
+	if ($Name)
+	{
+		$cartItem.Name = $Name;
+	}
+	if ($Description)
+	{	
+		$cartItem.Description = $Description;
+	}
+	if ($Quantity) 
+	{
+		$cartItem.Quantity = $Quantity;
+	}
+	
+	#save changes
+	$svc.Core.UpdateObject($cartItem)
+	$result = $svc.core.SaveChanges();	
+				
+	#get the updated Cart Item 
+	$updatedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	if ($Name)
+	{
+		$bin = $updatedCartItem.Name | Should Be $Name;
+	}
+	if ($Description) 
+	{
+		$bin = $updatedCartItem.Description | Should Be $Description;
+	}
+	if ($Quantity) 
+	{
+		$bin = $updatedCartItem.Quantity | Should Not Be $Quantity;
+	}
+	$bin = $updatedCartItem.Id | Should Be $Id;
+	
+	return $updatedCartItem;
 }
+
 
 #
 # Copyright 2015 d-fens GmbH

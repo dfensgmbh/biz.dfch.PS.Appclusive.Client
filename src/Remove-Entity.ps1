@@ -68,7 +68,7 @@ PARAM
 (
 	# Specifies the id of the entity to remove
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'id')]
-	[ValidateRange(1, [int]::MaxValue)]
+	[ValidateRange(1, [long]::MaxValue)]
 	$Id
 	,
 	# Specifies the entity set name of the entity to remove
