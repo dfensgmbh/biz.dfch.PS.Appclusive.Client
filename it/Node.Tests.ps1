@@ -53,6 +53,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$node.Id | Should Not Be $null;
 			$node.Name | Should Be $nodeName;
 			$node.Description | Should Be $nodeDescription;
+			$node.EntityKindId | Should Be $nodeEntityKindId;
 		}
 		
 		It "CreateParentAndChildNode" -Test {
@@ -73,10 +74,12 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$parentNode | Should Not Be $null;
 			$parentNode.Id | Should Not Be $null;
 			$parentNode.Name | Should Be $nodeName;
+			$parentNode.EntityKindId | Should Be $nodeEntityKindId;
 			$childNode | Should Not Be $null;
 			$childNode.Id | Should Not Be $null;
 			$childNode.ParentId | Should Be $nodeId;
 			$childNode.Name | Should Be $childName;
+			$childNode.EntityKindId | Should Be $nodeEntityKindId;
 			
 			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
 			Remove-ApcNode -id $childNode.Id -Confirm:$false -svc $svc;
@@ -102,14 +105,17 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$parentNode | Should Not Be $null;
 			$parentNode.Id | Should Not Be $null;
 			$parentNode.Name | Should Be $nodeName;
+			$parentNode.EntityKindId | Should Be $nodeEntityKindId;
 			$childNode1 | Should Not Be $null;
 			$childNode1.Id | Should Not Be $null;
 			$childNode1.ParentId | Should Be $nodeId;
 			$childNode1.Name | Should Be $childName1;
+			$childNode1.EntityKindId | Should Be $nodeEntityKindId;
 			$childNode2 | Should Not Be $null;
 			$childNode2.Id | Should Not Be $null;
 			$childNode2.ParentId | Should Be $nodeId;
 			$childNode2.Name | Should Be $childName2;
+			$childNode2.EntityKindId | Should Be $nodeEntityKindId;
 			
 			#ACT
 			$childNodes = $svc.Core.LoadProperty($parentNode, 'Children') | Select;
