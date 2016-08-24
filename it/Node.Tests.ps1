@@ -204,7 +204,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
 		}
 		
-		It "SetNodeAsItsOwnParent-ThrowsError" -Test {
+		It "SetNodeAsItsOwnParent-ThrowsException" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
 			
@@ -227,7 +227,6 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#CLEANUP
 			$svc = Enter-Appclusive;
 			Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
-			
 		}
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
