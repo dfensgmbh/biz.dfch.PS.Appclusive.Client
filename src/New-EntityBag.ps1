@@ -1,11 +1,11 @@
 function New-EntityBag {
 <#
 .SYNOPSIS
-Creates a EntityBag entry in Appclusive.
+Creates an EntityBag entry in Appclusive.
 
 
 .DESCRIPTION
-Creates a EntityBag entry in Appclusive.
+Creates an EntityBag entry in Appclusive.
 
 You must specify the parameters 'Name', 'Value', 'EntityId' and 'EntityKindId'. If the entry already exists no update of the existing entry is performed.
 
@@ -193,7 +193,7 @@ if($MyInvocation.ScriptName)
 } 
 
 # 
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
