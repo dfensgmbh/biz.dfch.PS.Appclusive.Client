@@ -222,7 +222,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#ACT set node as its own parent
 			$svc.Core.SetLink($node, "Parent", $node);
 			
-			{$updateResult = $Svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 500};
+			{$updateResult = $svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 500};
 			
 			#CLEANUP
 			$svc = Enter-Appclusive;
@@ -326,14 +326,12 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			# Arrange
 			$currentTenant = Get-ApcTenant -svc $svc -Current;
 			$tenantConfigurationNode = Get-ApcNode -Id $currentTenant.ConfigurationId -svc $svc;
-			#$tenantConfigurationNodeJob = Get-ApcNode -Id $tenantConfigurationNode.Id -svc $svc -ExpandJob;
 			
 			try 
 			{
 				# Act
 				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantConfigurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-				Write-Host ($assignablePermissions.Count | Out-String);
-				#Write-Host ($assignablePermissions | Out-String);
+				
 				# Assert
 				$assignablePermissions | Should Not Be $null;
 				# All permissions for EntityKinds except CRUD permissions for
@@ -341,14 +339,13 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				# And except CRUD for ActiveDirectoryUsers, Persons, CimiTargets, Endpoints and permissions for SpecialOperations as there are no EntityKinds defined for
 				$assignablePermissions.Name -contains "Apc:TenantsCanRead" | Should Be $true;
 				$assignablePermissions.Name -contains "Apc:UsersCanDelete" | Should Be $true;
-				$assignablePermissions.Name -contains "Apc:NetworksCanRead" | Should Not Be $true;
-				$assignablePermissions.Name -contains "Apc:FoldersCanDelete" | Should Not Be $true;
+				$assignablePermissions.Name -notcontains "Apc:NetworksCanRead" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:FoldersCanDelete" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:MachinesCanRead" | Should Be $true;
 			}
 			finally
 			{
 				# Cleanup
-				#$null = Remove-ApcEntity -Id $tenantConfigurationNodeJob.Id -EntitySetName "Jobs" -Confirm:$false;
-				#$null = Remove-ApcEntity -Id $tenantConfigurationNode.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
 		
@@ -357,38 +354,17 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$currentTenant = Get-ApcTenant -svc $svc -Current;
 			$tenantRootNode = Get-ApcNode -Id $currentTenant.NodeId -svc $svc;
 			
-			$allPermissions = New-Object System.Collections.Generic.List``1[biz.dfch.CS.Appclusive.Api.Core.Permission];
-			
-			$query = $svc.Core.Permissions;
-			$permissions = $query.Execute();
-	
-			while($true) 
-			{
-				foreach($permission in $permissions)
-				{
-					$allPermissions.Add($permission);
-				}
-			
-				$continuation = $permissions.GetContinuation();
-				if ($continuation -eq $null)
-				{
-					break;
-				}
-				
-				$permissions = $Svc.core.Execute($continuation);
-			}
-			
 			# Act
 			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantRootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-			Write-Host ($assignablePermissions.Count | Out-String);
+
 			# Assert
 			$assignablePermissions | Should Not Be $null;
 			# All product related permissions + permissions for
 			# Nodes and its subtypes like Folders, ScheduledJobs, ScheduledJobInstances, Machines and Networks
 			$assignablePermissions.Name -contains "Apc:NetworksCanRead" | Should Be $true;
 			$assignablePermissions.Name -contains "Apc:FoldersCanDelete" | Should Be $true;
-			$assignablePermissions.Name -contains "Apc:TenantsCanRead" | Should Not Be $true;
-			$assignablePermissions.Name -contains "Apc:UsersCanDelete" | Should Not Be $true;
+			$assignablePermissions.Name -notcontains "Apc:TenantsCanRead" | Should Be $true;
+			$assignablePermissions.Name -notcontains "Apc:UsersCanDelete" | Should Be $true;
 		}
     }
 }
