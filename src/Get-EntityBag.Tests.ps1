@@ -239,7 +239,64 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		   	$result | Should Not Be $null;
 			$result -is [Array] | Should Be $true;
 			0 -lt $result.Count | Should Be $true;
-		} 
+		}
+
+		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
+			# Arrange
+			$ShowFirst = 1;
+			
+			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$entityKindId = $resultFirst.EntityKindId;
+			$entityId = $resultFirst.EntityId;
+		
+			# Act
+			$result = Get-EntityBag -svc $svc -EntityKindId $entityKindId -EntityId -$entityId;
+			
+			# Assert
+			$result.Id | Should Be $resultFirst.Id;
+			$result.EntityKindId | Should Be $entityKindId;
+			$result.EntityId | Should Be $entityId;
+		}
+		
+		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
+			# Arrange
+			$ShowFirst = 1;
+			
+			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$entityKindId = $resultFirst.EntityKindId;
+			$entityId = $resultFirst.EntityId;
+			$name = $resultFirst.Name;
+		
+			# Act
+			$result = Get-EntityBag -svc $svc -Name $name -EntityKindId $entityKindId -EntityId -$entityId;
+			
+			# Assert
+			$result.Id | Should Be $resultFirst.Id;
+			$result.EntityKindId | Should Be $entityKindId;
+			$result.EntityId | Should Be $entityId;
+			$result.Name | Should Be $name;
+		}
+		
+		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
+			# Arrange
+			$ShowFirst = 1;
+			
+			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$entityKindId = $resultFirst.EntityKindId;
+			$entityId = $resultFirst.EntityId;
+			$name = $resultFirst.Name;
+			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::Default.value__;
+		
+			# Act
+			$result = Get-EntityBag -svc $svc -Name $name -EntityKindId $entityKindId -EntityId -$entityId -ProtectionLevel $protectionLevel;
+			
+			# Assert
+			$result.Id | Should Be $resultFirst.Id;
+			$result.EntityKindId | Should Be $entityKindId;
+			$result.EntityId | Should Be $entityId;
+			$result.Name | Should Be $name;
+			$result.ProtectionLevel | Should Be $protectionLevel;
+		}
 	}
 }
 
