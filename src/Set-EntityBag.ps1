@@ -15,7 +15,7 @@ default
 
 
 .EXAMPLE
-Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -svc $svc -CreateIfNotExist;
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId 1 -EntityId 2 -svc $svc -CreateIfNotExist;
 
 Name            : ArbitraryName
 Value           : ArbitraryValue
@@ -38,7 +38,7 @@ Create a new EntityBag entry if it does not exists.
 
 
 .EXAMPLE
-Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityId 2 -EntityKindId 1 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
+Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId  1 -EntityId 2 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
 
 Name            : ArbitraryName
 Value           : Arbitrary updated value
@@ -89,13 +89,13 @@ Param
 	[Parameter(Mandatory = $true, Position = 1)]
 	[string] $Value
 	,
-	# Specifies the EntityId
-	[Parameter(Mandatory = $true, Position = 2)]
-	[long] $EntityId
-	,
 	# Specifies the EntityKindId
-	[Parameter(Mandatory = $true, Position = 3)]
+	[Parameter(Mandatory = $true, Position = 2)]
 	[long] $EntityKindId
+	,
+	# Specifies the EntityId
+	[Parameter(Mandatory = $true, Position = 3)]
+	[long] $EntityId
 	,
 	# Specifies the new value
 	[Parameter(Mandatory = $false)]
