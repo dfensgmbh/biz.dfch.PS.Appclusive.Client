@@ -277,7 +277,7 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$result.Name | Should Be $name;
 		}
 		
-		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
+		It "Get-EntityBagByEntityKindIdAndEntityId" -Test {
 			# Arrange
 			$ShowFirst = 1;
 			
@@ -301,7 +301,7 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 }
 
 #
-# Copyright 2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
