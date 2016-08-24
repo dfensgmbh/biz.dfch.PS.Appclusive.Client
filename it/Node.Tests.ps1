@@ -337,12 +337,10 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$svc.Core.AddToNodes($configurationNode);
 			$null = $svc.Core.SaveChanges();
 			
-			$configurationNode = New-ApcNode -Name $nodeName -ParentId $tenantConfigurationNode.Id -EntityKindId $nodeEntityKindId -Parameters @{} -svc $svc;
-			
 			try 
 			{
 				# Act
-				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantConfigurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
+				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($configurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
 				
 				# Assert
 				$assignablePermissions | Should Not Be $null;
