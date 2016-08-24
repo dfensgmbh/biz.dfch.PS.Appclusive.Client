@@ -86,22 +86,13 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKindName = $entityPrefix + "EntityKind";
 				$entityKindDescription = ("Test Description For Pester Run - {0}" -f [Guid]::NewGuid().ToString());
 				$entityKindVersion = [Guid]::NewGuid().ToString();
-				$entityKindParameters = "'{ }'";
 				
 				#ACT
-				$entityKind = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription -entityKindVersion $entityKindVersion;
+				$entityKind = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription -entityKindVersion $entityKindVersion -svc $svc;
 				$entityKindId = $entityKind.Id;
 			}
 			finally
 			{
-				if (!$entityKind -eq $false)
-				{
-					#CLEANUP
-					$svc.Core.DeleteObject($entityKind);
-					$result = $svc.Core.SaveChanges();
-					$result.StatusCode | Should Be 204;
-					write-warning "EntityKind deleted"
-				}
 			}
 		}
 		
@@ -130,14 +121,6 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 			finally
 			{
-				if (!$entityKind -eq $false -And $newEntityKind.Id -ne 0)
-				{
-					#CLEANUP
-					$svc.Core.DeleteObject($entityKind);
-					$result = $svc.Core.SaveChanges();
-					$result.StatusCode | Should Be 204;
-					write-warning "EntityKind deleted"
-				}
 			}
 		}
 		
@@ -168,11 +151,6 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			{
 				if (!$entityKind -eq $false -And $newEntityKind.Id -ne 0)
 				{
-					#CLEANUP
-					$svc.Core.DeleteObject($entityKind);
-					$result = $svc.Core.SaveChanges();
-					$result.StatusCode | Should Be 204;
-					write-warning "EntityKind deleted"
 				}
 			}
 		}
@@ -188,10 +166,10 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKindVersion2 = [Guid]::NewGuid().ToString();
 				
 				#ACT create 2 entity kinds with same name but different versions
-				$entityKind1 = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription1 -entityKindVersion $entityKindVersion1;
+				$entityKind1 = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription1 -entityKindVersion $entityKindVersion1 -svc $svc;
 				$entityKindId1 = $entityKind1.Id;
 				
-				$entityKind2 = CreateEntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription2 -entityKindVersion $entityKindVersion2;
+				$entityKind2 = CreateEntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription2 -entityKindVersion $entityKindVersion2 -svc $svc;
 				$entityKindId2 = $entityKind2.Id;
 				
 				#ASSERT
@@ -203,17 +181,6 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 			finally
 			{
-				#Cleanup
-				$svc.Core.DeleteObject($entityKind1);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				write-warning "EntityKind deleted"
-				
-				#Cleanup
-				$svc.Core.DeleteObject($entityKind2);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				write-warning "EntityKind deleted"
 			}
 		}
 		
@@ -225,7 +192,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKindVersion = [Guid]::NewGuid().ToString();
 				
 				#ACT create 2 entity kinds with same name and versions
-				$entityKind1 = Create-EntityKind -entityKindName $entityKindName -entityKindVersion $entityKindVersion;
+				$entityKind1 = Create-EntityKind -entityKindName $entityKindName -entityKindVersion $entityKindVersion -svc $svc;
 				$entityKindId1 = $entityKind1.Id;
 				
 				$entityKind2 = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
@@ -240,11 +207,6 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 			finally
 			{
-				#Cleanup
-				$svc.Core.DeleteObject($entityKind1);
-				$result = $svc.Core.SaveChanges();
-				$result.StatusCode | Should Be 204;
-				write-warning "EntityKind deleted"
 			}
 		}
 		
@@ -258,7 +220,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKindParameters = "'{ }'";
 				
 				#ACT
-				$entityKind = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription -entityKindVersion $entityKindVersion;
+				$entityKind = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription -entityKindVersion $entityKindVersion -svc $svc;
 				$entityKindId = $entityKind.Id;
 				
 				# ARRANGE Update
@@ -289,14 +251,6 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 			finally
 			{
-				if (!$entityKind -eq $false)
-				{
-					#Cleanup
-					$svc.Core.DeleteObject($entityKind);
-					$result = $svc.Core.SaveChanges();
-					$result.StatusCode | Should Be 204;
-					write-warning "EntityKind deleted"
-				}
 			}
 		}
 	}
