@@ -1,14 +1,51 @@
+function Create-EntityKind{
+	Param
+	(
+		$Svc
+		,
+		$EntityKindName
+		,
+		$EntityKindDescription
+		,
+		$EntityKindVersion
+		,
+		$EntityKindParameters
+	)
+	
+	Push-ApcChangeTracker -Svc $Svc;
+	
+	try
+	{
+		$newEntityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
+		$newEntityKind.Name = $EntityKindName;
+		$newEntityKind.Description = $EntityKindDescription;
+		$newEntityKind.Version = $EntityKindVersion;
+		$newEntityKind.Parameters = $EntityKindParameters;
+		
+		#add it to entity kinds
+		$svc.Core.AddToEntityKinds($newEntityKind)
+		$result = $svc.Core.SaveChanges();
+		
+		#get entityKind
+		$query = "Id eq {0}" -f $newEntityKind.Id;
+		$entityKind = $svc.Core.EntityKinds.AddQueryOption('$filter', $query) | Select;
+		
+		#ASSERT
+		$bin = $result.StatusCode | Should be 201;
+		$bin = $entityKind | Should Not Be $null;
+		$bin = $entityKind.Id | Should Not Be 0;
+		$bin = $entityKind.Name | Should Be $EntityKindName;
+		$bin = $entityKind.Description | Should Be $EntityKindDescription;
+		$bin = $entityKind.Version | Should Be $EntityKindVersion;
+		$bin = $entityKind.Parameters | Should Be $EntityKindParameters;
+	}
+	finally
+	{
+		Pop-ApcChangeTracker -Svc $Svc;
+	}
 
-function CreateEntityKind($entityKindName, $entityKindDescription, $entityKindVersion, $entityKindParameters) 
-{
-	$entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
-	$entityKind.Version = $entityKindVersion;
-	$entityKind.Parameters = $entityKindParameters;
-	$entityKind.Name = $entityKindName;
-	$entityKind.Description = $entityKindDescription;
-	$entityKind.Created = [DateTimeOffset]::Now;
-	$entityKind.Modified = $entityKind.Created;
-	$entityKind.Id = 0;
+	$svc.Core.AttachIfNeeded($entityKind); #attaches a detached entity to the ChangeTracker if not already attached
+	
 	return $entityKind;
 }
 
