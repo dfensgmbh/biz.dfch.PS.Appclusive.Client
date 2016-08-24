@@ -1,5 +1,4 @@
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
+#Includes tests for test case CLOUDTCL-1873
 
 function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 {
@@ -11,8 +10,10 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Node.Tests" "Node.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-
-	. "$here\$sut"
+	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Nodes");
+	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 
 	Context "#CLOUDTCL-1873-NodeTests" {
 		
@@ -20,277 +21,212 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
+			$nodeParentId = (Get-ApcTenant -Current -svc $svc).NodeId;
 		}
 		
-		It "DoStateChangeOnNodeSetsConditionAndConditionParametersOnJob" -Test {
-			# Arrange
-			$condition = 'Continue';
-			$conditionParams = @{Msg = "tralala"};
-			
-			$node = New-ApcNode -Name 'Arbitrary' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
-			$query = "RefId eq '{0}' and EntityKindId eq {1}" -f $node.Id, [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-
-			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
-			$null = Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
+		It "CreateNode" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$nodeDescription = "node description";
 			
-			# Act
-			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName 'InvokeAction' -InputName $condition -InputParameters $conditionParams;
+			#ACT create node
+			$node = New-ApcNode -Name $nodeName -Description $nodeDescription -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
-			try 
-			{
-				# Assert
-				$svc = Enter-ApcServer;
-				$result | Should Not Be $null;
-				$resultingJob = Get-ApcJob -Id $job.Id -svc $svc;
-				$resultingJob.Condition | Should Be $condition;
-				$resultingJob.ConditionParameters | Should Be ($conditionParams | ConvertTo-Json -Compress);
-			}
-			finally 
-			{
-				# Cleanup
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
+			#ASSERT Node creation
+			$node | Should Not Be $null;
+			$node.Id | Should Not Be $null;
+			$node.Name | Should Be $nodeName;
+			$node.Description | Should Be $nodeDescription;
+			$node.EntityKindId | Should Be $nodeEntityKindId;
 		}
 		
-		It "CreateAndDeleteNodeSucceeds" -Test {
-			# Arrange
+		It "CreateParentAndChildNode" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$childName = $entityPrefix + "childnode";
 			
-			# Act
-			$node = New-ApcNode -Name 'Arbitrary' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
+			#ACT create node
+			$parentNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
-			try 
-			{
-				#Assert	
-				$node | Should Not Be $null;
-				$node.Id | Should Not Be 0;
-			} 
-			finally 
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				$deletionResult = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-				
-				$deletionResult.StatusCode | Should Be 204;
-			}
+			#get Id of the node
+			$nodeId = $parentNode.Id;
+			
+			#ACT create child Node
+			$childNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#ASSERT parent & child Node creation
+			$parentNode | Should Not Be $null;
+			$parentNode.Id | Should Not Be $null;
+			$parentNode.Name | Should Be $nodeName;
+			$parentNode.EntityKindId | Should Be $nodeEntityKindId;
+			$childNode | Should Not Be $null;
+			$childNode.Id | Should Not Be $null;
+			$childNode.ParentId | Should Be $nodeId;
+			$childNode.Name | Should Be $childName;
+			$childNode.EntityKindId | Should Be $nodeEntityKindId;
+			
+			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
+			Remove-ApcNode -id $childNode.Id -Confirm:$false -svc $svc;
 		}
 		
-		It "AddNewParentAndChildNodeSucceeds" -Test {
-			try
-			{
-				# Act
-				$node = New-ApcNode -Name 'Arbitrary Parent' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode = New-ApcNode -Name 'Arbitrary Child' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				#Assert	
-				$childNode | Should Not Be $null;
-				$childNode.Id | Should Not Be 0;
-				$childNode.ParentId | Should Be $node.Id;
-				$node | Should Not Be $null;
-				$node.Id | Should Not Be 0;
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $childNode.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
+		It "LoadChildNodes" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$childName1 = $entityPrefix + "childnode1";
+			$childName2 = $entityPrefix + "childnode2";
+			
+			#ACT create node
+			$parentNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $parentNode.Id;
+			
+			#ACT create child Node
+			$childNode1 = New-ApcNode -Name $childName1 -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+			$childNode2 = New-ApcNode -Name $childName2 -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#ASSERT parent & child Node creation
+			$parentNode | Should Not Be $null;
+			$parentNode.Id | Should Not Be $null;
+			$parentNode.Name | Should Be $nodeName;
+			$parentNode.EntityKindId | Should Be $nodeEntityKindId;
+			$childNode1 | Should Not Be $null;
+			$childNode1.Id | Should Not Be $null;
+			$childNode1.ParentId | Should Be $nodeId;
+			$childNode1.Name | Should Be $childName1;
+			$childNode1.EntityKindId | Should Be $nodeEntityKindId;
+			$childNode2 | Should Not Be $null;
+			$childNode2.Id | Should Not Be $null;
+			$childNode2.ParentId | Should Be $nodeId;
+			$childNode2.Name | Should Be $childName2;
+			$childNode2.EntityKindId | Should Be $nodeEntityKindId;
+			
+			#ACT
+			$childNodes = $svc.Core.LoadProperty($parentNode, 'Children') | Select;
+			
+			#ASSERT
+			$childNodes | Should Not Be $null;
+			$childNodes.Id -contains $childNode1.Id | Should be $true;
+			$childNodes.Id -contains $childNode2.Id | Should be $true;
+			
+			#CLEANUP - Remove child nodes (The AfterEach block will handle parent node)
+			Remove-ApcNode -id $childNode1.Id -Confirm:$false -svc $svc;
+			Remove-ApcNode -id $childNode2.Id -Confirm:$false -svc $svc;
 		}
 		
-		It "DeleteParentNodeWithExistingChildThrowsException" -Test {
-			try 
-			{
-				# Arrange
-				$node = New-ApcNode -Name 'Arbitrary Parent' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode = New-ApcNode -Name 'Arbitrary Child' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
+		It "LoadParentNode" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			$childName = $entityPrefix + "childnode";
+			
+			#ACT create node
+			$parentNode = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the node
+			$nodeId = $parentNode.Id;
+			
+			#ACT create child Node
+			$childNode = New-ApcNode -Name $childName -ParentId $nodeId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#ACT
+			$loadedParentNode = $svc.Core.LoadProperty($childNode, 'Parent') | Select;
 				
-				$childNode | Should Not Be $null;
-				$childNode.Id | Should Not Be 0;
-				$childNode.ParentId | Should Be $node.Id;
-				$node | Should Not Be $null;
-				$node.Id | Should Not Be 0;
-						
-				# Act
-				try 
-				{
-					$svc.Core.DeleteObject($node);
-					$svc.Core.SaveChanges();
-				} catch 
-				{
-					$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
-					$exception.'odata.error'.message.value | Should Be "An error has occurred.";
-					$detach = $svc.Core.Detach($node);
-				}
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $childNode.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
+			#ASSERT
+			$loadedParentNode | Should Not Be $null;
+			$loadedParentNode.Id | Should be $nodeId;
+			
+			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
+			Remove-ApcNode -id $childNode.Id -Confirm:$false -svc $svc;	
 		}
 		
-		It "LoadChildNodesSucceeds" -Test {
-			try
-			{
-				# Arrange
-				$node = New-ApcNode -Name 'Arbitrary Parent' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode = New-ApcNode -Name 'Arbitrary Child' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode2 = New-ApcNode -Name 'Arbitrary Child 2' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				# Act
-				$childNodes = $svc.Core.LoadProperty($node, 'Children') | Select;
-				
-				#Assert
-				$childNodes | Should Not Be $Null;
-				$childNodes.Id -contains $childNode.Id | Should be $true;
-				$childNodes.Id -contains $childNode2.Id | Should be $true;
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode2.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $childNode.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $childNode2.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
+		It "SetNodeAsChildToAnotherNode" -Test {
+			#ARRANGE
+			$nodeName1 = $entityPrefix + "node1";
+			$nodeName2 = $entityPrefix + "node2";
+			
+			#ACT create nodes
+			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get ids of nodes
+			$node1Id = $node1.Id;
+			$node2Id = $node2.Id;
+			
+			#ASSERT Nodes creation
+			$node1 | Should Not Be $null;
+			$node1.Id | Should Not Be $null;
+			$node1.Name | Should Be $nodeName1;
+			$node1.EntityKindId | Should Be $nodeEntityKindId;
+			$node2 | Should Not Be $null;
+			$node2.Id | Should Not Be $null;
+			$node2.Name | Should Be $nodeName2;
+			$node2.EntityKindId | Should Be $nodeEntityKindId;
+			$childrenOfNode1 = $svc.Core.LoadProperty($node1, 'Children') | Select;
+			$childrenOfNode1 | Should be $null;
+			$childrenOfNode2 = $svc.Core.LoadProperty($node2, 'Children') | Select;
+			$childrenOfNode2 | Should be $null;
+			
+			#ACT set node1 as parent of node2
+			$svc.Core.SetLink($node2, "Parent", $node1);
+			$updateResult = $svc.Core.SaveChanges();
+			
+			#Assert
+			$parentNodeReload = $svc.Core.LoadProperty($node2, 'Parent') | Select;
+			$childNodeReload = $svc.Core.LoadProperty($node1, 'Children') | Select;
+			
+			#ASSERT
+			$updateResult.StatusCode | Should Be 204;
+			$parentNodeReload.Id | Should Be $node1.Id;
+			$childNodeReload.Id | Should Be $node2.Id;
+			
+			#Reload the service connection and the node2 so we assert the parentId change
+			$svc = Enter-Appclusive;
+			$node2Reload = Get-ApcNode -id $node2Id -svc $svc;
+			$node2Reload.ParentId | Should Be $node1Id;
+			
+			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
+			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
 		}
 		
-		It "LoadParentNodeSucceeds" -Test {
-			try
-			{
-				# Arrange
-				$node = New-ApcNode -Name 'Arbitrary Parent' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$childNode = New-ApcNode -Name 'Arbitrary Child' -ParentId $node.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				# Act
-				$parentNode = $svc.Core.LoadProperty($childNode, 'Parent') | Select;
-				
-				#Assert
-				$parentNode | Should Not Be $Null;
-				$parentNode.Id | Should be $node.Id;
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $childNode.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $childNode.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
-		}
-		
-		It "AttachNodeAsChildToAnotherNodeSucceeds" -Test {
-			try
-			{
-				# Arrange
-				$node1 = New-ApcNode -Name 'Arbitrary Node 1' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				$node2 = New-ApcNode -Name 'Arbitrary Node 2' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				$childrenOfNode1 = $svc.Core.LoadProperty($node1, 'Children') | Select;
-				$childrenOfNode1 | Should be $null;
-				$childrenOfNode2 = $svc.Core.LoadProperty($node2, 'Children') | Select;
-				$childrenOfNode2 | Should be $null;
-				
-				# Act
-				$svc.Core.SetLink($node2, "Parent", $node1);
-				$updateResult = $Svc.Core.SaveChanges();
-				
-				#Assert
-				$parentNodeReload = $svc.Core.LoadProperty($node2, 'Parent') | Select;
-				$childNodeReload = $svc.Core.LoadProperty($node1, 'Children') | Select;
-
-				$updateResult.StatusCode | Should Be 204;
-				$parentNodeReload.Id | Should Be $node1.Id
-				$childNodeReload.Id | Should Be $node2.Id
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node1.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node2.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $node2.Id -EntitySetName "Nodes" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node1.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
-		}
-		
-		It "AttachNodeAsChildToHisOwn-ThrowsError" -Test {
-			try
-			{
-				# Arrange
-				$node = New-ApcNode -Name 'Arbitrary Node 1' -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-				
-				$childrenOfNode = $svc.Core.LoadProperty($node, 'Children') | Select;
-				$childrenOfNode | Should be $null;
-				
-				# Act
-				$svc.Core.SetLink($node, "Parent", $node);
-				
-				try
-				{
-					$updateResult = $Svc.Core.SaveChanges();
-				}
-				catch
-				{
-					$exception = ConvertFrom-Json $error[0].Exception.InnerException.InnerException.Message;
-					$exception.'odata.error'.message.value | Should Be "An error has occurred.";
-					$detach = $svc.Core.Detach($node);
-				}
-			}
-			finally
-			{
-				#Cleanup
-				$query = "RefId eq '{0}' and EntityKindId eq 1" -f $node.Id;
-				$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
-			}
+		It "SetNodeAsItsOwnParent-ThrowsException" -Test {
+			#ARRANGE
+			$nodeName = $entityPrefix + "node";
+			
+			#ACT create node
+			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get id of node
+			$nodeId = $node.Id;
+			
+			#ASSERT Node creation
+			$node | Should Not Be $null;
+			$node.Id | Should Not Be $null;
+			$node.Name | Should Be $nodeName;
+			
+			#ACT set node as its own parent
+			$svc.Core.SetLink($node, "Parent", $node);
+			
+			{$updateResult = $svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 500};
+			
+			#CLEANUP
+			$svc = Enter-Appclusive;
+			Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
 		}
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
@@ -351,26 +287,59 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			}
 		}
 		
+		It "DoStateChangeOnNodeSetsConditionAndConditionParametersOnJob" -Test {
+			# Arrange
+			$nodeName = $entityPrefix + "node";
+			$condition = 'Continue';
+			$conditionParams = @{Msg = "ArbitraryParameters"};
+			
+			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -Parameters @{} -svc $svc;
+			
+			$query = "RefId eq '{0}'" -f $node.Id;
+			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+			
+			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
+			Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult -svc $svc;
+			
+			# Act
+			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName "InvokeAction" -InputName $condition -InputParameters $conditionParams -svc $svc;
+			
+			try 
+			{
+				# Assert
+				$svc = Enter-Appclusive;
+				$result | Should Not Be $null;
+				$resultingJob = Get-ApcJob -Id $job.Id -svc $svc;
+				$resultingJob.Condition | Should Be $condition;
+				$resultingJob.ConditionParameters | Should Be ($conditionParams | ConvertTo-Json -Compress);
+			}
+			finally 
+			{
+				# Cleanup
+				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false -svc $svc;
+				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false -svc $svc;
+			}
+		}
+		
 		It "GetAssignablePermissionsForConfigurationNode-ReturnsIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
-			$configurationRootNodeId = 2;
-			$approvalEntityKindId = 5;
+			$nodeName = $entityPrefix + "node";
+			$currentTenant = Get-ApcTenant -svc $svc -Current;
+			$tenantConfigurationNode = Get-ApcNode -Id $currentTenant.ConfigurationId -svc $svc;
 			
 			$configurationNode = New-Object biz.dfch.CS.Appclusive.Api.Core.Node;
-			$configurationNode.Parameters = "{}";
-			$configurationNode.EntityKindId = $approvalEntityKindId;
+			$configurationNode.Name = $nodeName;
 			$configurationNode.EntityId = 42;
-			$configurationNode.ParentId = $configurationRootNodeId;
-			$configurationNode.Name = "Arbitrary";
-			
+			$configurationNode.EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::KeyNameValue.value__;
+			$configurationNode.ParentId = $tenantConfigurationNode.Id;
+			$configurationNode.Parameters = "{}";
+  			
 			$svc.Core.AddToNodes($configurationNode);
 			$null = $svc.Core.SaveChanges();
 			
-			$configurationNodeJob = Get-ApcJob -Id $configurationNode.Id;
-			$configurationNode = Get-ApcNode -Id $configurationNodeJob.RefId;
-			
+			$configurationNode = Get-ApcNode -name $nodeName -svc $svc;
 			try 
-			{				
+			{
 				# Act
 				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($configurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
 				
@@ -379,315 +348,36 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 				# All permissions for EntityKinds except CRUD permissions for
 				# Nodes and its subtypes like Folders, ScheduledJobs, ScheduledJobInstances, Machines and Networks
 				# And except CRUD for ActiveDirectoryUsers, Persons, CimiTargets, Endpoints and permissions for SpecialOperations as there are no EntityKinds defined for
-				$assignablePermissions.Count | Should Be 131;
+				$assignablePermissions.Name -contains "Apc:TenantsCanRead" | Should Be $true;
+				$assignablePermissions.Name -contains "Apc:UsersCanDelete" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:NetworksCanRead" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:FoldersCanDelete" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:MachinesCanRead" | Should Be $true;
+				$assignablePermissions.Name -notcontains "Apc:ScheduledJobsCanCreate" | Should Be $true;
 			}
 			finally
 			{
 				# Cleanup
-				$null = Remove-ApcEntity -Id $configurationNodeJob.Id -EntitySetName "Jobs" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $configurationNode.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
 		
 		It "GetAssignablePermissionsForRootNode-ReturnsPermissionsExceptIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
-			$rootNodeId = 1L;
-			$rootNode = Get-ApcNode -Id $rootNodeId;
-			
-			$allPermissions = New-Object System.Collections.Generic.List``1[biz.dfch.CS.Appclusive.Api.Core.Permission];
-			
-			$query = $svc.Core.Permissions;
-			$permissions = $query.Execute();
-	
-			while($true) 
-			{
-				foreach($permission in $permissions)
-				{
-					$allPermissions.Add($permission);
-				}
-			
-				$continuation = $permissions.GetContinuation();
-				if ($continuation -eq $null)
-				{
-					break;
-				}
-				
-				$permissions = $Svc.core.Execute($continuation);
-			}
+			$currentTenant = Get-ApcTenant -svc $svc -Current;
+			$tenantRootNode = Get-ApcNode -Id $currentTenant.NodeId -svc $svc;
 			
 			# Act
-			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($rootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-			
+			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantRootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
+
 			# Assert
 			$assignablePermissions | Should Not Be $null;
 			# All product related permissions + permissions for
 			# Nodes and its subtypes like Folders, ScheduledJobs, ScheduledJobInstances, Machines and Networks
-			$assignablePermissions.Count | Should Be ($allPermissions.Count - 131);
+			$assignablePermissions.Name -contains "Apc:NetworksCanRead" | Should Be $true;
+			$assignablePermissions.Name -contains "Apc:FoldersCanDelete" | Should Be $true;
+			$assignablePermissions.Name -notcontains "Apc:TenantsCanRead" | Should Be $true;
+			$assignablePermissions.Name -notcontains "Apc:UsersCanDelete" | Should Be $true;
 		}
-	}
-
-    Context "#269-DeletionLogicForNode" {
-    
-		BeforeAll {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
-		}
-
-		BeforeEach {
-			$moduleName = 'biz.dfch.PS.Appclusive.Client';
-			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
-		}
-		
-        AfterAll {
-            $cleanSvc = Enter-ApcServer;
-            
-            Write-Host "    [_] " -ForegroundColor Green -NoNewline;
-
-            Write-Host "Deleting created Nodes" -NoNewLine;
-            $nodeNames = @("DeletingNodeRemovesAttachedRelationsSimple",
-                "DeletingNodeRemovesAttachedRelationsComplete",
-                "DeletingNodeStopsIfHasChildren-Child",
-                "DeletingNodeStopsIfHasChildren"
-                "DeletingNodeStopsIfHasChild-Child",
-                "DeletingNodeStopsIfHasChild",
-                "DeletingNodeStopsIfHasIncomingAssocs");
-
-            foreach ($nodeName in $nodeNames)
-            {
-                $nodeFilter = ("startswith(Name,'{0}')" -f $nodeName);
-                $createdNodes = $cleanSvc.Core.Nodes.AddQueryOption('$filter', $nodeFilter) | Select;
-
-                foreach ($node in $createdNodes)
-                {
-                    # find incoming Assocs:
-                    $assocs = $cleanSvc.Core.Assocs.AddQueryOption('$filter', ("DestinationId eq {0}" -f $node.Id)) | Select;
-                    foreach ($assoc in $assocs)
-                    {
-                        $cleanSvc.Core.DeleteObject($assoc);
-                    }
-
-                    $cleanSvc.Core.SaveChanges();
-
-                    $cleanSvc.Core.DeleteObject($node);
-                }
-                $cleanSvc.Core.SaveChanges();
-            }
-
-            Write-Host " Done" -ForegroundColor Green;
-        }
-
-        function CreateAssoc([long]$fromNodeId, [long]$toNodeId)
-        {
-            $assoc = New-Object biz.dfch.CS.Appclusive.Api.Core.Assoc;
-            $assoc.DestinationId = $toNodeId;
-            $assoc.SourceId = $fromNodeId;
-            $assoc.Order = $fromNodeId + $toNodeId;
-            $assoc.Name = ("DeletionLogicForNode-{0}-{1}" -f $fromNodeId,$toNodeId);
-
-            return $assoc;
-        }
-
-        function CreateEntityBag([long]$nodeId, [string]$key, [string]$value)
-        {
-            $entityBag = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityBag;
-            $entityBag.EntityId = $nodeId;
-            $entityBag.EntityKindId = 1;
-            $entityBag.Name = $key;
-            $entityBag.Value = $value;
-
-            return $entityBag;
-        }
-
-        function CreateAcl([long]$nodeId, [string]$key)
-        {
-            $acl = New-Object biz.dfch.CS.Appclusive.Api.Core.Acl;
-            $acl.EntityId = $nodeId;
-            $acl.EntityKindId = 1;
-            $acl.Name = $key;
-
-            return $acl;
-        }
-
-        function CreateAce([long]$aclId, [string]$key)
-        {
-            $ace = New-Object biz.dfch.CS.Appclusive.Api.Core.Ace;
-            $ace.AclId = $aclId;
-            $ace.Name = $key;
-            $ace.PermissionId = 0; #all
-            $ace.TrusteeType = 1; #user
-            $ace.TrusteeId = 1;
-            $ace.Type = 1; #allow
-
-            return $ace;
-        }
-
-        function DeleteNode([long]$nodeId)
-        {
-            $nodeFilter = ("Id eq {0}" -f $nodeId);
-            $node = $svc.Core.Nodes.AddQueryOption('$filter', $nodeFilter) | Select;
-            $svc.Core.DeleteObject($node);
-            $svc.Core.SaveChanges();
-        }
-        
-        It "DeletingNodeRemovesAttachedRelationsSimple" -Test {
-            $nodeName = "DeletingNodeRemovesAttachedRelationsSimple";
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-
-            $createdNode = Get-ApcNode -Name $nodeName;
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node];
-
-            $jobFilter = ("RefId eq '{0}' and EntityKindId eq {1}" -f $createdNode.Id,$createdNode.EntityKindId);
-            $createdJob = $svc.Core.Jobs.AddQueryOption('$filter', $jobFilter) | Select;
-
-            $createdJob | Should BeofType [biz.dfch.CS.Appclusive.Api.Core.Job];
-
-            DeleteNode $node.Id;
-
-            $deletedNode = Get-ApcNode -Name $nodeName;
-            $deletedNode | Should Be $null;
-
-            $jobFilter = ("Id eq {0}" -f $createdJob.Id);
-            $deletedJob = $svc.Core.Jobs.AddQueryOption('$filter', $jobFilter) | Select;
-
-            $deletedJob | Should Be $null;
-        }
-
-        It "DeletingNodeRemovesAttachedRelationsComplete" -Test {
-            # arrange
-            $nodeName = "DeletingNodeRemovesAttachedRelationsComplete";
-            $entityBagItems = 5;
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-
-            $createdNode = Get-ApcNode -Name $nodeName;
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node];
-
-            $jobFilter = ("RefId eq '{0}' and EntityKindId eq {1}" -f $createdNode.Id,$createdNode.EntityKindId);
-            $createdJob = $svc.Core.Jobs.AddQueryOption('$filter', $jobFilter) | Select;
-
-            $createdJob | Should BeofType [biz.dfch.CS.Appclusive.Api.Core.Job];
-
-            for ($i = 1;$i -le $entityBagItems;$i++)
-            {
-                $entityBagItem = CreateEntityBag $createdNode.Id ("{0}-{1}" -f $nodeName,$i) ("value_{0}" -f $i);
-                $svc.Core.AddToEntityBags($entityBagItem);
-            }
-            $svc.Core.SaveChanges();
-            
-            $createdEntityBagsFilter = ("EntityId eq {0} and EntityKindId eq {1}" -f $createdNode.Id,$createdNode.EntityKindId);
-            $createdEntityBags = $svc.Core.EntityBags.AddQueryOption('$filter', $createdEntityBagsFilter) | Select;
-
-            $createdEntityBags.Count | Should Be $entityBagItems;
-
-            $assoc = CreateAssoc $createdNode.Id 1;
-            $svc.Core.AddToAssocs($assoc);
-            $svc.Core.SaveChanges();
-            
-            $createdAssocFilter = ("SourceId eq {0}" -f $createdNode.Id);
-            $createdAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $createdAssocFilter) | Select;
-
-            $createdAssoc | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Assoc]
-
-            $acl = CreateAcl $createdNode.Id ("{0}-ACL" -f $nodeName);
-            $svc.Core.AddToAcls($acl);
-            $svc.Core.SaveChanges();
-            
-            $createdAclFilter = ("Name eq '{0}'" -f ("{0}-ACL" -f $nodeName));
-            $createdAcl = $svc.Core.Acls.AddQueryOption('$filter', $createdAclFilter) | Select;
-            
-            $createdAcl | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Acl]
-            $createdAcl.EntityId | Should Be $createdNode.Id;
-            
-            $ace = CreateAce $createdAcl.Id ("{0}-ACE" -f $nodeName)
-            $svc.Core.AddToAces($ace);
-            $svc.Core.SaveChanges();
-
-            $createdAceFilter = ("Name eq '{0}'" -f ("{0}-ACE" -f $nodeName));
-            $createdAce = $svc.Core.Aces.AddQueryOption('$filter', $createdAceFilter) | Select;
-            
-            $createdAce | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Ace]
-            $createdAce.AclId | Should Be $createdAcl.Id;
-
-            # act
-            DeleteNode $node.Id;
-
-            # assert
-            
-            $createdAceFilter = ("Name eq '{0}'" -f ("{0}-ACE" -f $nodeName));
-            $deletedAce = $svc.Core.Aces.AddQueryOption('$filter', $createdAceFilter) | Select;
-            
-            $deletedAce | Should Be $null;
-
-            $createdAclFilter = ("Name eq '{0}'" -f ("{0}-ACL" -f $nodeName));
-            $deletedAce = $svc.Core.Acls.AddQueryOption('$filter', $createdAclFilter) | Select;
-            
-            $deletedAce | Should Be $null;
-            
-            $createdAssocFilter = ("SourceId eq {0}" -f $createdNode.Id);
-            $deletedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $createdAssocFilter) | Select;
-
-            $deletedAssoc | Should Be $null;
-            
-            $createdEntityBagsFilter = ("EntityId eq {0} and EntityKindId eq {1}" -f $createdNode.Id,$createdNode.EntityKindId);
-            $deletedEntityBags = $svc.Core.EntityBags.AddQueryOption('$filter', $createdEntityBagsFilter) | Select;
-
-            $deletedEntityBags | Should Be $null;
-            
-            $deletedNode = Get-ApcNode -Name $nodeName;
-            $deletedNode | Should Be $null;
-
-            $jobFilter = ("Id eq {0}" -f $createdJob.Id);
-            $deletedJob = $svc.Core.Jobs.AddQueryOption('$filter', $jobFilter) | Select;
-
-            $deletedJob | Should Be $null;
-        }
-
-        It "DeletingNodeStopsIfHasChild" -Test {        
-            $nodeName = "DeletingNodeStopsIfHasChild";
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-            $createdNode = Get-ApcNode -Name $nodeName;
-
-			$childNode = New-ApcNode -Name ("{0}-Child" -f $nodeName) -ParentId $createdNode.Id -EntityKindId 1 -Parameters @{} -svc $svc;
-
-            { DeleteNode $createdNode.Id; } | Should Throw;
-        }
-        
-        It "DeletingNodeStopsIfHasChildren" -Test {
-        
-            $nodeName = "DeletingNodeStopsIfHasChildren";
-            $nodeChildren = 4;
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-
-            $createdNode = Get-ApcNode -Name $nodeName;
-            $createdNode | Should BeOfType [biz.dfch.CS.Appclusive.Api.Core.Node];
-            
-            for ($i = 1; $i -le $nodeChildren; $i++)
-            {
-			    $childNode = New-ApcNode -Name ("{0}-Child-{1}" -f $nodeName,$i) -ParentId $createdNode.Id -EntityKindId 1 -Parameters @{} -svc $svc
-            }
-
-            { DeleteNode $createdNode.Id; } | Should Throw;
-        }
-
-        It "DeletingNodeStopsIfHasIncomingAssocs" -Test {
-
-            $nodeName = "DeletingNodeStopsIfHasIncomingAssocs";
-
-			$node = New-ApcNode -Name $nodeName -ParentId 1 -EntityKindId 1 -Parameters @{} -svc $svc;
-            $createdNode = Get-ApcNode -Name $nodeName;
-
-            $assoc = CreateAssoc 1 $createdNode.Id;
-            $svc.Core.AddToAssocs($assoc);
-
-            { DeleteNode $createdNode.Id; } | Should Throw;
-        }
     }
 }
 
