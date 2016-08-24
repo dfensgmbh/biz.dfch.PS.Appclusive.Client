@@ -147,7 +147,6 @@ Process
 	$EntityBagContents += $Value;
 	$EntityBagContents += $EntityId;
 	$EntityBagContents += $EntityKindId;
-	$EntityBagContentsString = [String]::Join(',', $EntityBagContents);
 
 	$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', 1) | Select;
 	Contract-Assert (!$entityBag) 'Entity does already exist';
