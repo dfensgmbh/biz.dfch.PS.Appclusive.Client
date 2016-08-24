@@ -85,12 +85,10 @@ Param
 	,
 	# Specifies the Value to modify
 	[Parameter(Mandatory = $true, Position = 1)]
-	[ValidateNotNullOrEmpty()]
 	[string] $Value
 	,
 	# Specifies the EntityKindId to modify
 	[Parameter(Mandatory = $true, Position = 2)]
-	[ValidateNotNullOrEmpty()]
 	[long] $EntityKindId
 	,
 	# Specifies the EntityId to modify
