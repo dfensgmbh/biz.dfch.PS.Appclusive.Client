@@ -172,9 +172,11 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$node1 | Should Not Be $null;
 			$node1.Id | Should Not Be $null;
 			$node1.Name | Should Be $nodeName1;
+			$node1.EntityKindId | Should Be $nodeEntityKindId;
 			$node2 | Should Not Be $null;
 			$node2.Id | Should Not Be $null;
 			$node2.Name | Should Be $nodeName2;
+			$node2.EntityKindId | Should Be $nodeEntityKindId;
 			$childrenOfNode1 = $svc.Core.LoadProperty($node1, 'Children') | Select;
 			$childrenOfNode1 | Should be $null;
 			$childrenOfNode2 = $svc.Core.LoadProperty($node2, 'Children') | Select;
@@ -195,14 +197,13 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			
 			#Reload the service connection and the node2 so we assert the parentId change
 			$svc = Enter-Appclusive;
-			$node2Reload = Get-ApcNode -id $node2Id;
+			$node2Reload = Get-ApcNode -id $node2Id -svc $svc;
 			$node2Reload.ParentId | Should Be $node1Id;
 			
 			#CLEANUP - Remove child node (The AfterEach block will handle parent node)
 			Remove-ApcNode -id $node2Id -Confirm:$false -svc $svc;
 		}
 		
-		<# it fails now, will be fixed and deployed on next release
 		It "SetNodeAsItsOwnParent-ThrowsError" -Test {
 			#ARRANGE
 			$nodeName = $entityPrefix + "node";
@@ -222,13 +223,13 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			#ACT set node as its own parent
 			$svc.Core.SetLink($node, "Parent", $node);
 			
-			{$updateResult = $Svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 404};
+			{$updateResult = $Svc.Core.SaveChanges();} | Should ThrowDataServiceClientException @{StatusCode = 400};
 			
 			#CLEANUP
 			$svc = Enter-Appclusive;
 			Remove-ApcNode -id $nodeId -Confirm:$false -svc $svc;
 			
-		}#>
+		}
 		
 		It "CreateWithJobConditionParametersSucceeds" -Test {
 			# Arrange
@@ -292,7 +293,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			# Arrange
 			$nodeName = $entityPrefix + "node";
 			$condition = 'Continue';
-			$conditionParams = @{Msg = "tralala"};
+			$conditionParams = @{Msg = "ArbitraryParameters"};
 			
 			$node = New-ApcNode -Name $nodeName -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -Parameters @{} -svc $svc;
 			
@@ -300,15 +301,15 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			
 			$jobResult = @{Version = "1"; Message = "Msg"; Succeeded = $true};
-			Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult;
+			Invoke-ApcEntityAction -InputObject $job -EntityActionName "JobResult" -InputParameters $jobResult -svc $svc;
 			
 			# Act
-			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName "InvokeAction" -InputName $condition -InputParameters $conditionParams;
+			$result = Invoke-ApcEntityAction -InputObject $node -EntityActionName "InvokeAction" -InputName $condition -InputParameters $conditionParams -svc $svc;
 			
 			try 
 			{
 				# Assert
-				$svc = Enter-ApcServer;
+				$svc = Enter-Appclusive;
 				$result | Should Not Be $null;
 				$resultingJob = Get-ApcJob -Id $job.Id -svc $svc;
 				$resultingJob.Condition | Should Be $condition;
@@ -317,40 +318,22 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			finally 
 			{
 				# Cleanup
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false;
+				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false -svc $svc;
+				$null = Remove-ApcEntity -Id $node.Id -EntitySetName "Nodes" -Confirm:$false -svc $svc;
 			}
 		}
 		
-		
-		
 		It "GetAssignablePermissionsForConfigurationNode-ReturnsIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
-			$configurationRootNodeId = 2; #System tenant configuration node
-			#$approvalEntityKindId = 5;
-			$query = "Id gt {0}" -f [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::ReservationEnd.value__;
-			$approvalEntityKindId = ($svc.Core.EntityKinds.AddQueryOption('$filter', $query) | Select -First 1).id;
-			$nodeName = $entityPrefix + "node";
-			
-			$configurationNode = New-Object biz.dfch.CS.Appclusive.Api.Core.Node;
-			$configurationNode.Parameters = "{}";
-			$configurationNode.EntityKindId = $approvalEntityKindId;
-			$configurationNode.EntityId = 42;
-			$configurationNode.ParentId = $configurationRootNodeId;
-			$configurationNode.Name = $nodeName;
-			
-			$svc.Core.AddToNodes($configurationNode);
-			$null = $svc.Core.SaveChanges();
-			#Write-Host ($configurationNode | Out-String);
-			
-			$configurationNode = Get-ApcNode -Name $nodeName -ParentId $configurationRootNodeId;
-			$configurationNodeJob = Get-ApcNode -Id $configurationNode.Id -ExpandJob;
+			$currentTenant = Get-Tenant -svc $svc -Current;
+			$tenantConfigurationNode = Get-ApcNode -Id $currentTenant.ConfigurationId -svc $svc;
+			$tenantConfigurationNodeJob = Get-ApcNode -Id $tenantConfigurationNode.Id -svc $svc -ExpandJob;
 			
 			try 
 			{
 				# Act
-				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($configurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
-				
+				$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantConfigurationNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
+				Write-Host ($assignablePermissions.Count | Out-String);
 				# Assert
 				$assignablePermissions | Should Not Be $null;
 				# All permissions for EntityKinds except CRUD permissions for
@@ -364,15 +347,15 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			finally
 			{
 				# Cleanup
-				$null = Remove-ApcEntity -Id $configurationNodeJob.Id -EntitySetName "Jobs" -Confirm:$false;
-				$null = Remove-ApcEntity -Id $configurationNode.Id -EntitySetName "Nodes" -Confirm:$false;
+				$null = Remove-ApcEntity -Id $tenantConfigurationNodeJob.Id -EntitySetName "Jobs" -Confirm:$false;
+				$null = Remove-ApcEntity -Id $tenantConfigurationNode.Id -EntitySetName "Nodes" -Confirm:$false;
 			}
 		}
 		
 		It "GetAssignablePermissionsForRootNode-ReturnsPermissionsExceptIntrinsicEntityKindNonNodePermissions" -Test {
 			# Arrange
-			$rootNodeId = 1L; #system tenant root node
-			$rootNode = Get-ApcNode -Id $rootNodeId;
+			$currentTenant = Get-ApcTenant -svc $svc -Current;
+			$tenantRootNode = Get-ApcNode -Id $currentTenant.NodeId -svc $svc;
 			
 			$allPermissions = New-Object System.Collections.Generic.List``1[biz.dfch.CS.Appclusive.Api.Core.Permission];
 			
@@ -396,7 +379,7 @@ Describe -Tags "Node.Tests" "Node.Tests" {
 			}
 			
 			# Act
-			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($rootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
+			$assignablePermissions = $svc.Core.InvokeEntityActionWithListResult($tenantRootNode, "GetAssignablePermissions", [biz.dfch.CS.Appclusive.Api.Core.Permission], $null);
 			
 			# Assert
 			$assignablePermissions | Should Not Be $null;
