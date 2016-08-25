@@ -25,8 +25,7 @@ function Create-EntityKind{
 	$result = $svc.Core.SaveChanges();
 	
 	#get entity Kind
-	$query = "Id eq {0}" -f $newEntityKind.Id;
-	$entityKind = $svc.Core.EntityKinds.AddQueryOption('$filter', $query) | Select;
+	$entityKind = Get-ApcEntityKind -Id $newEntityKind.Id -svc $svc;
 	
 	#ASSERT
 	$bin = $result.StatusCode | Should be 201;
@@ -44,8 +43,9 @@ function Create-EntityKind{
 	}
 	
 	$bin = Pop-ApcChangeTracker -Svc $Svc;
-
-	$bin = $svc.Core.AttachIfNeeded($entityKind); #attaches a detached entity to the ChangeTracker if not already attached
+	
+	#attaches a detached entity to the ChangeTracker if not already attached
+	$bin = $svc.Core.AttachIfNeeded($entityKind); 
 	
 	return $entityKind;
 }

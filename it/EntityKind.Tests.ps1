@@ -100,16 +100,14 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			try
 			{
 				#ARRANGE
-				$entityKindName = $null;
 				$entityKindDescription = ("Test Description For Pester Run - {0}" -f [Guid]::NewGuid().ToString());
 				$entityKindVersion = [Guid]::NewGuid().ToString();
 				$entityKindParameters = "'{ }'";
 				
 				$newEntityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
-				$newEntityKind.Name = $EntityKindName;
-				$newEntityKind.Description = $EntityKindDescription;
-				$newEntityKind.Version = $EntityKindVersion;
-				$newEntityKind.Parameters = $EntityKindParameters;
+				$newEntityKind.Description = $entityKindDescription;
+				$newEntityKind.Version = $entityKindVersion;
+				$newEntityKind.Parameters = $entityKindParameters;
 				
 				#ACT add it to entity kinds - should throw
 				$svc.Core.AddToEntityKinds($newEntityKind)
@@ -117,7 +115,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				
 				#ASSERT
 				$newEntityKind.Id | Should Be 0;
-				$Error[0].Exception | Should Match "entity.Name : The Name field is required.";
+				$Error[0].Exception | Should Match " A null value was found for the property named 'Name'";
 			}
 			finally
 			{
@@ -129,30 +127,28 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			{
 				#ARRANGE
 				$entityKindName = $entityPrefix + "EntityKind";
-				$entityKindDescription = ("Test Description For Pester Run - {0}" -f [Guid]::NewGuid().ToString())
-				$entityKindVersion = $null;
+				$entityKindDescription = ("Test Description For Pester Run - {0}" -f [Guid]::NewGuid().ToString());
 				$entityKindParameters = "'{ }'";
 				
 				$newEntityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
-				$newEntityKind.Name = $EntityKindName;
-				$newEntityKind.Description = $EntityKindDescription;
-				$newEntityKind.Version = $EntityKindVersion;
-				$newEntityKind.Parameters = $EntityKindParameters;
+				$newEntityKind.Name = $entityKindName;
+				$newEntityKind.Description = $entityKindDescription;
+				$newEntityKind.Parameters = $entityKindParameters;
 		
 				#ACT add it to entity kinds - should throw
 				$svc.Core.AddToEntityKinds($newEntityKind);
 				{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 				
 				#ASSERT
-				$newEntityKind.Id | Should Be 0;	
-				$Error[0].Exception | Should Match "entity.Version : The Version field is required.";
+				$newEntityKind.Id | Should Be 0;
+				$Error[0].Exception | Should Match "A null value was found for the property named 'Version'";
 			}
 			finally
 			{
 			}
 		}
 		
-		It "CreateEntityKindTwiceWithDifferentVersion" -Test {
+		It "CreateAnotherVersionOfTheSameEntityKind-ShouldSucceed" -Test {
 			try
 			{
 				#ARRANGE
@@ -170,8 +166,8 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKindId2 = $entityKind2.Id;
 				
 				#ASSERT
-				$entityKind1Check = $svc.Core.EntityKinds.AddQueryOption('$filter',("Id eq {0}" -f $entityKindId1));
-				$entityKind2Check = $svc.Core.EntityKinds.AddQueryOption('$filter',("Id eq {0}" -f $entityKindId2));
+				$entityKind1Check = Get-ApcEntityKind -Id $entityKindId1 -svc $svc;
+				$entityKind2Check = Get-ApcEntityKind -Id $entityKindId2 -svc $svc;
 				$entityKind1Check.Description | Should Not Be $entityKind2Check.Description;
 				$entityKind1Check.Id | Should Not Be $entityKind2Check.Id;
 				$entityKind1Check.Name | Should Be $entityKind2Check.Name;
@@ -181,7 +177,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 		}
 		
-		It "CreateEntityKindsWithSameNameAndVersion-ShouldFail" -Test {
+		It "CreateEntityKindWithSameNameAndVersionTwice-ShouldFail" -Test {
 			try
 			{
 				#ARRANGE
@@ -198,8 +194,9 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 		
 				#ACT add it to entity kinds - should throw
 				$svc.Core.AddToEntityKinds($entityKind2);
-				{ $result = $svc.Core.SaveChanges(); } | Should Throw;
-				$svc.Core.RevertEntityState($entityKind2) # reverts the state of entity to EntityStates.Detatched
+				{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
+				# reverts the state of entity to EntityStates.Detatched
+				$svc.Core.RevertEntityState($entityKind2);
 				$Error[0].Exception | Should Match ("EntityKind with Name '{0}' and Version '{1}' already exists" -f $entityKindName, $entityKindVersion);
 			}
 			finally
@@ -207,7 +204,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 		}
 		
-		It "UpdateEntityKindNameDescriptionVersionParameter" -Test {
+		It "UpdateEntityKindSucceeds" -Test {
 			try
 			{
 				#ARRANGE
@@ -220,13 +217,13 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKind = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription -entityKindVersion $entityKindVersion -svc $svc;
 				$entityKindId = $entityKind.Id;
 				
-				# ARRANGE Update
+				#ARRANGE Update
 				$entityKindUpdateName = $entityPrefix + "EntityKind Updated";
 				$entityKindUpdateDescription = $entityKindDescription + "Updated";
 				$entityKindUpdateVersion = 2;
 				$entityKindUpdateParameter = "Updated";
 				
-				#ACT set new parameters
+				#ACT update properties
 				$entityKind.Name = $entityKindUpdateName;
 				$entityKind.Description = $entityKindUpdateDescription;
 				$entityKind.Parameters = $entityKindUpdateParameter;
@@ -236,13 +233,13 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$result = $svc.Core.SaveChanges();
 				
 				# Assert
-				$entityKindUpdated = $svc.Core.EntityKinds.AddQueryOption('$filter', "Id eq "+$entityKind.Id+"");
+				$updatedEntityKind = Get-ApcEntityKind -Id $entityKindId -svc $svc;
 				$result.StatusCode | Should Be 204;			
-				$entityKindUpdated.Name | Should Be $entityKindUpdateName;
-				$entityKindUpdated.Description | Should Be $entityKindUpdateDescription;
-				$entityKindUpdated.Parameters | Should Be $entityKindUpdateParameter;
-				$entityKindUpdated.Version | Should Be $entityKindUpdateVersion;
-				$entityKindUpdated.Id | Should Be $entityKindId;
+				$updatedEntityKind.Name | Should Be $entityKindUpdateName;
+				$updatedEntityKind.Description | Should Be $entityKindUpdateDescription;
+				$updatedEntityKind.Parameters | Should Be $entityKindUpdateParameter;
+				$updatedEntityKind.Version | Should Be $entityKindUpdateVersion;
+				$updatedEntityKind.Id | Should Be $entityKindId;
 			}
 			finally
 			{
