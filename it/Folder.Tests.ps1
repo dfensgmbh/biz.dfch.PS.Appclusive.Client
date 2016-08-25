@@ -1,3 +1,5 @@
+# includes tests for CLOUDTCL-1882
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -11,6 +13,9 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Folder.Tests" "Folder.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
+	. "$here\$sut"
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Folders");
 	
 	Context "#CLOUDTCL-1882-FolderTests" {
 		
@@ -18,51 +23,36 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
 		It "CreateAndDeleteFolderSucceeds" -Test {
-			# Arrange
-			$folder = New-Object biz.dfch.CS.Appclusive.Api.Core.Folder;
-			$folder.Name = "Arbitrary Folder";
-			$folder.Description = "Arbitrary Description";
-			$folder.EntityKindId = 28;
-			$folder.ParentId = 1;
-			$folder.Parameters = '{}';
+			#ARRANGE
+			$folderName = $entityPrefix + "Folder";
 			
-			# Act
-			$svc.Core.AddToFolders($folder);
-			$folderCreationResult = $svc.Core.SaveChanges();
+			#ACT create folder
+			$folder = Create-Folder -Svc $svc -Name $folderName;
 			
-			$folderCreationResult | Should Not Be $null;
-			$folderCreationResult.StatusCode | Should Be 202;
+			#get folder id
+			$folderId = $folder.Id;
 			
-			$query = "Id eq {0} and EntityKindId eq 1" -f $folder.Id;
-			$job = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			
-			$query = "Id eq {0}" -f $job.RefId;
-			$createdFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
-			
-			try 
-			{
-				#Assert
-				$job | Should Not Be $null;
-				$job.Id | Should Not Be 0;
-				
-				$createdFolder | Should Not Be $null;
-				$createdFolder.Id | Should Not Be 0;
-				$createdFolder.Name | Should Be "Arbitrary Folder";
-				$createdFolder.Description | Should Be "Arbitrary Description";
-				$createdFolder.EntityKindId | Should Be 28;
-			} 
-			finally 
-			{
-				#Cleanup
-				$null = Remove-ApcEntity -Id $job.Id -EntitySetName "Jobs" -Confirm:$false;
-				$deletionResult = Remove-ApcEntity -Id $createdFolder.Id -EntitySetName "Folders" -Confirm:$false;
-				
-				$deletionResult.StatusCode | Should Be 204;
-			}
+			#ACT delete folder
+			Delete-Folder -Svc $svc -Id $folderId;
 		}
 	}
 }
