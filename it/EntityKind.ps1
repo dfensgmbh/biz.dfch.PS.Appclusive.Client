@@ -12,7 +12,7 @@ function Create-EntityKind{
 		$EntityKindParameters
 	)
 	
-	Push-ApcChangeTracker -Svc $Svc;
+	$bin = Push-ApcChangeTracker -Svc $Svc;
 
 	$newEntityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
 	$newEntityKind.Name = $EntityKindName;
@@ -42,9 +42,10 @@ function Create-EntityKind{
 	{
 	$bin = $entityKind.Parameters | Should Be $EntityKindParameters;
 	}
-	Pop-ApcChangeTracker -Svc $Svc;
+	
+	$bin = Pop-ApcChangeTracker -Svc $Svc;
 
-	$svc.Core.AttachIfNeeded($entityKind); #attaches a detached entity to the ChangeTracker if not already attached
+	$bin = $svc.Core.AttachIfNeeded($entityKind); #attaches a detached entity to the ChangeTracker if not already attached
 	
 	return $entityKind;
 }
