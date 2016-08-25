@@ -110,10 +110,10 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$newEntityKind.Description = $EntityKindDescription;
 				$newEntityKind.Version = $EntityKindVersion;
 				$newEntityKind.Parameters = $EntityKindParameters;
-		
+				
 				#ACT add it to entity kinds - should throw
 				$svc.Core.AddToEntityKinds($newEntityKind)
-				{ $result = $svc.Core.SaveChanges(); } | Should Throw;
+				{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 				
 				#ASSERT
 				$newEntityKind.Id | Should Be 0;
@@ -141,7 +141,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 		
 				#ACT add it to entity kinds - should throw
 				$svc.Core.AddToEntityKinds($newEntityKind);
-				{ $result = $svc.Core.SaveChanges(); } | Should Throw;
+				{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 				
 				#ASSERT
 				$newEntityKind.Id | Should Be 0;	
@@ -149,9 +149,6 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 			}
 			finally
 			{
-				if (!$entityKind -eq $false -And $newEntityKind.Id -ne 0)
-				{
-				}
 			}
 		}
 		
@@ -169,7 +166,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$entityKind1 = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription1 -entityKindVersion $entityKindVersion1 -svc $svc;
 				$entityKindId1 = $entityKind1.Id;
 				
-				$entityKind2 = CreateEntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription2 -entityKindVersion $entityKindVersion2 -svc $svc;
+				$entityKind2 = Create-EntityKind -entityKindName $entityKindName -entityKindDescription $entityKindDescription2 -entityKindVersion $entityKindVersion2 -svc $svc;
 				$entityKindId2 = $entityKind2.Id;
 				
 				#ASSERT
@@ -238,10 +235,8 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$svc.Core.UpdateObject($entityKind);
 				$result = $svc.Core.SaveChanges();
 				
-				# Assert	
-				write-warning $entityKindCreated.Name;
-				$entityKindUpdated = $svc.Core.EntityKinds.AddQueryOption('$filter', "Id eq "+$entityKind.Id+"")
-
+				# Assert
+				$entityKindUpdated = $svc.Core.EntityKinds.AddQueryOption('$filter', "Id eq "+$entityKind.Id+"");
 				$result.StatusCode | Should Be 204;			
 				$entityKindUpdated.Name | Should Be $entityKindUpdateName;
 				$entityKindUpdated.Description | Should Be $entityKindUpdateDescription;
