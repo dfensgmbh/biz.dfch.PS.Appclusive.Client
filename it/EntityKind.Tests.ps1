@@ -200,7 +200,7 @@ Describe -Tags "EntityKind.Tests" "EntityKind.Tests" {
 				$svc.Core.AddToEntityKinds($entityKind2);
 				{ $result = $svc.Core.SaveChanges(); } | Should Throw;
 				$svc.Core.RevertEntityState($entityKind2) # reverts the state of entity to EntityStates.Detatched
-				$Error[0].Exception | Should Match ("EntityKind with Name '{0}' and Version '{1}' already exists" -f $entityKindName, $entityKindVersion)
+				$Error[0].Exception | Should Match ("EntityKind with Name '{0}' and Version '{1}' already exists" -f $entityKindName, $entityKindVersion);
 			}
 			finally
 			{

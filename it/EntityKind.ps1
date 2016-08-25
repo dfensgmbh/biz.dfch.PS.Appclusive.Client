@@ -21,7 +21,7 @@ function Create-EntityKind{
 	$newEntityKind.Parameters = $EntityKindParameters;
 	
 	#add it to entity Kinds
-	$svc.Core.AddToEntityKinds($newEntityKind)
+	$svc.Core.AddToEntityKinds($newEntityKind);
 	$result = $svc.Core.SaveChanges();
 	
 	#get entity Kind
