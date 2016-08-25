@@ -1,4 +1,83 @@
-# This file intentionally left blank
+function Create-Folder{
+	Param
+	(
+		$Svc
+		,
+		#[Parameter(Mandatory = $true)]
+		$Name
+		,
+		#[Parameter(Mandatory = $false)]
+		$Description = "Default Description"
+		,
+		#[Parameter(Mandatory = $true)]
+		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Folder.value__
+		,
+		#[Parameter(Mandatory = $true)]
+		$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
+		,
+		#[Parameter(Mandatory = $true)]
+		$Parameters = '{}'
+	)
+	
+	$bin = Push-ApcChangeTracker -Svc $Svc;
+
+	$newFolder = New-Object biz.dfch.CS.Appclusive.Api.Core.Folder;
+	$newFolder.Name = $Name;
+	$newFolder.Description = $Description;
+	$newFolder.EntityKindId = $EntityKindId;
+	$newFolder.ParentId = $ParentId;
+	$newFolder.Parameters = $Parameters;
+	
+	#add to folders
+	$svc.Core.AddToFolders($newFolder);
+	$result = $svc.Core.SaveChanges();
+	
+	#get folder
+	$query = "Name eq '{0}' and Description eq '{1}'" -f $Name, $Description;
+	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+	
+	#ASSERT
+	$bin = $result.StatusCode | Should be 202;
+	$bin = $folder | Should Not Be $null;
+	$bin = $folder.Id | Should Not Be 0;
+	$bin = $folder.Name | Should Be $Name;
+	$bin = $folder.Description | Should Be $Description;
+	$bin = $folder.EntityKindId | Should Be $EntityKindId;
+	$bin = $folder.ParentId | Should Be $ParentId;
+	$bin = $folder.Parameters | Should Be $Parameters;
+	
+	$bin = Pop-ApcChangeTracker -Svc $Svc;
+	
+	#attaches a detached entity to the ChangeTracker if not already attached
+	$bin = $svc.Core.AttachIfNeeded($folder); 
+	
+	return $folder;
+}
+
+function Delete-Folder {
+	Param
+	(
+		$svc
+		,
+		$Id
+	)
+	
+	#get the folder
+	$query = "Id eq {0}" -f $Id;
+	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | select;
+	
+	#delete the folder
+	$svc.Core.DeleteObject($folder);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted folder
+	$query = "Id eq {0}" -f $Id;
+	$deletedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT folder is deleted
+	$bin = $deletedFolder | Should Be $null;
+	$bin = $result.StatusCode | Should Be 204;
+}
 
 #
 # Copyright 2016 d-fens GmbH
