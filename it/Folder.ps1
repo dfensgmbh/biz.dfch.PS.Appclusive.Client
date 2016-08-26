@@ -3,19 +3,14 @@ function Create-Folder{
 	(
 		$Svc
 		,
-		#[Parameter(Mandatory = $true)]
 		$Name
 		,
-		#[Parameter(Mandatory = $false)]
 		$Description = "Default Description"
 		,
-		#[Parameter(Mandatory = $true)]
 		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Folder.value__
 		,
-		#[Parameter(Mandatory = $true)]
 		$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 		,
-		#[Parameter(Mandatory = $true)]
 		$Parameters = '{}'
 	)
 	
