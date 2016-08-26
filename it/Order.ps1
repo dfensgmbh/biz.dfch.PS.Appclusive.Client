@@ -1,14 +1,13 @@
-function CreateOrder 
-{
-[CmdletBinding()]
-PARAM
-(
-	[Parameter(Mandatory = $false, Position = 0)]
-	[string] $OrderName = 'Arbitrary Order'
-	,
-	[Parameter(Mandatory = $false, Position = 1)]
-	[string] $Parameters = '{}'
-)
+function Create-Order{
+	[CmdletBinding()]
+	Param
+	(
+		[Parameter(Mandatory = $false, Position = 0)]
+		[string] $Name = 'Arbitrary Order'
+		,
+		[Parameter(Mandatory = $false, Position = 1)]
+		[string] $Parameters = '{}'
+	)
 
 	$order = New-Object biz.dfch.CS.Appclusive.Api.Core.Order;
 	$order.Name = $OrderName;
