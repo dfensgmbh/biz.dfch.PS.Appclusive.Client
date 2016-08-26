@@ -1,4 +1,61 @@
-# This file intentionally left blank
+function Create-Assoc{
+Param
+	(
+		$Svc
+		,
+		$Name
+		,
+		$Description = "Arbitrary Product"
+		,
+		$SourceId
+		,
+		$DestinationId
+		,
+		$Order
+		,
+		$Parameters
+	)
+
+	$bin = Push-ApcChangeTracker -Svc $Svc;
+	
+	$newAssoc = New-Object biz.dfch.CS.Appclusive.Api.Core.Assoc;
+	$newAssoc.Name = $Name;
+	$newAssoc.Description = $Description;
+	$newassoc.SourceId = $SourceId;
+	$newAssoc.DestinationId = $DestinationId;
+	$newAssoc.Order = $Order;
+	if ($Parameters)
+	{
+		$newAssoc.Parameters = $Parameters;
+	}
+	
+	$svc.Core.AddToAssocs($newassoc);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the assoc
+	$query = "Name eq '{0}'" -f $assocName;
+	$assoc = $svc.core.Assocs.AddQueryOption('$filter', $query) | Select;
+	
+	#ASSERT
+	$bin = $result.StatusCode | Should be 201;
+	$bin = $assoc | Should Not Be $null;
+	$bin = $assoc.Id | Should Not Be 0;
+	$bin = $assoc.Name | Should Be $Name;
+	$bin = $assoc.Description | Should Be $Description;
+	$bin = $assoc.SourceId | Should Be $SourceId;
+	$bin = $assoc.DestinationId | Should Be $DestinationId;
+	$bin = $assoc.Order | Should Be $Order;
+	if ($Parameters)
+	{
+	$bin = $assoc.Parameters | Should Be $Parameters;
+	}
+	
+	$bin = Pop-ApcChangeTracker -Svc $Svc;
+	
+	#attaches a detached entity to the ChangeTracker if not already attached
+	$bin = $svc.Core.AttachIfNeeded($assoc); 
+	return $assoc;
+}
 
 #
 # Copyright 2015 d-fens GmbH
