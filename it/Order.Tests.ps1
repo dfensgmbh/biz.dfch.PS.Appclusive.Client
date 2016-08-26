@@ -1,3 +1,5 @@
+# includes tests for CLOUDTCL-1886
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -11,10 +13,12 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 Describe -Tags "Order.Tests" "Order.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
-
 	. "$here\$sut"
-	. "$here\Catalogue.ps1"
+	. "$here\CatalogueAndCatalogueItems.ps1"
 	. "$here\Cart.ps1"
+	. "$here\Product.ps1"
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Orders", "CartItems", "CatalogueItems", "Products", "Catalogues", "Carts");
 	
 	Context "#CLOUDTCL-1886-OrderTests" {
 		
@@ -22,16 +26,44 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "PlaceOrderWithoutCart-Fails" -Test {
-			$order = CreateOrder;
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
+		It "PlaceOrderWithoutCart-ShouldFail" -Test {
+			#ARRANGE
+			$orderName = $entityPrefix + "Order";
 			
+			#delete cart if there is one
+			$cart = $svc.Core.Carts | Select -First 1;
+			if ($cart)
+			{
+				Remove-ApcEntity -svc $svc -Id $cart.Id -EntitySetName "Carts" -Confirm:$false;
+			}
+			
+			#ACT
+			$order = New-Object biz.dfch.CS.Appclusive.Api.Core.Order;
+			$order.Name = $OrderName;
+			$order.Parameters = '{}';
 			$svc.Core.AddToOrders($order);
 			
-			try {
-				$result = $svc.Core.SaveChanges();
+			try
+			{
+				{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			}
 			catch
 			{
@@ -41,56 +73,57 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 		}
 		
 		It "CheckoutCart-CreatesOrderAndDeletesCart" -Test {
-			# Get catItem
-			$catItem = GetCatalogueItemByName -svc $svc -name 'VDI Personal';
-			$catItem | Should Not Be $null;
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
+			$orderName = $entityPrefix + "Order";
 			
-			# Create new cartItem
-			$cartItem = CreateCartItem -catItem $catItem;
-
-			# Add cartItem
-			$svc.Core.AddToCartItems($cartItem);
-			$result = $svc.Core.SaveChanges();
-
-			# Check result
-			$result.StatusCode | Should Be 201;
-			$cartItem.Id | Should Not Be 0;
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
 			
-			$cart = GetCartOfUser -svc $svc;
-			$cart | Should Not Be $null;
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName;
+			$productId = $newProduct.Id;
 			
-			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
-			$cartItems.Count | Should Be 1;
-			$cartItems[0].Id | Should Be $cartItem.Id;
-
-			# Create order
-			$order = CreateOrder;
-			$svc.Core.AddToOrders($order);
-			try
-			{
-				$svc.Core.SaveChanges();
-			}
-			catch
-			{
-				# Intentionally left empty
-				# The metadata URI 'http://localhost:53422/api/Core/$metadata#Edm.String' is not valid for the expected payload kind 'Entry'
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId;
+			$catalogueItemId = $newCatalogueItem.Id;
+			
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItemId = $cartItem.Id;
+			$cartId = $cartItem.CartId;
+			Write-Host ($cartId | out-String);
+			
+			#ACT create order
+			$orderParameters = @{
+				Name = $orderName;
+				Description = "Arbitrary Description";
+				Requester = (Get-ApcUser -Current).Id;
+				Parameters = '{}';
 			}
 			
-			Start-Sleep -s 5;
+			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
 			
-			# Check result
-			$svc = Enter-ApcServer;
+			$query = "Name eq '{0}'" -f $orderName;
+			$order = $svc.Core.Orders.AddQueryOption('$filter', $query) | Select;
+			Write-Host ($order | out-String);
 			
-			$createdOrder = $svc.Core.Orders |? Name -eq 'Arbitrary Order';
-			$createdOrder.RequesterId | Should Be $createdOrder.CreatedById;
-			$createdOrder.Status | Should Be 'Approval';
+			#$createdOrder = $svc.Core.Orders |? Name -eq 'Arbitrary Order';
+			#$createdOrder.RequesterId | Should Be $createdOrder.CreatedById;
+			#$createdOrder.Status | Should Be 'Approval';
 			
-			$query = "EntityKindId eq 20 and RefId eq '{0}'" -f $createdOrder.Id;
-			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query);
+			$query = "RefId eq '{0}'" -f $order.Id;
+			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+			Write-Host ($orderJob | out-String);
 			$orderJob.Status | Should Be 'Approval';
 			
-			$query = "EntityKindId eq 5 and ParentId eq {0}" -f $orderJob.Id;
+			$query = "EntityKindId eq 5 and ParentId eq {0}" -f $order.Id;
 			$approvalJob = $svc.Core.Jobs.AddQueryOption('$filter', $query);
+			Write-Host ($approvalJob | out-String);
 			$approvalJob.Status | Should Be 'Created';
 			
 			$approval = $svc.Core.Approvals |? Id -eq $approvalJob.RefId;
@@ -115,9 +148,9 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			
 			$svc.Core.DeleteObject($createdOrder);
 			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
+			$result.StatusCode | Should Be 204;#>
 		}
-		
+		<#
 		It "CheckoutCartWithRequester-CreatesOrderAndDeletesCart" -Test {
 			$requester = 'Arbitrary User';
 		
@@ -482,7 +515,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$svc.Core.DeleteObject($createdOrder);
 			$result = $svc.Core.SaveChanges();
 			$result.StatusCode | Should Be 204;
-		}
+		}#>
 	}
 }
 
