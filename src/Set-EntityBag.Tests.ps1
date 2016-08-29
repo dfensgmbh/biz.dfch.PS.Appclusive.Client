@@ -127,27 +127,15 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			$result.EntityKindId| Should Be $entityKindId;
 		}
 
-		It "Set-EntityBag-WithEntityKindIdZeroShouldThrowContractException" -Test {
+		It "Set-EntityBag-WithInvalidEntityKindIdShouldThrowArgumentException" -Test {
 			# Arrange
 			# N/A	
 				
 			# Act
-			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId 0 -svc $svc -CreateIfNotExist } | Should ThrowErrorId 'Contract';
+			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId 0 -svc $svc -CreateIfNotExist } | Should Throw 'argument';
 
 			# Assert
 			# N/A
-		}
-		
-		It "Set-EntityBag-WithInvalidEntityKindIdShouldThrowContractException" -Test {
-			# Arrange
-			$invalidEntityKindId =  [long]::MaxValue;
-				
-			# Act
-			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId  [long]::MaxValue -svc $svc -CreateIfNotExist } | Should ThrowErrorId 'Contract';
-
-			# Assert
-			# N/A
-			
 		}
 	}
 }
