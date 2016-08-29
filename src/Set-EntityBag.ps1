@@ -125,6 +125,7 @@ Param
 	[string] $As = 'default'
 )
 
+# Begin
 Begin 
 {
 	trap { Log-Exception $_; break; }
@@ -136,7 +137,6 @@ Begin
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 }
-# Begin
 
 Process 
 {
