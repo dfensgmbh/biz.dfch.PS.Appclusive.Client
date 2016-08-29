@@ -139,10 +139,11 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-	# Validating here, because you can't use constants from C#-project in markup-tags
+	
+	# ProtectionLevel param validation
 	$minProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;
 	$maxProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__;
-	$errorMessage = ('Argument $ProtectionLevel ({0}) is not a valid protectionlevel. The Argument must be between {1} and {2}' -f $ProtectionLevel, $minProtectionLevelValue, $maxProtectionLevelValue);
+	$errorMessage = ('Argument $ProtectionLevel ({0}) is not a valid protectionlevel. The argument must be between {1} and {2}' -f $ProtectionLevel, $minProtectionLevelValue, $maxProtectionLevelValue);
 	if ($ProtectionLevel -lt $minProtectionLevelValue -or $ProtectionLevel -gt $maxProtectionLevelValue) 
 	{
 		throw $errorMessage;
