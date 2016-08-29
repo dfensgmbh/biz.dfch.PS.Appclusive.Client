@@ -51,7 +51,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			$nodeName1 = $entityPrefix + "node1";
 			$nodeName2 = $entityPrefix + "node2";
 			$assocName = $entityPrefix + "assoc";
-			$order = 1;
+			$order = 0;
 			
 			#ACT create node
 			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
@@ -70,6 +70,53 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#ACT delete assoc
 			Delete-Assoc -Svc $svc -Id $assocId;
 		}
+		
+		It "Assoc-Update" -Test {
+			#ARRANGE
+			$nodeName1 = $entityPrefix + "node1";
+			$nodeName2 = $entityPrefix + "node2";
+			$nodeName3 = $entityPrefix + "node3";
+			$nodeName4 = $entityPrefix + "node4";
+			$assocName = $entityPrefix + "assoc";
+			$order = 1;
+			
+			#ACT create nodes
+			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node3 = New-ApcNode -Name $nodeName3 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node4 = New-ApcNode -Name $nodeName4 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the nodes
+			$node1Id = $node1.Id;
+			$node2Id = $node2.Id;
+			$node3Id = $node3.Id;
+			$node4Id = $node4.Id;
+			
+			#ACT create Assoc that has first two nodes as source and destination
+			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id -Order $order;
+			Write-Host ($assoc | out-string);
+			#get the id of the assoc
+			$assocId = $assoc.Id;
+			
+			#ARRANGE update
+			$newName = $assocName + " Updated";
+			$newDescription = "Updated";
+			$newOrder = 2;
+			
+			#ACT Update assoc using node3 & node4 as source & destination
+			$updatedAssoc = Update-Assoc -Svc $svc -Id $assocId -Name $newName -Description $newDescription;
+			Write-Host ($updatedAssoc | out-string);
+			
+			#ACT delete assoc
+			Delete-Assoc -Svc $svc -Id $assocId;
+		}
+		
+		It "Assoc-Update-ShouldFail" -Test {
+		#
+		
+		}
+		
+		
 	}
 }
 

@@ -83,6 +83,73 @@ function Delete-Assoc {
 	return $result;
 }
 
+function Update-Assoc{
+	Param
+	(
+		$Svc
+		,
+		$Id
+		,
+		$Name
+		,
+		$Description
+		#,
+		#$Order
+		,
+		$Tid
+	)
+	
+	#get the assoc
+	$query = "Id eq {0}" -f $Id;
+	$assoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
+	
+	#update the assoc
+	if ($Name)
+	{
+	$assoc.Name = $Name;
+	}
+	if ($Description)
+	{
+	$assoc.Description = $Description;
+	}
+	#if ($Order)
+	#{
+	#$assoc.Order = $Order;
+	#}
+	if ($Tid)
+	{
+	$assoc.Tid = $Tid;
+	}
+	
+	$svc.Core.UpdateObject($assoc);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the updated assoc
+	$query = "Id eq {0}" -f $Id;
+	$updatedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT - update
+	$bin = $updatedAssoc.Id | Should Be $Id;
+	if ($Name)
+	{
+	$bin = $updatedAssoc.Name | Should Be $UpdatedName;
+	}
+	if ($Description)
+	{
+	$bin = $updatedAssoc.Description | Should Be $UpdatedDescription;
+	}
+	#if ($Order)
+	#{
+	#$bin = $updatedAssoc.Order | Should Be $Order;
+	#}
+	if ($Tid)
+	{
+	$bin = $updatedAssoc.Tid | Should Be $Tid;
+	}
+	
+	return $updatedAssoc;
+}
+
 
 
 
