@@ -96,12 +96,31 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 
 		It "New-EntityBag-CreateTwiceTheSameEntityBagShouldThrowContractException" -Test {
 			# Arrange
-			#N/A
+			# N/A
 			
 			# Act / Assert
 			$result = New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -EntityId $testNode.Id;
 			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -EntityId $testNode.Id } | Should ThrowErrorId 'Contract';
 		}	
+		
+		It "New-EntityBag-WithInvalidEntityIdShouldThrowArgumentException" -Test {
+			# Arrange
+			$invalidEntityId = 0;
+			
+			# Act
+			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -Entityid $invalidEntityId } | Should Throw 'argument';
+			
+			# Assert
+		}
+		
+		It "New-EntityBag-WithInvalidProtectionLevelShouldThrowArgumentException" -Test {
+			# Arrange
+			$invalidProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__ + 1;
+			
+			# Act
+			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -Entityid $testNode.Id -ProtectionLevel $invalidProtectionLevel } | Should Throw 'Argument';
+			
+		}
 	}
 }
 
