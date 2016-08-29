@@ -1,12 +1,12 @@
 function Import-DataType {
 <#
 .SYNOPSIS
-Creates or Recreates DataTypes for an EntityKind (based on .NET Class)
+Creates or Recreates DataTypes for an EntityKind (based on .NET class)
 
 .DESCRIPTION
-Creates or Recreates DataTypes for an EntityKind (based on .NET Class)
+Creates or Recreates DataTypes for an EntityKind (based on .NET class)
 
-Inspects the .NET Class for all its properties and will create for every Property with an EntityBag Mapping a DataType. All supported Validation Attributes will be parsed into the DataTypes.
+Inspects a given .NET class and all its properties and creates a DataType for each property. All supported Validation Attributes will be parsed into the DataTypes.
 
 .OUTPUTS
 default | json | json-pretty | xml | xml-pretty
@@ -53,7 +53,7 @@ See module manifest for dependencies and further requirements.
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
-    ConfirmImpact = 'Medium'
+    ConfirmImpact = 'High'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Import-DataType/'
 )]
@@ -104,11 +104,12 @@ Process
     # Return values are always and only returned via OutputParameter.
     $OutputParameter = $null;
 
-	$entityKind = biz.dfch.PS.Appclusive.Client\Get-ApcEntityKind -Version $EntityKindVersion -svc $svc;
+	Log-Debug $fn ("Resolving EntityKind.Version '{0}' ..." -f $EntityKindVersion);
+	$entityKind = Get-EntityKind -Version $EntityKindVersion -svc $svc;
 	Contract-Assert (!!$entityKind) "EntityKindVersion does not exist";
-	Log-Debug $fn ("Found EntityKind.Version:{0} [{1}]" -f $entityKind.Version, $entityKind.Id);
+	Log-Info $fn ("Resolving EntityKind.Version '{0}' ['{1}'] SUCCEEDED." -f $EntityKindVersion, $entityKind.Id);
 
-	$entityFqcn = biz.dfch.PS.System.Utilities\Get-DataType $entityKind.Version;
+	$entityFqcn = biz.dfch.PS.System.Utilities\Get-DataType $entityKind.Version -Literal;
 	Contract-Assert (1 -eq $entityFqcn.Count)
 	$instance = New-Object $entityFqcn;
 	Contract-Assert (!!$instance)
@@ -122,27 +123,25 @@ Process
 	$dataTypes = $svc.Diagnostics.DataTypes.AddQueryOption('$filter', $q) | Select;
 	if ($PSBoundParameters.ContainsKey('RecreateIfExist'))
 	{
-		foreach ($dataType in $dataTypes)
-		{
-			biz.dfch.PS.Appclusive.Client\Remove-Entity -svc $svc -InputObject $dataType -Confirm:$false;
-		}
-
+		$null = $dataTypes | Remove-Entity -svc $svc -Confirm:$Confirm;
 		$dataTypes = @();
 	}
 
-	foreach ($classProperty in $properties)
+	foreach ($property in $properties)
 	{
-		$hasEntityBagAttribute = HasEntityBagAttribute $classProperty;
-		if (!$hasEntityBagAttribute)
+		$entityBagAttributeName = GetEntityBagAttributeName $property;
+		if (!$entityBagAttributeName)
 		{
 			continue;
 		}
 
-		$dataType = $dataTypes |? Name -eq $classProperty.Name;
-		if (!!$dataType)
+		Log-Info $fn ("Importing '{0}' ..." -f $entityBagAttributeName);
+		
+		$dataType = $dataTypes |? Name -eq $entityBagAttributeName;
+		if ($dataType)
 		{
 			# Do not change an existing dataType
-			Log-Warning $fn ("{0}.{1} has not been updated." -f $entityKind.Version, $classProperty.Name);
+			Log-Warning $fn ("Importing '{0}' FAILED. DataType already exists." -f $entityBagAttributeName);
 			continue;
 		}
 
@@ -150,32 +149,32 @@ Process
 		$svc.Diagnostics.AddToDataTypes($dataType);
 
 		$dataType.EntityKindId = $entityKind.Id;
-		$dataType.Type = $classProperty.PropertyType.FullName;
+		$dataType.Name = $entityBagAttributeName;
+		$dataType.Type = $property.PropertyType.FullName;
 		
-		ApplyEntityBagAttribute $dataType $classProperty;
-		ApplyPropertyDescriptionAttribute $dataType $classProperty;
-		ApplyDefaultValue $dataType $classProperty;
-		ApplyRequired $dataType $classProperty;
-		ApplyRange $dataType $classProperty;
-		ApplyIncrement $dataType $classProperty;
-		ApplyUnit $dataType $classProperty;
-		ApplyValidatePattern $dataType $classProperty;
-		ApplyValidateScript $dataType $classProperty;
-		ApplyValidateSet $dataType $classProperty;
-		ApplyKeyNameValueFilter $dataType $classProperty;
-		ApplyStringLength $dataType $classProperty;
+		SetPropertyDescriptionAttribute $dataType $property;
+		SetDefaultValueAttribute $dataType $property;
+		SetRequiredAttribute $dataType $property;
+		SetRangeAttribute $dataType $property;
+		SetIncrementAttribute $dataType $property;
+		SetUnitAttribute $dataType $property;
+		SetValidatePatternAttribute $dataType $property;
+		SetValidateScriptAttribute $dataType $property;
+		SetValidateSetAttribute $dataType $property;
+		SetKeyNameValueFilterAttribute $dataType $property;
+		SetStringLengthAttribute $dataType $property;
 		
 		$svc.Diagnostics.UpdateObject($dataType);
 		if($PSCmdlet.ShouldProcess(($dataType | Out-String)))
 		{
 			$null = $svc.Diagnostics.SaveChanges();
+			Log-Info $fn ("Importing '{0}' SUCCEEDED." -f $entityBagAttributeName);
 			$r += $dataType;
 		}
 
 	}
 
-	# $OutputParameter = biz.dfch.PS.Appclusive.Client\Format-ResultAs $r $As;
-	$OutputParameter = $r;
+	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
 
 }
@@ -196,22 +195,20 @@ End
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-DataType; } 
 
-function HasEntityBagAttribute($property)
+function GetEntityBagAttributeName($property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Converters.EntityBagAttribute], $true);
-    
-    return ($attr.Count -eq 1);
-}
-
-function ApplyEntityBagAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Converters.EntityBagAttribute], $true);
-    Contract-Assert (!!$attr) "EntityBagAttribute does not exist $($dataType.Type)"
 	
-    $dataType.Name = $attr.Name;
+	$attr = $attr | Select -First 1;
+	if(!$attr)
+	{
+		return $null;
+	}
+	
+	return $attr.Name;
 }
 
-function ApplyPropertyDescriptionAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetPropertyDescriptionAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.EntityBagDescriptionAttribute], $true);
 
@@ -223,7 +220,7 @@ function ApplyPropertyDescriptionAttribute([biz.dfch.CS.Appclusive.Core.OdataSer
 	$dataType.Description = $attr.Name;
 }
 
-function ApplyDefaultValue([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetDefaultValueAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([System.ComponentModel.DefaultValueAttribute], $true);
 
@@ -235,7 +232,7 @@ function ApplyDefaultValue([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostic
 	$dataType.Default = $attr.Value;
 }
 
-function ApplyRequired([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetRequiredAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.RequiredAttribute], $true);
 
@@ -249,7 +246,7 @@ function ApplyRequired([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.Da
 	$dataType.IsRequired = $true;
 }
 
-function ApplyRange([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetRangeAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.RangeAttribute], $true);
 
@@ -262,7 +259,7 @@ function ApplyRange([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataT
 	$dataType.Maximum = $attr.Maximum;
 }
 
-function ApplyIncrement([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetIncrementAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.IncrementAttribute], $true);
 
@@ -275,7 +272,7 @@ function ApplyIncrement([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.D
 	$dataType.IncrementFunction = $attr.IncrementFunction;
 }
 
-function ApplyUnit([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetUnitAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.UnitAttribute], $true);
 
@@ -287,7 +284,7 @@ function ApplyUnit([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataTy
 	$dataType.Unit = $attr.Unit;
 }
 
-function ApplyValidateSet([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetValidateSetAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ValidateSetIfNotDefaultAttribute], $true);
 
@@ -299,7 +296,7 @@ function ApplyValidateSet([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics
 	$dataType.ValidateSet = $attr.Set;
 }
 
-function ApplyValidateScript([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetValidateScriptAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ValidateScriptIfNotDefaultAttribute], $true);
 
@@ -311,7 +308,7 @@ function ApplyValidateScript([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnost
 	$dataType.ValidateScript = $attr.Script;
 }
 
-function ApplyValidatePattern([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetValidatePatternAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ValidatePatternIfNotDefaultAttribute], $true);
 
@@ -323,7 +320,7 @@ function ApplyValidatePattern([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnos
 	$dataType.ValidatePattern = $attr.Pattern;
 }
 
-function ApplyKeyNameValueFilter([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetKeyNameValueFilterAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.KeyNameValueFilterAttribute], $true);
 
@@ -335,7 +332,7 @@ function ApplyKeyNameValueFilter([biz.dfch.CS.Appclusive.Core.OdataServices.Diag
 	$dataType.KeyNameValueFilter = $attr.Pattern;
 }
 
-function ApplyStringLength([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
+function SetStringLengthAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.StringLengthAttribute], $true);
 
