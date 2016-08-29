@@ -11,7 +11,7 @@ Param
 		,
 		$DestinationId
 		,
-		$Order
+		$Order = 1
 		,
 		$Parameters
 	)
@@ -56,6 +56,35 @@ Param
 	$bin = $svc.Core.AttachIfNeeded($assoc); 
 	return $assoc;
 }
+
+function Delete-Assoc {
+	Param 
+	(
+		$Svc
+		,
+		$Id
+	)
+	
+	#get the assoc
+	$query = "Id eq {0}" -f $Id;
+	$assoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
+	
+	#delete assoc
+	$svc.Core.DeleteObject($assoc);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the deleted assoc
+	$query = "Id eq {0}" -f $Id;
+	$deletedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
+	
+	#ASSERT that assoc is deleted
+	$bin = $deletedAssoc | Should Be $null;
+	
+	return $result;
+}
+
+
+
 
 #
 # Copyright 2015 d-fens GmbH
