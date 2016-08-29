@@ -1,3 +1,4 @@
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -124,7 +125,30 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			$result.Value | Should Be $newValue;
 			$result.EntityId | Should Be $testNode.Id;
 			$result.EntityKindId| Should Be $entityKindId;
-		}	
+		}
+
+		It "Set-EntityBag-WithEntityKindIdZeroShouldThrowContractException" -Test {
+			# Arrange
+			# N/A	
+				
+			# Act
+			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId 0 -svc $svc -CreateIfNotExist } | Should ThrowErrorId 'Contract';
+
+			# Assert
+			# N/A
+		}
+		
+		It "Set-EntityBag-WithInvalidEntityKindIdShouldThrowContractException" -Test {
+			# Arrange
+			$invalidEntityKindId =  [long]::MaxValue;
+				
+			# Act
+			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId  [long]::MaxValue -svc $svc -CreateIfNotExist } | Should ThrowErrorId 'Contract';
+
+			# Assert
+			# N/A
+			
+		}
 	}
 }
 
