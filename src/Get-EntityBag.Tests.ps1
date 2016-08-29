@@ -67,9 +67,6 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			}
 		}
 	
-		# Context wide constants
-		# N/A
-		
 		It "Warmup" -Test {
 			$true | Should Be $true;
 		}
