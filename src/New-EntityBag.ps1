@@ -89,10 +89,12 @@ Param
 	,
 	# Specifies the EntityKindId to modify
 	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $EntityKindId
 	,
 	# Specifies the EntityId to modify
 	[Parameter(Mandatory = $true, Position = 3)]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $EntityId
 	,
 	# Specifies the ProtectionLevel to modify
@@ -125,6 +127,15 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+	
+	# ProtectionLevel param validation
+	$minProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;
+	$maxProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__;
+	$errorMessage = ('Argument $ProtectionLevel ({0}) is not a valid protectionlevel. The argument must be between {1} and {2}' -f $ProtectionLevel, $minProtectionLevelValue, $maxProtectionLevelValue);
+	if ($ProtectionLevel -lt $minProtectionLevelValue -or $ProtectionLevel -gt $maxProtectionLevelValue) 
+	{
+		throw $errorMessage;
+	}
 }
 # Begin
 
