@@ -1,3 +1,5 @@
+# includes tests for CLOUDTCL-1881
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -8,9 +10,14 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "NameTest.Tests" "NameTest.Tests" {
+Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
+	. "$here\$sut"
+	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Assocs","Nodes");
+	$nodeEntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
 	
 	Context "#CLOUDTCL-1881-AssocTests" {
 		
@@ -18,19 +25,50 @@ Describe -Tags "NameTest.Tests" "NameTest.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
+			
+			$currentTenant = Get-ApcTenant -Current -Svc $Svc;
+			$nodeParentId = $currentTenant.NodeId;
 		}
 		
-		It "TestName" -Test {
-			# Arrange
+		AfterEach {
+            $svc = Enter-ApcServer;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+		
+		It "Assoc-CreateAndDelete" -Test {
+			#ARRANGE
+			$nodeName1 = $entityPrefix + "node1";
+			$nodeName2 = $entityPrefix + "node2";
+			$assocName = $entityPrefix + "assoc";
+			$order = 1;
 			
+			#ACT create node
+			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
-			# Act
+			#get Id of the nodes
+			$node1Id = $node1.Id;
+			$node2Id = $node2.Id;
 			
+			#create Assoc that has node as destination
+			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id -Order $order;
+			Write-Host ($assoc | out-string);
+			#get the id of the assoc
+			$assocId = $assoc.Id;
 			
-			# Assert	
-			"There " | Should Be "an error... Not yet implemented!";
-			# TODO: Change description in Jira.
+			#ACT delete assoc
+			Delete-Assoc -Svc $svc -Id $assocId;
 		}
 	}
 }
