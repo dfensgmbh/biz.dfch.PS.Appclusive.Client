@@ -207,9 +207,11 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			
 			$condition = "Continue";
 			$null = $svc.Core.InvokeEntityActionWithVoidResult($approval, "InvokeAction", @{Name=$condition; Parameters="Arbitrary"});
-			Write-Host ($approval | out-String);
-			Write-Host ($approvalJob | out-String);
+			$condition = "Continue";
+			$null = $svc.Core.InvokeEntityActionWithVoidResult($order, "InvokeAction", @{Name=$condition; Parameters="Arbitrary"});
 			
+			Start-Sleep -s 15;
+			Write-Host ($svc.core.carts | out-String);
 			<#
 			$cart = GetCartOfUser -svc $svc;
 			$cart | Should Be $null;
