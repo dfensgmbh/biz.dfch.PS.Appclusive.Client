@@ -127,28 +127,30 @@ See module manifest for required software versions and dependencies.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-ManagementUri/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-EntityBag/'
 	,
 	DefaultParameterSetName = 'list'
 )]
 PARAM 
 (
-	# Specifies the name of the entity
-	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'id')]
+	# DFTODO - add validation
 	[long] $Id
 	,
-	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'entityReference')]
 	[Alias('n')]
 	[string] $Name
 	,
-	# Filter by creator
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[string] $CreatedBy
+	[Parameter(Mandatory = $true, ParameterSetName = 'entityReference')]
+	[long] $EntityKindId
 	,
-	# Filter by modifier
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[string] $ModifiedBy
+	[Parameter(Mandatory = $true, ParameterSetName = 'entityReference')]
+	[long] $EntityId
 	,
+	# [Parameter(Mandatory = $true, ParameterSetName = 'entity')]
+	# [biz.dfch.CS.Appclusive.Core.OdataServices.Core.BaseEntity] $entity
+	# ,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
 	[string[]] $Select = @()
@@ -156,20 +158,19 @@ PARAM
 	# Specifies to return only values without header information. 
 	# This parameter takes precendes over the 'Select' parameter.
 	[ValidateScript( { if(1 -ge $Select.Count -And $_) { $true; } else { throw("You must specify exactly one 'Select' property when using 'ValueOnly'."); } } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false)]
 	[Alias('HideTableHeaders')]
 	[switch] $ValueOnly
 	,
 	# This value is only returned if the regular search would have returned no results
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false)]
 	[Alias('default')]
 	$DefaultValue
 	,
 	# Specifies to deserialize JSON payloads
 	[ValidateScript( { if($ValueOnly -And $_) { $true; } else { throw("You must set the 'ValueOnly' switch when using 'ConvertFromJson'."); } } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false)]
 	[Alias('Convert')]
 	[switch] $ConvertFromJson
 	,
@@ -202,7 +203,7 @@ Begin
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 	
-	$EntitySetName = 'ManagementUris';
+	$EntitySetName = 'EntityBags';
 	
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
@@ -227,7 +228,10 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	Contract-Assert ($PSCmdlet.ShouldProcess(($PSBoundParameters | Out-String)))
+	Contract-Assert ($PSCmdlet.ShouldProcess(($PSBoundParameters | Out-String)));
+	
+	$response = @();
+	$exp = @();
 
 	if($PSCmdlet.ParameterSetName -eq 'list') 
 	{
@@ -235,108 +239,84 @@ Process
 		{
 			if($PSBoundParameters.ContainsKey('First'))
 			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name').AddQueryOption('$top', $First) | Select -Property $Select;
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select -Property $Select;
 			}
 			else
 			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name') | Select -Property $Select;
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name') | Select -Property $Select;
 			}
 		}
 		else 
 		{
 			if($PSBoundParameters.ContainsKey('First'))
 			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name').AddQueryOption('$top', $First) | Select;
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select;
 			}
 			else
 			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name') | Select;
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name') | Select;
 			}
-		}
-	} 
-	else 
-	{
-		$Exp = @();
-		if($PSCmdlet.ParameterSetName -eq 'id')
-		{
-			$Exp += ("Id eq {0}" -f $Id);
-		}
-		if($Name) 
-		{ 
-			$Exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
-		}
-		if($CreatedBy) 
-		{ 
-			$CreatedById = Get-User -svc $svc -Name $CreatedBy -Select Id -ValueOnly;
-			if ( !$CreatedById )
-			{
-				# User not found
-				return;
-			}
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
-		}
-		if($ModifiedBy)
-		{ 
-			$ModifiedById = Get-User -svc $svc -Name $ModifiedBy -Select Id -ValueOnly;
-			if ( !$ModifiedById )
-			{
-				# User not found
-				return;
-			}			
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
-		}
-		$FilterExpression = [String]::Join(' and ', $Exp);
-	
-		if($Select) 
-		{
-			if($PSBoundParameters.ContainsKey('First'))
-			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', $First) | Select -Property $Select;
-			}
-			else
-			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select -Property $Select;
-			}
-		}
-		else 
-		{
-			if($PSBoundParameters.ContainsKey('First'))
-			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', $First) | Select;
-			}
-			else
-			{
-				$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
-			}
-			
-		}
-		if(1 -eq $Select.Count -And $ValueOnly)
-		{
-			$Response = $Response.$Select;
-		}
-		if($PSBoundParameters.ContainsKey('DefaultValue') -And !$Response)
-		{
-			$Response = $DefaultValue;
-		}
-		if($ValueOnly -And $ConvertFromJson)
-		{
-			$ResponseTemp = New-Object System.Collections.ArrayList;
-			foreach($item in $Response)
-			{
-				try
-				{
-					$null = $ResponseTemp.Add((ConvertFrom-Json -InputObject $item));
-				}
-				catch
-				{
-					$null = $ResponseTemp.Add($item);
-				}
-			}
-			$Response = $ResponseTemp.ToArray();
 		}
 	}
+	elseif ($PSCmdlet.ParameterSetName -eq 'name')
+	{
+		if ($name)
+		{
+			$exp += ("tolower(Name) -eq '{0}'" -f $name.ToLower());
+		}
+	}
+	
+	elseif ($PSCmdlet.ParameterSetName -eq 'id')
+	{
+		$Exp = @();
+		$Exp += ("Id eq {0}" -f $Id);
+		
+	}
 
-	$OutputParameter = Format-ResultAs $Response $As
+	elseif ($PSCmdlet.ParameterSetName -eq 'entityReference')
+	{
+		
+	}
+	
+	# elseif ($PSCmdlet.ParameterSetName -eq 'entity')
+	# {
+	
+	# }
+
+	$FilterExpression = [String]::Join(' and ', $Exp);
+	if($PSBoundParameters.ContainsKey('First'))
+	{
+		$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', $First) | Select -Property $Select;
+	}
+	else
+	{
+		$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select -Property $Select;
+	}
+	if(1 -eq $Select.Count -And $ValueOnly)
+	{
+		$response = $response.$Select;
+	}
+	if($PSBoundParameters.ContainsKey('DefaultValue') -And !$response)
+	{
+		$response = $DefaultValue;
+	}
+	if($ValueOnly -And $ConvertFromJson)
+	{
+		$responseTemp = New-Object System.Collections.ArrayList;
+		foreach($item in $response)
+		{
+			try
+			{
+				$null = $responseTemp.Add((ConvertFrom-Json -InputObject $item));
+			}
+			catch
+			{
+				$null = $responseTemp.Add($item);
+			}
+		}
+		$response = $responseTemp.ToArray();
+	}
+	$OutputParameter = Format-ResultAs $response $As
 	$fReturn = $true;
 
 }
@@ -356,7 +336,7 @@ return $OutputParameter;
 
 } # function
 
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-ManagementUri; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-EntityBag; } 
 
 # 
 # Copyright 2016 d-fens GmbH
