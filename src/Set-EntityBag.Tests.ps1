@@ -137,6 +137,17 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			# Assert
 			# N/A
 		}
+		
+		It "Set-EntityBag-WithInvalidProtectionLevelShouldThrowArgumentException" -Test {
+			# Arrange
+			$invalidProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__ + 1;
+			
+			# Act
+			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -ProtectionLevel $invalidProtectionLevel -CreateIfNotExist } | Should Throw 'Argument';
+			
+			# Assert
+			# N/A
+		}
 	}
 }
 
