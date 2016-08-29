@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.6.0.20160824'
+ModuleVersion = '4.7.0.20160829'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -254,11 +254,15 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20160824
-# Features
-* updated API to 3.9.0
-* added DataType endpoint
-* added NetworkAddresses endpoint
+        ReleaseNotes = '20160829
+# BUGFIXES
+
+* fixed Assoc.Order validation (now accepting any long)
+
+# FEATURES
+
+* updated Appclusive Core API to 3.11.0
+* added Ratings/GetCostInformation action
 '
     } 
 	
@@ -292,8 +296,8 @@ DefaultCommandPrefix = 'Apc'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDqi/Frjw4A1zcbLhuXLyQF8Q
-# uZagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUX4uCuH34NGJwPWl/JVWURvpP
+# qAagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -392,26 +396,26 @@ DefaultCommandPrefix = 'Apc'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQW29PakjiqB4c4
-# dP7Hom+iQ301TjANBgkqhkiG9w0BAQEFAASCAQB9blnhkJ+VPraEvhF672bEYyb4
-# EUUZsK79WjVANUNA850Q/XfwaZ2T6hXHC1n9ZKSuOupasmOm7h5BitcoLSWkKHZO
-# o3HDqUopAkI2VEdBBDLSvAueK4ycOKVLNoxUuwRrjQcDcmDh23pQP/AC5Raa8NQq
-# DQrIE/0xmilym2vQFKZRqSfWfN/9HEbZoKxCgqWtLcogNsn4WrjFfiF8894j+Qhh
-# h/v/kjgCY4YFkKSCqqmcVvePTfm2mmPP7QN7oWIad8c9QM5za/1EOS+vwm/hdtSg
-# EEp1s27JJRzEZ+WvPY178pb9Kp7VV8H79f/0bnAyiIFsdlgMpcLTP4dFn++boYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQQZEEJts9wt/LH
+# isM7QPUcBSh4jDANBgkqhkiG9w0BAQEFAASCAQAZongsKXY+bpLUQrflaf8thCIX
+# uP0+FFUVSBW5ntozdzC6X3Q4NJxjdW4+KirS5xeIQOfgYe0lJrviXwuYDP13tDuX
+# vpx+ff5MYIWvsevYcfEkvOeuZatts/yK7uTEEfEmte8c23ktLPJYRV3XFJlSgV0K
+# z3c5fyuqvO6vuEu9xGzJ/B9pSh763SJYZVk8KMiIEeeDH9+qjJy3oIdeSrXx6c53
+# HWTHtsmrI58KYSo9InHFwicJ8gRnKKz0AXkItyobnpd2hgEap1OWwTFasJmrfVxZ
+# vc/cyQCu3QpyQvYlU0ZnrVyE9EkUusyq3FjycGu9QUcOgPm4PwcI36JRFsE7oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgyNDE1NTQwM1owIwYJKoZIhvcNAQkEMRYEFGsywEs5GBnXvLJLBXtNG/dEbnXn
+# MDgyOTA3MzQ1N1owIwYJKoZIhvcNAQkEMRYEFFS0Exkuhex1XsMcFScODVdtzIqj
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAf3ZQtk6Q8O9dZ6GNo
-# Ccck4K528BDqQusQjnunxVbv13+yzTQ18A4Ub+1PiKAvgizPaYunODQOew5kI1XL
-# UVTuyVRR9MBiv4V7B8vwvha3K7sQ/xEXbMOGrTbMXNTWI4SqUpfXqXjnKl+OebnL
-# cWuqqTr5glC24zg0JX6EmqspyMl424TD6DL2FiAI/Akq9v1c2d08veqmkBGWWfl/
-# HWQpSMRBnB6c3aAUGppEVrvj+XkAnNsqZcV4ZLL71GhfdsyzOVaBD/PqyhccAkQb
-# T4OBbu3ALcbs4NDM5rB34qStrh8YngPzlbMSCp+X73/ebuRsVaZu9aF/jKotm1yc
-# g/A3
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQA3I8a+0J1vyW+9bpfg
+# msCTBVY9hbb+ZnSHppZttheo+7ylFCsN1y+5NoGy0KZQOfTmih1rTGmd95jq0rh/
+# YBjikJQTkwdnL8VLtVB8QYluox3W317pI8OMnmlSoZDdhtjtWsVBJ7u5W9Atc4Fq
+# JkkYZ1G+HB5z+JgQh4vAPtb+HlECuyozaOKqUeCScEG1Cw9RsP5DfYkAFk05kmTK
+# 75oMaTWvt0KnUgRP+8AGQIvyUNj1M6PL0ftyGkPhIkFyyjyLMmknBIz8++FU2Bz4
+# mdDmGpkaiGEt4LA7+bR7GpvfJFEfXzfuZ2PxgLyyrkhORZD1R7oqWOvwVVoGxd8g
+# jbeV
 # SIG # End signature block
