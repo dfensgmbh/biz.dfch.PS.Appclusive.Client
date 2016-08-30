@@ -46,7 +46,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$folderName = $entityPrefix + "Folder";
 			
 			#ACT create folder
-			$folder = Create-Folder -Svc $svc -Name $folderName;
+			$folder = Create-Folder -Svc $svc -Name $folderName | Select;
 			
 			#get folder id
 			$folderId = $folder.Id;
@@ -54,7 +54,49 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			#ACT delete folder
 			Delete-Folder -Svc $svc -Id $folderId;
 		}
+		
+		It "UpdateFolder" -Test {
+			#ARRANGE
+			$folderName = $entityPrefix + "Folder";
+			$newName = $folderName + " Updated";
+			$newDescription = "Description Updated";
+			
+			#ACT create folder
+			$folder = Create-Folder -Svc $svc -Name $folderName | Select;
+			
+			#get folder id
+			$folderId = $folder.Id;
+			
+			#ACT update cart item
+			$updatedFolder = Update-Folder -Svc $svc -Id $folderId -Name $newName -Description $newDescription;
+		}
+		
+		It "UpdateParentId-ShouldFail" -Test {
+			#ARRANGE
+			$folderName = $entityPrefix + "Folder";
+			$newParentId = ($svc.Core.Folders | Select -First 1).ParentId;
+			
+			#ACT create folder
+			$folder = Create-Folder -Svc $svc -Name $folderName | Select;
+			
+			#get folder id
+			$folderId = $folder.Id;
+			
+			#ACT update parent Id of folder
+			$folder.ParentId = $newParentId;
+			
+			$svc.Core.UpdateObject($folder);
+			{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
+			
+			#get the folder
+			$query = "Id eq {0}" -f $folderId;
+			$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+			
+			#ASSERT
+			$folder.ParentId | Should Not Be $newparentId;
+		}
 	}
+	
 }
 
 #

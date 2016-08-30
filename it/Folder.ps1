@@ -94,6 +94,8 @@ function Update-Folder{
 		$Tid
 	)
 	
+	$bin = Push-ApcChangeTracker -Svc $Svc;
+	
 	#get the folder
 	$query = "Id eq {0}" -f $Id;
 	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
@@ -110,10 +112,6 @@ function Update-Folder{
 	if ($ParentId) 
 	{
 	$folder.ParentId = $ParentId;
-	}
-	if ($Tid) 
-	{
-	$folder.Tid = $Tid;
 	}
 	
 	$svc.Core.UpdateObject($folder);
@@ -133,14 +131,12 @@ function Update-Folder{
 	{
 	$bin = $updatedFolder.Description | Should Be $Description;
 	}
-	if ($Parentid) 
+	if ($ParentId)
 	{
 	$bin = $updatedFolder.ParentId | Should Be $ParentId;
 	}
-	if ($Tid) 
-	{
-	$bin = $updatedFolder.Tid | Should Be $Tid;
-	}
+	
+	$bin = Pop-ApcChangeTracker -Svc $Svc;
 	
 	return $updatedFolder;
 }
