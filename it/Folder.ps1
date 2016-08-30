@@ -57,9 +57,11 @@ function Delete-Folder {
 		$Id
 	)
 	
+	$bin = Push-ApcChangeTracker -Svc $Svc;
+	
 	#get the folder
 	$query = "Id eq {0}" -f $Id;
-	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | select;
+	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 	
 	#delete the folder
 	$svc.Core.DeleteObject($folder);
@@ -67,11 +69,80 @@ function Delete-Folder {
 	
 	#get the deleted folder
 	$query = "Id eq {0}" -f $Id;
-	$deletedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | select;
+	$deletedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 	
 	#ASSERT folder is deleted
 	$bin = $deletedFolder | Should Be $null;
 	$bin = $result.StatusCode | Should Be 204;
+	
+	$bin = Pop-ApcChangeTracker -Svc $Svc;
+}
+
+function Update-Folder{
+	Param
+	(
+		$Svc
+		,
+		$Id
+		,
+		$Name
+		,
+		$Description
+		,
+		$ParentId
+		,
+		$Tid
+	)
+	
+	#get the folder
+	$query = "Id eq {0}" -f $Id;
+	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+	
+	#update the folder
+	if ($Name) 
+	{
+	$folder.Name = $Name;
+	}
+	if ($Description) 
+	{
+	$folder.Description = $Description;
+	}
+	if ($ParentId) 
+	{
+	$folder.ParentId = $ParentId;
+	}
+	if ($Tid) 
+	{
+	$folder.Tid = $Tid;
+	}
+	
+	$svc.Core.UpdateObject($folder);
+	$result = $svc.Core.SaveChanges();
+	
+	#get the updated product
+	$query = "Id eq {0}" -f $Id;
+	$updatedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+	
+	#ASSERT - update
+	$bin = $updatedFolder.Id | Should Be $Id;
+	if ($Name) 
+	{
+	$bin = $updatedFolder.Name | Should Be $Name;
+	}
+	if ($Description) 
+	{
+	$bin = $updatedFolder.Description | Should Be $Description;
+	}
+	if ($Parentid) 
+	{
+	$bin = $updatedFolder.ParentId | Should Be $ParentId;
+	}
+	if ($Tid) 
+	{
+	$bin = $updatedFolder.Tid | Should Be $Tid;
+	}
+	
+	return $updatedFolder;
 }
 
 #
