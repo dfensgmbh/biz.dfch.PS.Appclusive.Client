@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.6.0.20160824'
+ModuleVersion = '4.8.0.20160830'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -256,11 +256,15 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20160824
-# Features
-* updated API to 3.9.0
-* added DataType endpoint
-* added NetworkAddresses endpoint
+        ReleaseNotes = '20160829
+# BUGFIXES
+
+* fixed Assoc.Order validation (now accepting any long)
+
+# FEATURES
+
+* updated Appclusive Core API to 3.11.0
+* added Ratings/GetCostInformation action
 '
     } 
 	
@@ -294,8 +298,8 @@ DefaultCommandPrefix = 'Apc'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDqi/Frjw4A1zcbLhuXLyQF8Q
-# uZagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE5lUkRX5249SdaZKj3kauaXC
+# 8TmgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -394,26 +398,26 @@ DefaultCommandPrefix = 'Apc'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQW29PakjiqB4c4
-# dP7Hom+iQ301TjANBgkqhkiG9w0BAQEFAASCAQB9blnhkJ+VPraEvhF672bEYyb4
-# EUUZsK79WjVANUNA850Q/XfwaZ2T6hXHC1n9ZKSuOupasmOm7h5BitcoLSWkKHZO
-# o3HDqUopAkI2VEdBBDLSvAueK4ycOKVLNoxUuwRrjQcDcmDh23pQP/AC5Raa8NQq
-# DQrIE/0xmilym2vQFKZRqSfWfN/9HEbZoKxCgqWtLcogNsn4WrjFfiF8894j+Qhh
-# h/v/kjgCY4YFkKSCqqmcVvePTfm2mmPP7QN7oWIad8c9QM5za/1EOS+vwm/hdtSg
-# EEp1s27JJRzEZ+WvPY178pb9Kp7VV8H79f/0bnAyiIFsdlgMpcLTP4dFn++boYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQZxFnwJZXFBdSb
+# bNSdLgJHP8zQTDANBgkqhkiG9w0BAQEFAASCAQC6m0ZnJXCKilNnT9OqEPL9itdv
+# LyNEgY9yJrwUs0HMbuWUpyQvCPS351RS5oR6jD3fc3LrGCukrCXNUYelXceUXLN9
+# LX3CLM5hK9i03CL5q5WFRKcdANGJuuRnCQ1JzRDZwoazTuV1oF6WoYfg3K6rMl8N
+# X7dZ7aj1JBQ4CDjH5xV0mg39hoFV3aHnxvo9R5tP0xmnntsgAA5y37yKfcpS1Mmw
+# 9hfj92XaeDcSRqijE3R8iwZAIegFBOhStxKPg8myxf03wtTXlpcqoeuvwpH9mu3C
+# kjDWnKDlWIXtKfP8XTVDjFRXschDJ6mQWvAXzqCspJmcvhi1y1dwgEvw47lxoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgyNDE1NTQwM1owIwYJKoZIhvcNAQkEMRYEFGsywEs5GBnXvLJLBXtNG/dEbnXn
+# MDgzMDE1NDA1OVowIwYJKoZIhvcNAQkEMRYEFAzBQc1Qui7rmqnEQ92Un2sO//b9
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAf3ZQtk6Q8O9dZ6GNo
-# Ccck4K528BDqQusQjnunxVbv13+yzTQ18A4Ub+1PiKAvgizPaYunODQOew5kI1XL
-# UVTuyVRR9MBiv4V7B8vwvha3K7sQ/xEXbMOGrTbMXNTWI4SqUpfXqXjnKl+OebnL
-# cWuqqTr5glC24zg0JX6EmqspyMl424TD6DL2FiAI/Akq9v1c2d08veqmkBGWWfl/
-# HWQpSMRBnB6c3aAUGppEVrvj+XkAnNsqZcV4ZLL71GhfdsyzOVaBD/PqyhccAkQb
-# T4OBbu3ALcbs4NDM5rB34qStrh8YngPzlbMSCp+X73/ebuRsVaZu9aF/jKotm1yc
-# g/A3
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAjRNSfOXE5Z5k/WjJw
+# lDilrreI/B1dTq7wvZhHdGXSi/A6wJ1ajszM1lmZee0ZuaYUb5HkpvDkVi8Wy4Lb
+# IWMUR5FRzCnubEPOJVoctAbBF3X6t+eWD/W0NHOoZ11ZK8zHMHSH+TLzLQcoly0O
+# ty2z77PAeYRGCydZFOLEJ0AdPiRv/QINLb/qB6PJCxc4R4k5VdMitIjfHsUFmQy1
+# InU1WIho5b6JF2AN3Z/r3tkft9th2ETDgsCGd4Z4Z2ZvM2bCA8C2StpnSUzMEEvh
+# 1JshmLf6u2jLHnA4ACgFUOj9avRTxitOQJOal4jHVRngxEf/4oQOblisrqE3oP0u
+# Etlk
 # SIG # End signature block
