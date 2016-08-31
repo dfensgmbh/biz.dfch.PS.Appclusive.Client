@@ -1,4 +1,4 @@
-function Create-Folder{
+function Create-Folder {
 	Param
 	(
 		$Svc
@@ -11,16 +11,17 @@ function Create-Folder{
 		,
 		$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 		,
+		$Tid = (Get-ApcTenant -Current -svc $svc).Id
+		,
 		$Parameters = '{}'
 	)
-	
-	$bin = Push-ApcChangeTracker -Svc $Svc;
 
 	$newFolder = New-Object biz.dfch.CS.Appclusive.Api.Core.Folder;
 	$newFolder.Name = $Name;
 	$newFolder.Description = $Description;
 	$newFolder.EntityKindId = $EntityKindId;
 	$newFolder.ParentId = $ParentId;
+	$newFolder.Tid = $Tid;
 	$newFolder.Parameters = $Parameters;
 	
 	#add to folders
@@ -32,19 +33,15 @@ function Create-Folder{
 	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 	
 	#ASSERT
-	$bin = $result.StatusCode | Should be 202;
-	$bin = $folder | Should Not Be $null;
-	$bin = $folder.Id | Should Not Be 0;
-	$bin = $folder.Name | Should Be $Name;
-	$bin = $folder.Description | Should Be $Description;
-	$bin = $folder.EntityKindId | Should Be $EntityKindId;
-	$bin = $folder.ParentId | Should Be $ParentId;
-	$bin = $folder.Parameters | Should Be $Parameters;
-	
-	$bin = Pop-ApcChangeTracker -Svc $Svc;
-	
-	#attaches a detached entity to the ChangeTracker if not already attached
-	$bin = $svc.Core.AttachIfNeeded($folder); 
+	$null = $result.StatusCode | Should be 202;
+	$null = $folder | Should Not Be $null;
+	$null = $folder.Id | Should Not Be 0;
+	$null = $folder.Name | Should Be $Name;
+	$null = $folder.Description | Should Be $Description;
+	$null = $folder.EntityKindId | Should Be $EntityKindId;
+	$null = $folder.ParentId | Should Be $ParentId;
+	$null = $folder.Tid | Should Be $Tid;
+	$null = $folder.Parameters | Should Be $Parameters;
 	
 	return $folder;
 }
@@ -56,8 +53,6 @@ function Delete-Folder {
 		,
 		$Id
 	)
-	
-	$bin = Push-ApcChangeTracker -Svc $Svc;
 	
 	#get the folder
 	$query = "Id eq {0}" -f $Id;
@@ -72,10 +67,8 @@ function Delete-Folder {
 	$deletedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 	
 	#ASSERT folder is deleted
-	$bin = $deletedFolder | Should Be $null;
-	$bin = $result.StatusCode | Should Be 204;
-	
-	$bin = Pop-ApcChangeTracker -Svc $Svc;
+	$deletedFolder | Should Be $null;
+	$result.StatusCode | Should Be 204;
 }
 
 function Update-Folder{
@@ -88,10 +81,6 @@ function Update-Folder{
 		$Name
 		,
 		$Description
-		,
-		$ParentId
-		,
-		$Tid
 	)
 	
 	$bin = Push-ApcChangeTracker -Svc $Svc;
@@ -108,10 +97,6 @@ function Update-Folder{
 	if ($Description) 
 	{
 	$folder.Description = $Description;
-	}
-	if ($ParentId) 
-	{
-	$folder.ParentId = $ParentId;
 	}
 	
 	$svc.Core.UpdateObject($folder);
@@ -130,10 +115,6 @@ function Update-Folder{
 	if ($Description) 
 	{
 	$bin = $updatedFolder.Description | Should Be $Description;
-	}
-	if ($ParentId)
-	{
-	$bin = $updatedFolder.ParentId | Should Be $ParentId;
 	}
 	
 	$bin = Pop-ApcChangeTracker -Svc $Svc;

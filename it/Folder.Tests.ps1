@@ -41,7 +41,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
             }
         }
 		
-		It "CreateAndDeleteFolderSucceeds" -Test {
+		It "Folder-CreateAndDelete" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
 			
@@ -55,7 +55,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			Delete-Folder -Svc $svc -Id $folderId;
 		}
 		
-		It "UpdateFolder" -Test {
+		It "Folder-Update" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
 			$newName = $folderName + " Updated";
@@ -71,7 +71,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$updatedFolder = Update-Folder -Svc $svc -Id $folderId -Name $newName -Description $newDescription;
 		}
 		
-		It "UpdateParentId-ShouldFail" -Test {
+		It "Folder-UpdateParentId-ShouldFail" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
 			$newParentId = ($svc.Core.Folders | Select -First 1).ParentId;
@@ -89,11 +89,36 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			
 			#get the folder
+			$svc = Enter-Appclusive;
 			$query = "Id eq {0}" -f $folderId;
-			$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+			$loadedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 			
 			#ASSERT
-			$folder.ParentId | Should Not Be $newparentId;
+			$loadedFolder.ParentId | Should Not Be $newparentId;
+		}
+		
+		It "CreateFolderInsideFolder" -Test {
+			#ARRANGE
+			$folderName1 = $entityPrefix + "Folder1";
+			$folderName2 = $entityPrefix + "Folder2";
+			
+			#ACT create folder
+			$folder1 = Create-Folder -Svc $svc -Name $folderName1 | Select;
+			
+			#get folder id
+			$folder1Id = $folder1.Id;
+			
+			#ACT create folder2 inside folder1
+			$folder2 = Create-Folder -Svc $svc -Name $folderName2 -ParentId $folder1Id | Select;
+			$folder2Id = $folder2.Id;
+			
+			#ASSERT
+			$folder2.ParentId | Should Be $folder1Id;
+
+			#CLEANUP delete folders
+			$svc = Enter-Appclusive;
+			Delete-Folder -Svc $svc -Id $folder2Id;
+			Delete-Folder -Svc $svc -Id $folder1Id;
 		}
 	}
 	
