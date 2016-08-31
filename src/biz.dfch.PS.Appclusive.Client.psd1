@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.8.0.20160830'
+ModuleVersion = '4.8.1.20160831'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -254,15 +254,11 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20160829
+        ReleaseNotes = '20160831
 # BUGFIXES
 
-* fixed Assoc.Order validation (now accepting any long)
+* disabled PSScriptAnalyser warnings
 
-# FEATURES
-
-* updated Appclusive Core API to 3.11.0
-* added Ratings/GetCostInformation action
 '
     } 
 	
@@ -296,8 +292,8 @@ DefaultCommandPrefix = 'Apc'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE5lUkRX5249SdaZKj3kauaXC
-# 8TmgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUd3O3O1BX1nleLcMm/kwLSmzm
+# faGgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -396,26 +392,26 @@ DefaultCommandPrefix = 'Apc'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQZxFnwJZXFBdSb
-# bNSdLgJHP8zQTDANBgkqhkiG9w0BAQEFAASCAQC6m0ZnJXCKilNnT9OqEPL9itdv
-# LyNEgY9yJrwUs0HMbuWUpyQvCPS351RS5oR6jD3fc3LrGCukrCXNUYelXceUXLN9
-# LX3CLM5hK9i03CL5q5WFRKcdANGJuuRnCQ1JzRDZwoazTuV1oF6WoYfg3K6rMl8N
-# X7dZ7aj1JBQ4CDjH5xV0mg39hoFV3aHnxvo9R5tP0xmnntsgAA5y37yKfcpS1Mmw
-# 9hfj92XaeDcSRqijE3R8iwZAIegFBOhStxKPg8myxf03wtTXlpcqoeuvwpH9mu3C
-# kjDWnKDlWIXtKfP8XTVDjFRXschDJ6mQWvAXzqCspJmcvhi1y1dwgEvw47lxoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQajKt90wbM6kSF
+# kmFI7gH/pxUq6jANBgkqhkiG9w0BAQEFAASCAQB6cXGg0ruXLxDVmiNbdIhPXHXC
+# i2AN60hgA3tSELO1bXP3dujH0qjSxkYoXN/cS2NYQw5L/+kdFKeFC0Cr4Ff7k+xR
+# ZbmAYDjOUli9nP+2JzzjpyABsxv5tbKIyeQkgL/e+4RdeHcKwveR0JPh4Q6Ce6ak
+# 0MzhTV3e/mO3hP9asyKn1ax7MyEi8MTBwkBGXsNmBHJY8mjp8FfOgVp6kWrP6DMo
+# hCc/SCP7irixcU93LDlGQjlj4ugjxuNMhYI+dTVTQs80aaZhqa2xUXOnG8dC2+nH
+# wQ+6thfS9Eo0eqS9dPBA4ogLPQD0g3RF/kIK9scAUtQLpo4SRmwFz1Qtpu5boYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMDE1NDA1OVowIwYJKoZIhvcNAQkEMRYEFAzBQc1Qui7rmqnEQ92Un2sO//b9
+# MDgzMTE5MTYzN1owIwYJKoZIhvcNAQkEMRYEFEVcXk+VXZAWn3yZgkaf+py/RMOZ
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAjRNSfOXE5Z5k/WjJw
-# lDilrreI/B1dTq7wvZhHdGXSi/A6wJ1ajszM1lmZee0ZuaYUb5HkpvDkVi8Wy4Lb
-# IWMUR5FRzCnubEPOJVoctAbBF3X6t+eWD/W0NHOoZ11ZK8zHMHSH+TLzLQcoly0O
-# ty2z77PAeYRGCydZFOLEJ0AdPiRv/QINLb/qB6PJCxc4R4k5VdMitIjfHsUFmQy1
-# InU1WIho5b6JF2AN3Z/r3tkft9th2ETDgsCGd4Z4Z2ZvM2bCA8C2StpnSUzMEEvh
-# 1JshmLf6u2jLHnA4ACgFUOj9avRTxitOQJOal4jHVRngxEf/4oQOblisrqE3oP0u
-# Etlk
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBO4pLtPKEEtYyLEePS
+# j5YIw3xj5Y7Qsea4LvJv4vepMBVTu27+g+0uy3qd7gQTpkLWm1ozMEkxWrbF8sYW
+# yoItLelM8doZuwJBd6Au1t2Yr7tOxb1zbhwM9ilNz+CloV2XsBdyTQ85zndKlAeK
+# nvOpx2s+wT3HQiWphazi/HuakRm/zHArtbCb0w7VtimCzFZz68+JaGCDaB72a2iP
+# OfjII707Ec5Z5+xq/kzsVXhH+ZzTrJ2am+xbqlmUBQUlGq5WfgbMkw7WWQJnxm34
+# fhXcbLjpfh4NnV2Js1Dn69mZ4S+d5pyIDD4jKJZCCMu9z1tR52W12sRU3lNdSHil
+# MEKs
 # SIG # End signature block
