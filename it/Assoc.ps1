@@ -95,8 +95,6 @@ function Update-Assoc{
 		$Description
 		#,
 		#$Order
-		,
-		$Tid
 	)
 	
 	#get the assoc
@@ -116,10 +114,6 @@ function Update-Assoc{
 	#{
 	#$assoc.Order = $Order;
 	#}
-	if ($Tid)
-	{
-	$assoc.Tid = $Tid;
-	}
 	
 	$svc.Core.UpdateObject($assoc);
 	$result = $svc.Core.SaveChanges();
@@ -142,10 +136,6 @@ function Update-Assoc{
 	#{
 	#$bin = $updatedAssoc.Order | Should Be $Order;
 	#}
-	if ($Tid)
-	{
-	$bin = $updatedAssoc.Tid | Should Be $Tid;
-	}
 	
 	return $updatedAssoc;
 }

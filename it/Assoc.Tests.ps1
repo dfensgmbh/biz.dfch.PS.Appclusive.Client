@@ -51,7 +51,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			$nodeName1 = $entityPrefix + "node1";
 			$nodeName2 = $entityPrefix + "node2";
 			$assocName = $entityPrefix + "assoc";
-			$order = 0;
+			$order = 1;
 			
 			#ACT create node
 			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
@@ -63,15 +63,15 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			
 			#create Assoc that has node as destination
 			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id -Order $order;
-			Write-Host ($assoc | out-string);
+			
 			#get the id of the assoc
 			$assocId = $assoc.Id;
 			
 			#ACT delete assoc
 			Delete-Assoc -Svc $svc -Id $assocId;
 		}
-		
-		It "Assoc-Update" -Test {
+		<#
+		It "Assoc-UpdateNameAndDescription" -Test {
 			#ARRANGE
 			$nodeName1 = $entityPrefix + "node1";
 			$nodeName2 = $entityPrefix + "node2";
@@ -94,7 +94,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			
 			#ACT create Assoc that has first two nodes as source and destination
 			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id -Order $order;
-			Write-Host ($assoc | out-string);
+			
 			#get the id of the assoc
 			$assocId = $assoc.Id;
 			
@@ -103,17 +103,50 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			$newDescription = "Updated";
 			$newOrder = 2;
 			
-			#ACT Update assoc using node3 & node4 as source & destination
+			#ACT Update assoc
 			$updatedAssoc = Update-Assoc -Svc $svc -Id $assocId -Name $newName -Description $newDescription;
-			Write-Host ($updatedAssoc | out-string);
 			
-			#ACT delete assoc
+			#CLEANUP delete assoc
 			Delete-Assoc -Svc $svc -Id $assocId;
-		}
+		}#>
 		
-		It "Assoc-Update-ShouldFail" -Test {
-		#
-		
+		It "Assoc-UpdateSourceAndDestination-ShouldFail" -Test {
+			#ARRANGE
+			$nodeName1 = $entityPrefix + "node1";
+			$nodeName2 = $entityPrefix + "node2";
+			$nodeName3 = $entityPrefix + "node3";
+			$nodeName4 = $entityPrefix + "node4";
+			$assocName = $entityPrefix + "assoc";
+			
+			#ACT create nodes
+			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node3 = New-ApcNode -Name $nodeName3 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			$node4 = New-ApcNode -Name $nodeName4 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
+			
+			#get Id of the nodes
+			$node1Id = $node1.Id;
+			$node2Id = $node2.Id;
+			$node3Id = $node3.Id;
+			$node4Id = $node4.Id;
+			
+			#ACT create Assoc that has first two nodes as source and destination
+			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id;
+			Write-Host ($assoc | out-string);
+			#get the id of the assoc
+			$assocId = $assoc.Id;
+			
+			#ARRANGE update
+			$assoc.SourceId = $node3Id;
+			$assoc.DestinationId = $node4Id;
+			
+			#ACT Update assoc using node3 & node4 as source & destination
+			$svc.Core.UpdateObject($assoc);
+			{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 500};
+			
+			#CLEANUP delete assoc
+			$svc = Enter-Appclusive;
+			Delete-Assoc -Svc $svc -Id $assocId;
 		}
 		
 		
