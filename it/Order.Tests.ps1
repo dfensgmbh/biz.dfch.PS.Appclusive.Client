@@ -44,7 +44,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
                 }
             }
         }
-		<#
+		
 		It "PlaceOrderWithoutCart-ShouldFail" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order";
@@ -141,7 +141,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$orderItems.Name -contains $catalogueItemName2;
 		}
 		
-		It "CheckoutCart-CreatesOrderAndDeletesCart" -Test {
+		It "CreateOrder-DeletesCart" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
@@ -184,24 +184,6 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
-			
-			#get order
-			$query = "Name eq '{0}'" -f $orderName;
-			$order = $svc.Core.Orders.AddQueryOption('$filter', $query) | Select;
-			
-			#get job of the order
-			$query = "EntityKindId eq 20 and RefId eq '{0}'" -f $order.Id;
-			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			$orderJob.Status | Should Be 'Approval';
-			
-			#get the job of the approval, its parentId should be the id of the job of the order
-			$query = "EntityKindId eq 5 and ParentId eq {0}" -f $orderJob.Id;
-			$approvalJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			$approvalJob.Status | Should Be 'Created';
-			
-			#get the approval
-			$query = "Id eq {0}" -f $approvalJob.RefId;
-			$approval = $svc.Core.Approvals.AddQueryOption('$filter', $query) | Select;
 			
 			Start-Sleep -s 5;
 			
@@ -209,9 +191,9 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$query = "Id eq {0}" -f $cartId;
 			$cart = $svc.Core.Carts.AddQueryOption('$filter', $query) | Select;
 			$cart | Should Be $null;
-		}#>
+		}
 		
-		It "Order-CancelOrderSetsJobError" -Test {
+		It "Order-CancelOrder" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
@@ -258,7 +240,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			#get order
 			$query = "Name eq '{0}'" -f $orderName;
 			$order = $svc.Core.Orders.AddQueryOption('$filter', $query) | Select;
-			#Write-Host ($order | out-String);
+			
 			#get job of the order
 			$query = "EntityKindId eq 20 and RefId eq '{0}'" -f $order.Id;
 			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
@@ -268,130 +250,37 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			#get the job of the approval, its parentId should be the id of the job of the order
 			$query = "EntityKindId eq 5 and ParentId eq {0}" -f $orderJob.Id;
 			$approvalJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			Write-Host ($approvalJob | out-String);
 			$approvalJob.Status | Should Be 'Created';
 			
 			#get the approval
 			$query = "Id eq {0}" -f $approvalJob.RefId;
 			$approval = $svc.Core.Approvals.AddQueryOption('$filter', $query) | Select;
-			Write-Host ($approval | out-String);
-			
 			
 			$condition = 'Continue';
-			#$conditionParams = @{Msg = "ArbitraryParameters"};
 			
-			
-			#simulate worker
-			$jobResult = @{Version = "1"; Message = "PESTER-TEST"; Succeeded = $true};
-			Invoke-ApcEntityAction -svc $svc -InputObject $approvalJob -EntityActionName "JobResult" -InputParameters $jobResult;
-			
-			#approve the approval (set it to status "Approved")
+			#approve the approval (set it to status "Approved" & order to status "Waiting to Run")
 			$null = $svc.Core.InvokeEntityActionWithVoidResult($approval, "InvokeAction", @{Name=$condition; Parameters="Arbitrary"});
 			
-			#set order to status "Waiting to Run"
-			$null = $svc.Core.InvokeEntityActionWithVoidResult($order, "InvokeAction", @{Name=$condition; Parameters="Arbitrary"});
-			
-						
-			
-			
+			$svc = Enter-Appclusive;
 			#get the approval job
-			$query = "EntityKindId eq 5 and RefId eq '{0}'" -f $approval.Id;
-			$approvalJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			
-			Write-Host ($approvalJob | out-String);
+			$approvalJobRefreshed = Get-ApcJob -id $approvalJob.Id
+			$approvalJobRefreshed.Status | Should Be "Approved";
 			
 			#get the order Job
 			$query = "EntityKindId eq 20 and RefId eq '{0}'" -f $order.Id;
 			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
+			$orderJob.Status | Should Be "WaitingToRun";
 			
-			Write-Host ($orderJob | out-String);
-			
-			<#
-			$condition = "Continue";
-			$null = $svc.Core.InvokeEntityActionWithVoidResult($approval, "InvokeAction", @{Name=$condition; Parameters="Arbitrary"});
-			$condition = "Continue";
+			#set order to status "Cancelled"
+			$condition = 'Cancel';
 			$null = $svc.Core.InvokeEntityActionWithVoidResult($order, "InvokeAction", @{Name=$condition; Parameters="Arbitrary"});
 			
-			# Approve approval
-			$approval.Status = 'Continue';
-			$svc.Core.UpdateObject($approval);
-			try
-			{
-				$svc.Core.SaveChanges();
-			}
-			catch
-			{
-				# Intentionally left empty
-				# The metadata URI 'http://localhost:53422/api/Core/$metadata#Edm.String' is not valid for the expected payload kind 'Entry'
-			}
+			Start-Sleep -s 20;
 			
-			Start-Sleep -s 5;
-			
-			# Check result
-			$svc = Enter-ApcServer;
-			
-			$createdOrder = $svc.Core.Orders |? Name -eq $orderName;
-			$createdOrder.Status | Should Be 'WaitingToRun';
-			
-			$query = "Name eq 'biz.dfch.CS.Appclusive.Core.OdataServices.Core.Order' and RefId eq '{0}'" -f $createdOrder.Id;
-			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query);
-			$orderJob.Status | Should Be 'WaitingToRun';
-			
-			$approvalJob = $svc.Core.Jobs |? ParentId -eq $orderJob.Id;
-			$approvalJob.Status | Should Be 'Approved';
-			
-			$approval = $svc.Core.Approvals |? Id -eq $approvalJob.RefId;
-			$approval.Status | Should Be 'Approved';
-			
-			# Update order
-			$createdOrder.Status = 'Cancel';
-			# DFTODO - Create new object of type JobError
-			$jobError = @{Code = 0; Message = 'Error Message'; Category = ''} | ConvertTo-Json -Compress;
-			$createdOrder.Parameters = $jobError;
-			$svc.Core.UpdateObject($createdOrder);
-			try
-			{
-				$svc.Core.SaveChanges();
-			}
-			catch
-			{
-				# Intentionally left empty
-				# The metadata URI 'http://localhost:53422/api/Core/$metadata#Edm.String' is not valid for the expected payload kind 'Entry'
-			}
-			
-			Start-Sleep -s 5;
-			
-			# Check result
-			$svc = Enter-ApcServer;
-			
-			$createdOrder = $svc.Core.Orders |? Name -eq $orderName;
-			$createdOrder.Status | Should Be 'Cancelled';
-			
-			$query = "Name eq 'biz.dfch.CS.Appclusive.Core.OdataServices.Core.Order' and RefId eq '{0}'" -f $createdOrder.Id;
-			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query);
-			$orderJob.Status | Should Be 'Cancelled';
-			$orderJob.Error | Should Be $jobError;
-			
-			$approvalJob = $svc.Core.Jobs |? ParentId -eq $orderJob.Id;
-			$approval = $svc.Core.Approvals |? Id -eq $approvalJob.RefId;
-			
-			# Cleanup			
-			$svc.Core.DeleteObject($approvalJob);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-			
-			$svc.Core.DeleteObject($approval);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-			
-			$orderJob = $svc.Core.Jobs |? Id -eq $orderJob.Id;
-			$svc.Core.DeleteObject($orderJob);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;
-			
-			$svc.Core.DeleteObject($createdOrder);
-			$result = $svc.Core.SaveChanges();
-			$result.StatusCode | Should Be 204;#>
+			#ASSERT that order job has status "Cancelled"
+			$svc = Enter-Appclusive;
+			$orderJobRefreshed = Get-ApcJob -id $orderJob.Id
+			$orderJobRefreshed.Status | Should Be "Cancelled";
 		}
 	}
 }
