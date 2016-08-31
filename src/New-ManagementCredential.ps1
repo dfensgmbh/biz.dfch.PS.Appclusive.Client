@@ -88,6 +88,7 @@ Param
 	[string] $Username
 	,
 	# Specifies the key for this entity
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "Password")]
 	[Parameter(Mandatory = $true, Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Password

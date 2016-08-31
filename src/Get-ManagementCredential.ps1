@@ -114,6 +114,7 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'list'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
 PARAM 
 (
 	# Specifies an reference object of the entity

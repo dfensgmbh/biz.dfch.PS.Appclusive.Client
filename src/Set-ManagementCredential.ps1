@@ -96,6 +96,7 @@ Param
 	[string] $Username
 	,
 	# Specifies the new name name
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingUserNameAndPassWordParams", "Password")]
 	[Parameter(Mandatory = $false, Position = 2)]
 	[string] $Password
 	,
