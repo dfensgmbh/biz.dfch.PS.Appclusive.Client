@@ -210,14 +210,14 @@ function GetEntityBagAttributeName($property)
 
 function SetPropertyDescriptionAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.EntityBagDescriptionAttribute], $true);
+    $attr = $property.GetCustomAttributes([System.ComponentModel.DescriptionAttribute], $true);
 
     if (!$attr)
     {
 		return;
     }
 
-	$dataType.Description = $attr.Name;
+	$dataType.Description = $attr.Description;
 }
 
 function SetDefaultValueAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
