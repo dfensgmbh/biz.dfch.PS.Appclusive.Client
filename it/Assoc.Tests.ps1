@@ -85,8 +85,6 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#get Id of the nodes
 			$node1Id = $node1.Id;
 			$node2Id = $node2.Id;
-			$node3Id = $node3.Id;
-			$node4Id = $node4.Id;
 			
 			#ACT create Assoc that has first two nodes as source and destination
 			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id -Order $order;
