@@ -75,16 +75,12 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#ARRANGE
 			$nodeName1 = $entityPrefix + "node1";
 			$nodeName2 = $entityPrefix + "node2";
-			$nodeName3 = $entityPrefix + "node3";
-			$nodeName4 = $entityPrefix + "node4";
 			$assocName = $entityPrefix + "assoc";
 			$order = 1;
 			
 			#ACT create nodes
 			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			$node2 = New-ApcNode -Name $nodeName2 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
-			$node3 = New-ApcNode -Name $nodeName3 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
-			$node4 = New-ApcNode -Name $nodeName4 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
 			
 			#get Id of the nodes
 			$node1Id = $node1.Id;
