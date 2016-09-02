@@ -9,9 +9,9 @@ function Create-Folder {
 		,
 		$EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Folder.value__
 		,
-		$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
+		$ParentId = (Get-ApcTenant -Current -svc $Svc).NodeId
 		,
-		$Tid = (Get-ApcTenant -Current -svc $svc).Id
+		$Tid = (Get-ApcTenant -Current -svc $Svc).Id
 		,
 		$Parameters = '{}'
 	)
@@ -32,43 +32,7 @@ function Create-Folder {
 	$query = "Name eq '{0}' and Description eq '{1}'" -f $Name, $Description;
 	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 	
-	#ASSERT
-	$null = $result.StatusCode | Should be 202;
-	$null = $folder | Should Not Be $null;
-	$null = $folder.Id | Should Not Be 0;
-	$null = $folder.Name | Should Be $Name;
-	$null = $folder.Description | Should Be $Description;
-	$null = $folder.EntityKindId | Should Be $EntityKindId;
-	$null = $folder.ParentId | Should Be $ParentId;
-	$null = $folder.Tid | Should Be $Tid;
-	$null = $folder.Parameters | Should Be $Parameters;
-	
 	return $folder;
-}
-
-function Delete-Folder {
-	Param
-	(
-		$svc
-		,
-		$Id
-	)
-	
-	#get the folder
-	$query = "Id eq {0}" -f $Id;
-	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
-	
-	#delete the folder
-	$svc.Core.DeleteObject($folder);
-	$result = $svc.Core.SaveChanges();
-	
-	#get the deleted folder
-	$query = "Id eq {0}" -f $Id;
-	$deletedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
-	
-	#ASSERT folder is deleted
-	$deletedFolder | Should Be $null;
-	$result.StatusCode | Should Be 204;
 }
 
 function Update-Folder{

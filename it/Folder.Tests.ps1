@@ -36,33 +36,47 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
          
                 foreach ($entity in $entities)
                 {
-                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
                 }
             }
         }
 		
-		It "Folder-CreateAndDelete" -Test {
+		It "Folder-CreateAndDeleteShouldSucceed" -Test {
 			#ARRANGE
-			$folderName = $entityPrefix + "Folder";
+			$name = $entityPrefix + "Folder";
+			$description = "folder description";
 			
 			#ACT create folder
-			$folder = Create-Folder -Svc $svc -Name $folderName | Select;
+			$folder = Create-Folder -Svc $svc -Name $name -Description $description;
 			
+			#ASSERT
+			$folder | Should Not Be $null;
+			$folder.Id | Should Not Be 0;
+			$folder.Name | Should Be $name;
+			$folder.Description | Should Be $description;
+	
 			#get folder id
 			$folderId = $folder.Id;
 			
 			#ACT delete folder
-			Delete-Folder -Svc $svc -Id $folderId;
+			Remove-ApcEntity -svc $svc -Id $folderId -EntitySetName "Folders" -Confirm:$false;
+			
+			#get the deleted folder
+			$query = "Id eq {0}" -f $folderId;
+			$deletedFolder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+			
+			#ASSERT folder is deleted
+			$deletedFolder | Should Be $null;
 		}
-		
-		It "Folder-Update" -Test {
+		<#
+		It "Folder-UpdateShouldSucceed" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
 			$newName = $folderName + " Updated";
 			$newDescription = "Description Updated";
 			
 			#ACT create folder
-			$folder = Create-Folder -Svc $svc -Name $folderName | Select;
+			$folder = Create-Folder -Svc $svc -Name $folderName;
 			
 			#get folder id
 			$folderId = $folder.Id;
@@ -77,7 +91,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$newParentId = ($svc.Core.Folders | Select -First 1).ParentId;
 			
 			#ACT create folder
-			$folder = Create-Folder -Svc $svc -Name $folderName | Select;
+			$folder = Create-Folder -Svc $svc -Name $folderName;
 			
 			#get folder id
 			$folderId = $folder.Id;
@@ -103,13 +117,13 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$folderName2 = $entityPrefix + "Folder2";
 			
 			#ACT create folder
-			$folder1 = Create-Folder -Svc $svc -Name $folderName1 | Select;
+			$folder1 = Create-Folder -Svc $svc -Name $folderName1;
 			
 			#get folder id
 			$folder1Id = $folder1.Id;
 			
 			#ACT create folder2 inside folder1
-			$folder2 = Create-Folder -Svc $svc -Name $folderName2 -ParentId $folder1Id | Select;
+			$folder2 = Create-Folder -Svc $svc -Name $folderName2 -ParentId $folder1Id;
 			$folder2Id = $folder2.Id;
 			
 			#ASSERT
@@ -119,7 +133,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$svc = Enter-Appclusive;
 			Delete-Folder -Svc $svc -Id $folder2Id;
 			Delete-Folder -Svc $svc -Id $folder1Id;
-		}
+		}#>
 	}
 	
 }
