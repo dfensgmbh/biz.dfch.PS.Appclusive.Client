@@ -31,10 +31,7 @@ Param
 	
 	$svc.Core.AddToAssocs($newassoc);
 	$result = $svc.Core.SaveChanges();
-	
-	#ASSERT result
-	$null = $result.StatusCode | Should be 201;
-	
+		
 	#get the assoc
 	$query = "Name eq '{0}'" -f $assocName;
 	$assoc = $svc.core.Assocs.AddQueryOption('$filter', $query) | Select;
