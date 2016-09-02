@@ -149,7 +149,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			
 			#get the id of the assoc
 			$assocId = $assoc.Id;
-			Write-Host ($assoc | out-string);
+			
 			#ARRANGE update
 			$assoc.SourceId = $node3Id;
 			$assoc.DestinationId = $node4Id;
