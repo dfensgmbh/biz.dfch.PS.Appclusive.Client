@@ -5,7 +5,7 @@ Param
 		,
 		$Name
 		,
-		$Description = "Arbitrary Product"
+		$Description = "Arbitrary Assoc"
 		,
 		$SourceId
 		,
@@ -33,7 +33,7 @@ Param
 	$result = $svc.Core.SaveChanges();
 	
 	#ASSERT result
-	$result.StatusCode | Should be 201;
+	$null = $result.StatusCode | Should be 201;
 	
 	#get the assoc
 	$query = "Name eq '{0}'" -f $assocName;
