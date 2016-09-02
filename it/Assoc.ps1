@@ -33,7 +33,7 @@ Param
 	$result = $svc.Core.SaveChanges();
 	
 	#ASSERT result
-	$null = $result.StatusCode | Should be 201;
+	$result.StatusCode | Should be 201;
 	
 	#get the assoc
 	$query = "Name eq '{0}'" -f $assocName;

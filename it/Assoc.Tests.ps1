@@ -123,7 +123,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#CLEANUP delete assoc
 			Remove-ApcEntity -svc $svc -Id $assocId -EntitySetName "Assocs" -Confirm:$false;
 		}
-		<#
+		
 		It "Assoc-UpdateSourceAndDestination-ShouldFail" -Test {
 			#ARRANGE
 			$nodeName1 = $entityPrefix + "node1";
@@ -160,8 +160,8 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			
 			#CLEANUP delete assoc
 			$svc = Enter-Appclusive;
-			Delete-Assoc -Svc $svc -Id $assocId;
-		}		#>
+			Remove-ApcEntity -svc $svc -Id $assocId -EntitySetName "Assocs" -Confirm:$false;
+		}
 	}
 }
 
