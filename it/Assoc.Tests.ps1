@@ -74,7 +74,6 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			$assoc.SourceId | Should Be $node1Id;
 			$assoc.DestinationId | Should Be $node2Id;
 			$assoc.Order | Should Be $order;
-			$assoc.Parameters | Should Be $Parameters;
 			
 			#ACT delete assoc
 			Remove-ApcEntity -svc $svc -Id $assocId -EntitySetName "Assocs" -Confirm:$false;
@@ -131,6 +130,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			$nodeName3 = $entityPrefix + "node3";
 			$nodeName4 = $entityPrefix + "node4";
 			$assocName = $entityPrefix + "assoc";
+			$order = 1;
 			
 			#ACT create nodes
 			$node1 = New-ApcNode -Name $nodeName1 -ParentId $nodeParentId -EntityKindId $nodeEntityKindId -svc $svc;
@@ -145,11 +145,11 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			$node4Id = $node4.Id;
 			
 			#ACT create Assoc that has first two nodes as source and destination
-			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id;
+			$assoc = Create-Assoc -svc $svc -Name $assocName -SourceId $node1Id -DestinationId $node2Id -Order $order;
 			
 			#get the id of the assoc
 			$assocId = $assoc.Id;
-			
+			Write-Host ($assoc | out-string);
 			#ARRANGE update
 			$assoc.SourceId = $node3Id;
 			$assoc.DestinationId = $node4Id;

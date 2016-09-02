@@ -80,8 +80,6 @@ function Update-Assoc{
 	$query = "Id eq {0}" -f $Id;
 	$updatedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
 	
-	
-	
 	return $updatedAssoc;
 }
 
