@@ -11,12 +11,12 @@ Param
 		,
 		$DestinationId
 		,
-		$Order = 1
+		$Order = 0
 		,
 		$Parameters
 	)
 
-	$bin = Push-ApcChangeTracker -Svc $Svc;
+	$null = Push-ApcChangeTracker -Svc $Svc;
 	
 	$newAssoc = New-Object biz.dfch.CS.Appclusive.Api.Core.Assoc;
 	$newAssoc.Name = $Name;
@@ -32,56 +32,19 @@ Param
 	$svc.Core.AddToAssocs($newassoc);
 	$result = $svc.Core.SaveChanges();
 	
+	#ASSERT result
+	$null = $result.StatusCode | Should be 201;
+	
 	#get the assoc
 	$query = "Name eq '{0}'" -f $assocName;
 	$assoc = $svc.core.Assocs.AddQueryOption('$filter', $query) | Select;
 	
-	#ASSERT
-	$bin = $result.StatusCode | Should be 201;
-	$bin = $assoc | Should Not Be $null;
-	$bin = $assoc.Id | Should Not Be 0;
-	$bin = $assoc.Name | Should Be $Name;
-	$bin = $assoc.Description | Should Be $Description;
-	$bin = $assoc.SourceId | Should Be $SourceId;
-	$bin = $assoc.DestinationId | Should Be $DestinationId;
-	$bin = $assoc.Order | Should Be $Order;
-	if ($Parameters)
-	{
-		$bin = $assoc.Parameters | Should Be $Parameters;
-	}
-	
-	$bin = Pop-ApcChangeTracker -Svc $Svc;
+	$null = Pop-ApcChangeTracker -Svc $Svc;
 	
 	#attaches a detached entity to the ChangeTracker if not already attached
-	$bin = $svc.Core.AttachIfNeeded($assoc);
+	$null = $svc.Core.AttachIfNeeded($assoc);
 	
 	return $assoc;
-}
-
-function Delete-Assoc {
-	Param 
-	(
-		$Svc
-		,
-		$Id
-	)
-	
-	#get the assoc
-	$query = "Id eq {0}" -f $Id;
-	$assoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
-	
-	#delete assoc
-	$svc.Core.DeleteObject($assoc);
-	$result = $svc.Core.SaveChanges();
-	
-	#get the deleted assoc
-	$query = "Id eq {0}" -f $Id;
-	$deletedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
-	
-	#ASSERT that assoc is deleted
-	$bin = $deletedAssoc | Should Be $null;
-	
-	return $result;
 }
 
 function Update-Assoc{
@@ -103,11 +66,11 @@ function Update-Assoc{
 	#update the assoc
 	if ($Name)
 	{
-	$assoc.Name = $Name;
+		$assoc.Name = $Name;
 	}
 	if ($Description)
 	{
-	$assoc.Description = $Description;
+		$assoc.Description = $Description;
 	}
 	
 	$svc.Core.UpdateObject($assoc);
@@ -117,16 +80,7 @@ function Update-Assoc{
 	$query = "Id eq {0}" -f $Id;
 	$updatedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
 	
-	#ASSERT - update
-	$bin = $updatedAssoc.Id | Should Be $Id;
-	if ($Name)
-	{
-		$bin = $updatedAssoc.Name | Should Be $UpdatedName;
-	}
-	if ($Description)
-	{
-		$bin = $updatedAssoc.Description | Should Be $UpdatedDescription;
-	}
+	
 	
 	return $updatedAssoc;
 }
