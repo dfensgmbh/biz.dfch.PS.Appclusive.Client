@@ -68,7 +68,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			#ASSERT folder is deleted
 			$deletedFolder | Should Be $null;
 		}
-		<#
+		
 		It "Folder-UpdateShouldSucceed" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
@@ -81,10 +81,16 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			#get folder id
 			$folderId = $folder.Id;
 			
-			#ACT update cart item
+			#ACT update folder
 			$updatedFolder = Update-Folder -Svc $svc -Id $folderId -Name $newName -Description $newDescription;
+			
+			#ASSERT - update
+			$updatedFolder.Id | Should Be $folderId;
+			$updatedFolder.Name | Should Be $newName;
+			$updatedFolder.Description | Should Be $newDescription;
+			
 		}
-		
+		<#
 		It "Folder-UpdateParentId-ShouldFail" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
