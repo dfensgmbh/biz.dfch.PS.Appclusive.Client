@@ -67,8 +67,24 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#get the id of the assoc
 			$assocId = $assoc.Id;
 			
+			#ASSERT assoc creation
+			$assoc | Should Not Be $null;
+			$assoc.Id | Should Not Be 0;
+			$assoc.Name | Should Be $assocName;
+			$assoc.SourceId | Should Be $node1Id;
+			$assoc.DestinationId | Should Be $node2Id;
+			$assoc.Order | Should Be $order;
+			$assoc.Parameters | Should Be $Parameters;
+			
 			#ACT delete assoc
-			Delete-Assoc -Svc $svc -Id $assocId;
+			Remove-ApcEntity -svc $svc -Id $assocId -EntitySetName "Assocs" -Confirm:$false;
+			
+			#get the deleted assoc
+			$query = "Id eq {0}" -f $assocId;
+			$deletedAssoc = $svc.Core.Assocs.AddQueryOption('$filter', $query) | select;
+	
+			#ASSERT that assoc is deleted
+			$deletedAssoc | Should Be $null;
 		}
 		
 		It "Assoc-UpdateNameAndDescription" -Test {
@@ -95,15 +111,19 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#ARRANGE update
 			$newName = $assocName + " Updated";
 			$newDescription = "Updated";
-			$newOrder = 2;
 			
 			#ACT Update assoc
 			$updatedAssoc = Update-Assoc -Svc $svc -Id $assocId -Name $newName -Description $newDescription;
 			
+			#ASSERT - update
+			$updatedAssoc.Id | Should Be $assocId;
+			$updatedAssoc.Name | Should Be $newName;
+			$updatedAssoc.Description | Should Be $newDescription;
+	
 			#CLEANUP delete assoc
-			Delete-Assoc -Svc $svc -Id $assocId;
+			Remove-ApcEntity -svc $svc -Id $assocId -EntitySetName "Assocs" -Confirm:$false;
 		}
-		
+		<#
 		It "Assoc-UpdateSourceAndDestination-ShouldFail" -Test {
 			#ARRANGE
 			$nodeName1 = $entityPrefix + "node1";
@@ -141,7 +161,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			#CLEANUP delete assoc
 			$svc = Enter-Appclusive;
 			Delete-Assoc -Svc $svc -Id $assocId;
-		}		
+		}		#>
 	}
 }
 
