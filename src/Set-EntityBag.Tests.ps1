@@ -138,12 +138,23 @@ Describe "Set-EntityBag" -Tags "Set-EntityBag" {
 			# N/A
 		}
 		
-		It "Set-EntityBag-WithInvalidProtectionLevelShouldThrowArgumentException" -Test {
+		It "Set-EntityBag-WithInvalidEntityIdShouldThrowArgumentException" -Test {
+			# Arrange
+			# N/A	
+				
+			# Act
+			{ Set-EntityBag -Name $name -Value $value -EntityId 0 -EntityKindId $testNode.EntityKindId -svc $svc -CreateIfNotExist } | Should Throw 'argument';
+
+			# Assert
+			# N/A
+		}
+		
+		It "Set-EntityBag-WithInvalidProtectionLevelShouldThrowContractException" -Test {
 			# Arrange
 			$invalidProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__ + 1;
 			
 			# Act
-			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -ProtectionLevel $invalidProtectionLevel -CreateIfNotExist } | Should Throw 'Argument';
+			{ Set-EntityBag -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -ProtectionLevel $invalidProtectionLevel -CreateIfNotExist } | Should ThrowErrorId 'Contract';
 			
 			# Assert
 			# N/A
