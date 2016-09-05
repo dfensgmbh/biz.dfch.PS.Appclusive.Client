@@ -113,12 +113,12 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			# Assert
 		}
 		
-		It "New-EntityBag-WithInvalidProtectionLevelShouldThrowArgumentException" -Test {
+		It "New-EntityBag-WithInvalidProtectionLevelShouldThrowContractException" -Test {
 			# Arrange
 			$invalidProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__ + 1;
 			
 			# Act
-			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -Entityid $testNode.Id -ProtectionLevel $invalidProtectionLevel } | Should Throw 'Argument';
+			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -Entityid $testNode.Id -ProtectionLevel $invalidProtectionLevel } | Should ThrowErrorId 'Contract';
 			
 		}
 	}
