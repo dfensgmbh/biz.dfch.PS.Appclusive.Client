@@ -86,7 +86,7 @@ Describe -Tags "Approval.Tests" "Approval.Tests" {
 			$orderParameters = @{
 				Name = $orderName;
 				Description = "Arbitrary Description";
-				Requester = (Get-ApcUser -Current).Id;
+				Requester = (Get-ApcUser -svc $svc -Current).Id;
 				Parameters = '{}';
 			}
 			
@@ -118,7 +118,7 @@ Describe -Tags "Approval.Tests" "Approval.Tests" {
 			
 			$svc = Enter-Appclusive;
 			#get the approval job
-			$approvalJobRefreshed = Get-ApcJob -id $approvalJob.Id
+			$approvalJobRefreshed = Get-ApcJob -svc $svc -id $approvalJob.Id;
 			$approvalJobRefreshed.Status | Should Be "Approved";
 			
 			#get the order Job
@@ -167,7 +167,7 @@ Describe -Tags "Approval.Tests" "Approval.Tests" {
 			$orderParameters = @{
 				Name = $orderName;
 				Description = "Arbitrary Description";
-				Requester = (Get-ApcUser -Current).Id;
+				Requester = (Get-ApcUser -svc $svc -Current).Id;
 				Parameters = '{}';
 			}
 			
@@ -199,7 +199,7 @@ Describe -Tags "Approval.Tests" "Approval.Tests" {
 			
 			$svc = Enter-Appclusive;
 			#get the approval job
-			$approvalJobRefreshed = Get-ApcJob -id $approvalJob.Id
+			$approvalJobRefreshed = Get-ApcJob -svc $svc -id $approvalJob.Id
 			$approvalJobRefreshed.Status | Should Be "Declined";
 			
 			#get the order Job
