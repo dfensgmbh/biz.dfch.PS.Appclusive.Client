@@ -90,7 +90,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			$updatedFolder.Description | Should Be $newDescription;	
 		}
 		
-		It "Folder-UpdateParentId-ShouldFail" -Test {
+		It "Folder-UpdateParentIdShouldFail" -Test {
 			#ARRANGE
 			$folderName = $entityPrefix + "Folder";
 			$newParentId = ($svc.Core.Folders | Select -First 1).ParentId;
