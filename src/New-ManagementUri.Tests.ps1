@@ -14,7 +14,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 	
 	$entityPrefix = "New-ManagementUri";
 	$usedEntitySets = @("ManagementUris", "ManagementCredentials");
-	
 
 	Context "New-ManagementUri" {
 	
