@@ -86,7 +86,7 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			# Assert
 			$result | Should Not Be $null;
 			$result.Id | Should Not Be 0;
-			$result.Value | Should Be $Value;
+			$result.Value | Should Be $value;
 			$result.Name | Should Be $Name;
 			$result.Description | Should Be $description;
 			$result.ProtectionLevel | Should Be $protectionLevel;
@@ -119,7 +119,6 @@ Describe "New-EntityBag" -Tags "New-EntityBag" {
 			
 			# Act
 			{ New-EntityBag -svc $svc -Name $name -Value $value -EntityKindId $entityKindId -Entityid $testNode.Id -ProtectionLevel $invalidProtectionLevel } | Should ThrowErrorId 'Contract';
-			
 		}
 	}
 }

@@ -12,9 +12,9 @@ Id, Name or other properties.
 
 
 .INPUTS
-The Cmdlet can either return all available entities or filter entities on 
+The Cmdlet can either return all available entities or filter entities based on specified conditions
 specified conditions.
-See PARAMETERS section on possible inputs.
+See PARAMETERS section for possible inputs.
 
 
 .OUTPUTS
@@ -28,10 +28,9 @@ Get-EntityBag -ListAvailable -Select Name
 
 Name
 ----
-myvCenter
-ActivitiClientUri
-ServiceBusClientUri
-WindowsAdminUri
+arbitrary.name
+some.name
+another.name
 
 Retrieves the name of all EntityBags.
 
@@ -65,21 +64,21 @@ Get-EntityBag -ListAvailable -Select Name, Id -First 3
 
 Name                    Id
 ----                    --
-myvCenter               4
-ActivitiClientUri       5
-ServiceBusClientUri     8
+arbitrary.name			4
+some.name				5
+another.name		    8
 
 Retrieves the name and id of the first 3 EntityBags.
 
 
 
 .EXAMPLE
-Get-EntityBag HttpProxy -Select Value -ValueOnly -DefaultValue 'http://proxy:8080'
+Get-EntityBag Arbitrary.Name -Select Value -ValueOnly -DefaultValue 'http://proxy:8080'
 
 http://proxy:8080
 
-Retrieves the 'Value' property of a EntityBag with Name 'HttpProxy' 
-and http://proxy:8080 if the entity is not found.
+Retrieves the 'Value' property of a EntityBag with Name 'Arbitrary.Name' 
+and returns arbitrary.value, if the no results were found.
 
 
 .LINK
@@ -109,17 +108,17 @@ PARAM
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'name')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'entityReference')]
 	[Alias('n')]
+	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'entityReference')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $EntityKindId
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'entityReference')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $EntityId
 	,
-	# [Parameter(Mandatory = $true, ParameterSetName = 'entity')]
-	# [biz.dfch.CS.Appclusive.Core.OdataServices.Core.BaseEntity] $entity
-	# ,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
 	[string[]] $Select = @()
@@ -245,10 +244,6 @@ Process
 				$exp += ("(tolower(Name) eq '{0}')" -f $name.ToLower());
 			}
 		}
-		# elseif ($PSCmdlet.ParameterSetName -eq 'entity')
-		# {
-	
-		# }
 	
 		$filterExpression = [String]::Join(' and ', $exp);
 		if($Select -And 'object' -ne $As) 

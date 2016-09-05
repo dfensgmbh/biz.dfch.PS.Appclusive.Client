@@ -33,7 +33,7 @@ Tenant          :
 CreatedBy       :
 ModifiedBy      :
 
-Create a new EntityBag entry if it not already exists.
+Create a new EntityBag entry, if it does not yet exist.
 
 
 .EXAMPLE
@@ -56,7 +56,7 @@ Tenant          :
 CreatedBy       :
 ModifiedBy      :
 
-Create a new EntityBag entry if it not already exists, with description and protectionLevel...
+Create a new EntityBag entry, if it does not yet exist, with description and protectionLevel...
 
 
 .LINK
@@ -133,7 +133,7 @@ Begin
 	$maxProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__;
 	
 	Contract-Assert($minProtectionLevelValue -le $ProtectionLevel);
-	Contract-Assert($maxProtectionLevelValue-ge $ProtectionLevel);
+	Contract-Assert($maxProtectionLevelValue -ge $ProtectionLevel);
 }
 # Begin
 
@@ -144,23 +144,23 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$Exp = @();
-	$EntityBagContents = @();
+	$exp = @();
+	$entityBagContents = @();
 	
-	$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-	$Exp += ("(EntityId eq {0})" -f $EntityId);
-	$Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
-	$FilterExpression = [String]::Join(' and ', $Exp);
+	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$exp += ("(EntityId eq {0})" -f $EntityId);
+	$exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+	$FilterExpression = [String]::Join(' and ', $exp);
 	
-	$EntityBagContents += $Name;
-	$EntityBagContents += $Value;
-	$EntityBagContents += $EntityId;
-	$EntityBagContents += $EntityKindId;
+	$entityBagContents += $Name;
+	$entityBagContents += $Value;
+	$entityBagContents += $EntityId;
+	$entityBagContents += $EntityKindId;
 
 	$entityBag = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', 1) | Select;
-	Contract-Assert (!$entityBag) 'Entity does already exist';
+	Contract-Assert (!$entityBag) 'EntityBag does already exist';
 	
-	if($PSCmdlet.ShouldProcess($EntityBagContents))
+	if($PSCmdlet.ShouldProcess($entityBagContents))
 	{
 		if($PSBoundParameters.ContainsKey('Description') -And $PSBoundParameters.ContainsKey('ProtectionLevel'))
 		{

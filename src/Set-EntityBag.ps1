@@ -146,7 +146,7 @@ Begin
 	if ($ProtectionLevel) 
 	{
 		Contract-Assert($minProtectionLevelValue -le $ProtectionLevel);
-		Contract-Assert($maxProtectionLevelValue-ge $ProtectionLevel);
+		Contract-Assert($maxProtectionLevelValue -ge $ProtectionLevel);
 	}
 }
 

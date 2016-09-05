@@ -117,13 +117,14 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			
 			# Act
 			$resultFirst = Get-EntityBag -svc $svc -First $showFirst;
-			$Id = $resultFirst.Id;
-			$result = Get-EntityBag -Id $Id -svc $svc;
+			$id = $resultFirst.Id;
+			$result = Get-EntityBag -Id $id -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result | Should Be $resultFirst;
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.EntityBag] | Should Be $true;
+			$result.id | Should Be $id;
 		}
 		
 		It "Get-EntityBag-ShouldReturnFiveEntities" -Test {
@@ -201,7 +202,7 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			}
 		}
 
-		It "Get-EntityBag-ByEntityKindIdandEntityId" -Test {
+		It "Get-EntityBag-ByEntityKindIdAndEntityId" -Test {
 			# Arrange
 			$showFirst = 1;
 			
