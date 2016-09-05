@@ -1,22 +1,5 @@
-function CreateOrder 
-{
-[CmdletBinding()]
-PARAM
-(
-	[Parameter(Mandatory = $false, Position = 0)]
-	[string] $OrderName = 'Arbitrary Order'
-	,
-	[Parameter(Mandatory = $false, Position = 1)]
-	[string] $Parameters = '{}'
-)
+# Intentionally left empty
 
-	$order = New-Object biz.dfch.CS.Appclusive.Api.Core.Order;
-	$order.Name = $OrderName;
-	$order.Parameters = $Parameters;
-	return $order;
-}
-
-#
 # Copyright 2015 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
