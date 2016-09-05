@@ -187,7 +187,7 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$result.Substring($result.Length -1, 1) | Should Be '}';
 		}
 		
-		It "Get-EntityBag-WithInvalidId-ShouldReturnException" -Test {
+		It "Get-EntityBag-WithInvalidId-ShouldThrowException" -Test {
 			# Act
 			try 
 			{
@@ -200,45 +200,8 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			   	$result | Should Be $null;
 			}
 		}
-		
-		It "Get-EntityBagByCreatedByThatDoesNotExist-ShouldReturnNull" -Test {
-			# Arrange
-			$user = 'User-that-does-not-exist';
-			
-			# Act
-			$result = Get-EntityBag -svc $svc -CreatedBy $user;
 
-			# Assert
-		   	$result | Should Be $null;
-		}
-		
-		It "Get-EntityBagByCreatedBy-ShouldReturnListWithEntities" -Test {
-			# Arrange
-			$user = 'SYSTEM';
-			
-			# Act
-			$result = Get-EntityBag -svc $svc -CreatedBy $user;
-
-			# Assert
-		   	$result | Should Not Be $null;
-			$result -is [Array] | Should Be $true;
-			0 -lt $result.Count | Should Be $true;
-		}
-		
-		It "Get-EntityBagByModifiedBy-ShouldReturnListWithEntities" -Test {
-			# Arrange
-			$user = 'SYSTEM';
-			
-			# Act
-			$result = Get-EntityBag -svc $svc -ModifiedBy $user;
-
-			# Assert
-		   	$result | Should Not Be $null;
-			$result -is [Array] | Should Be $true;
-			0 -lt $result.Count | Should Be $true;
-		}
-
-		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
+		It "Get-EntityBag-ByEntityKindIdandEntityId" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -247,9 +210,10 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$entityId = $resultFirst.EntityId;
 		
 			# Act
-			$result = Get-EntityBag -svc $svc -EntityKindId $entityKindId -EntityId -$entityId;
+			$result = Get-EntityBag -svc $svc -EntityKindId $entityKindId -EntityId $entityId;
 			
 			# Assert
+			$result | Should Not Be $null;
 			$result.Id | Should Be $resultFirst.Id;
 			$result.EntityKindId | Should Be $entityKindId;
 			$result.EntityId | Should Be $entityId;
@@ -263,36 +227,18 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$entityKindId = $resultFirst.EntityKindId;
 			$entityId = $resultFirst.EntityId;
 			$name = $resultFirst.Name;
+			
+			$resultFirst | Should Not Be $null;
 		
 			# Act
-			$result = Get-EntityBag -svc $svc -Name $name -EntityKindId $entityKindId -EntityId -$entityId;
+			$result = Get-EntityBag -svc $svc -Name $name -EntityKindId $entityKindId -EntityId $entityId;
 			
 			# Assert
+			$result | Should Not Be $null;
 			$result.Id | Should Be $resultFirst.Id;
 			$result.EntityKindId | Should Be $entityKindId;
 			$result.EntityId | Should Be $entityId;
 			$result.Name | Should Be $name;
-		}
-		
-		It "Get-EntityBag-ByNameEntityKindIdEntityIdAndProtectionLevel" -Test {
-			# Arrange
-			$showFirst = 1;
-			
-			$resultFirst = Get-EntityBag -svc $svc -First $showFirst;
-			$entityKindId = $resultFirst.EntityKindId;
-			$entityId = $resultFirst.EntityId;
-			$name = $resultFirst.Name;
-			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::Default.value__;
-		
-			# Act
-			$result = Get-EntityBag -svc $svc -Name $name -EntityKindId $entityKindId -EntityId -$entityId -ProtectionLevel $protectionLevel;
-			
-			# Assert
-			$result.Id | Should Be $resultFirst.Id;
-			$result.EntityKindId | Should Be $entityKindId;
-			$result.EntityId | Should Be $entityId;
-			$result.Name | Should Be $name;
-			$result.ProtectionLevel | Should Be $protectionLevel;
 		}
 	}
 }
