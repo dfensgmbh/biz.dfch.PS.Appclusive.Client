@@ -73,7 +73,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			}
 		}
 		
-		It "CreateOrderCreatesOrderItems" -Test {
+		It "PlaceOrder-ShouldCreateOrderItemsFromCartItems" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
@@ -104,6 +104,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			
 			$cartItem2 = Create-CartItem -svc $svc -Name $cartItemName2 -CatalogueItemId $catalogueItem2Id;
 			$cartItem2Id = $cartItem2.Id;
+			
 			#ASSERT 2 cart items are in the same cart
 			$cartItem2.CartId | Should Be $cartId;
 			
@@ -141,7 +142,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$orderItems.Name -contains $catalogueItemName2;
 		}
 		
-		It "CreateOrder-DeletesCart" -Test {
+		It "PlaceOrder-ShouldDeleteCart" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
@@ -193,13 +194,15 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$cart | Should Be $null;
 		}
 		
-		It "Order-CancelOrder" -Test {
+		It "CancelOrder-ShouldSucceed" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
 			$productName = $entityPrefix + "Product";
 			$catalogueItemName = $entityPrefix + "CatalogueItem";
 			$cartItemName = $entityPrefix + "CartItem";
 			$orderName = $entityPrefix + "Order";
+			$orderEntityKindId = [biz.dfch.cs.appclusive.public.constants+EntityKindId]::Order.value__;
+			$approvalEntityKindId = [biz.dfch.cs.appclusive.public.constants+EntityKindId]::Approval.value__;
 			
 			#ACT create catalogue
 			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
@@ -242,13 +245,13 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$order = $svc.Core.Orders.AddQueryOption('$filter', $query) | Select;
 			
 			#get job of the order
-			$query = "EntityKindId eq 20 and RefId eq '{0}'" -f $order.Id;
+			$query = "EntityKindId eq {0} and RefId eq '{1}'" -f $orderEntityKindId, $order.Id;
 			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			$orderJob.Status | Should Be 'Approval';
 			#Write-Host ($orderJob | out-String);
 			
 			#get the job of the approval, its parentId should be the id of the job of the order
-			$query = "EntityKindId eq 5 and ParentId eq {0}" -f $orderJob.Id;
+			$query = "EntityKindId eq {0} and ParentId eq {1}" -f $approvalEntityKindId, $orderJob.Id;
 			$approvalJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			$approvalJob.Status | Should Be 'Created';
 			
@@ -267,7 +270,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			$approvalJobRefreshed.Status | Should Be "Approved";
 			
 			#get the order Job
-			$query = "EntityKindId eq 20 and RefId eq '{0}'" -f $order.Id;
+			$query = "EntityKindId eq {0} and RefId eq '{1}'" -f $orderEntityKindId, $order.Id;
 			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			$orderJob.Status | Should Be "WaitingToRun";
 			
