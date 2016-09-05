@@ -100,7 +100,6 @@ Describe -Tags "Approval.Tests" "Approval.Tests" {
 			$query = "EntityKindId eq {0} and RefId eq '{1}'" -f $orderEntityKindId, $order.Id;
 			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			$orderJob.Status | Should Be 'Approval';
-			#Write-Host ($orderJob | out-String);
 			
 			#get the job of the approval, its parentId should be the id of the job of the order
 			$query = "EntityKindId eq {0} and ParentId eq {1}" -f $approvalEntityKindId, $orderJob.Id;
@@ -181,7 +180,6 @@ Describe -Tags "Approval.Tests" "Approval.Tests" {
 			$query = "EntityKindId eq {0} and RefId eq '{1}'" -f $orderEntityKindId, $order.Id;
 			$orderJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
 			$orderJob.Status | Should Be 'Approval';
-			#Write-Host ($orderJob | out-String);
 			
 			#get the job of the approval, its parentId should be the id of the job of the order
 			$query = "EntityKindId eq {0} and ParentId eq {1}" -f $approvalEntityKindId, $orderJob.Id;
