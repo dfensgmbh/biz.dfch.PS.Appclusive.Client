@@ -1,11 +1,11 @@
 function Get-EntityBag {
 <#
 .SYNOPSIS
-Retrieves one or more entities from the ManagementUri entity set.
+Retrieves one or more entities from the EntityBag entity set.
 
 
 .DESCRIPTION
-Retrieves one or more entities from the ManagementUri entity set.
+Retrieves one or more entities from the EntityBag entity set.
 
 You can retrieve one ore more entities from the entity set by specifying 
 Id, Name or other properties.
@@ -24,7 +24,7 @@ In addition output can be filtered on specified properties.
 
 
 .EXAMPLE
-Get-ManagementUri -ListAvailable -Select Name
+Get-EntityBag -ListAvailable -Select Name
 
 Name
 ----
@@ -33,46 +33,35 @@ ActivitiClientUri
 ServiceBusClientUri
 WindowsAdminUri
 
-Retrieves the name of all ManagementUris.
+Retrieves the name of all EntityBags.
 
 
 .EXAMPLE
-Get-ManagementUri 4
+Get-EntityBag -id 159
 
-Type                   : json
-Value                  : {"ConnectionString":"Endpoint=sb://activiti.example.com/ServiceBusDefaultNamespace;SharedAccessKeyN
-                         ame={0};SharedAccessKey={1}=;TransportType=Amqp"}
-ManagementCredentialId : 5
-Id                     : 4
-Tid                    : 22222222-2222-2222-2222-222222222222
-Name                   : ActivitiClientUri
-Description            : Connection String for Amqp messaging client
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 15.12.2015 00:00:00 +01:00
-Modified               : 15.12.2015 00:00:00 +01:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              : SYSTEM
-ModifiedBy             : SYSTEM
+Name            : ArbitraryName
+Value           : ArbitraryValue
+EntityId        : 2
+EntityKindId    : 1
+ProtectionLevel : 0
+Id              : 159
+Tid             : 11111111-1111-1111-1111-111111111111
+Description     :
+CreatedById     : 1
+ModifiedById    : 1
+Created         : 23.08.2016 11:08:14 +02:00
+Modified        : 23.08.2016 11:08:14 +02:00
+RowVersion      : {0, 0, 0, 0...}
+Tenant          :
+CreatedBy       :
+ModifiedBy      :
 
-Retrieves the ManagementUri object with Id 4 and returns all properties of it.
+Retrieves the EntityBag object with Id 159 and returns all properties of it.
 
-
-.EXAMPLE
-Get-ManagementUri ActivitiClientUri -Select Value -ValueOnly -ConvertFromJson
-
-ConnectionString
-----------------
-Endpoint=sb://win-8a036g6jvpj/ServiceBusDefaultNamespace;SharedAccessKeyName={0};SharedAccessKey={1}=;TransportType=Amqp
-
-Retrieves the ManagementUri 'ActivitiClientUri' and only returns the 'Description' property 
-of it. In addition the contents of the property will be converted from JSON.
 
 
 .EXAMPLE
-Get-ManagementUri -ListAvailable -Select Name, Id -First 3
+Get-EntityBag -ListAvailable -Select Name, Id -First 3
 
 Name                    Id
 ----                    --
@@ -80,41 +69,21 @@ myvCenter               4
 ActivitiClientUri       5
 ServiceBusClientUri     8
 
-Retrieves the name and id of the first 3 ManagementUris.
+Retrieves the name and id of the first 3 EntityBags.
 
-
-.EXAMPLE
-Get-ManagementUri 8 -Select Name -ValueOnly
-
-ServiceBusClientUri
-
-Retrieves the name of the ManagementUri with Id 8.
 
 
 .EXAMPLE
-Get-ManagementUri -ModifiedBy SYSTEM -Select Id, Name
-
-Id Name
--- ----
- 4 myvCenter
- 5 ActivitiClientUri
- 8 ServiceBusClientAcct
-
-Retrieves id and name of all Users that have been modified by user 
-with name 'SYSTEM' (case insensitive substring match).
-
-
-.EXAMPLE
-Get-ManagementUri HttpProxy -Select Value -ValueOnly -DefaultValue 'http://proxy:8080'
+Get-EntityBag HttpProxy -Select Value -ValueOnly -DefaultValue 'http://proxy:8080'
 
 http://proxy:8080
 
-Retrieves the 'Value' property of a ManagementUri with Name 'HttpProxy' 
+Retrieves the 'Value' property of a EntityBag with Name 'HttpProxy' 
 and http://proxy:8080 if the entity is not found.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-ManagementUri/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-EntityBag/
 
 
 .NOTES
@@ -134,7 +103,7 @@ See module manifest for required software versions and dependencies.
 PARAM 
 (
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'id')]
-	# DFTODO - add validation
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $Id
 	,
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'name')]
@@ -170,14 +139,13 @@ PARAM
 	# Specifies to deserialize JSON payloads
 	[ValidateScript( { if($ValueOnly -And $_) { $true; } else { throw("You must set the 'ValueOnly' switch when using 'ConvertFromJson'."); } } )]
 	[Parameter(Mandatory = $false)]
-	[Parameter(Mandatory = $false)]
 	[Alias('Convert')]
 	[switch] $ConvertFromJson
 	,
 	# Limits the output to the specified number of entries
 	[Parameter(Mandatory = $false)]
 	[Alias('top')]
-	[int] $First
+	[long] $First
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -258,40 +226,55 @@ Process
 			}
 		}
 	}
-	elseif ($PSCmdlet.ParameterSetName -eq 'name')
+	else 
 	{
-		if ($name)
+		if ($PSCmdlet.ParameterSetName -eq 'name')
 		{
-			$exp += ("tolower(Name) -eq '{0}'" -f $name.ToLower());
+			$exp += ("(tolower(Name) eq '{0}')" -f $name.ToLower());
+		}
+		elseif ($PSCmdlet.ParameterSetName -eq 'id')
+		{
+			$exp += ("Id eq {0}" -f $Id);
+		}
+		elseif ($PSCmdlet.ParameterSetName -eq 'entityReference')
+		{
+			$exp += ("EntityKindId eq {0}" -f $EntityKindId);
+			$exp += ("EntityId eq {0}" -f $EntityId);
+			if($Name)
+			{
+				$exp += ("(tolower(Name) eq '{0}')" -f $name.ToLower());
+			}
+		}
+		# elseif ($PSCmdlet.ParameterSetName -eq 'entity')
+		# {
+	
+		# }
+	
+		$filterExpression = [String]::Join(' and ', $exp);
+		if($Select -And 'object' -ne $As) 
+		{
+			if($PSBoundParameters.ContainsKey('First'))
+			{
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select -Property $Select;
+			}
+			else
+			{
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $filterExpression) | Select -Property $Select;
+			}
+		}
+		else
+		{
+			if($PSBoundParameters.ContainsKey('First'))
+			{
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select;
+			}
+			else
+			{
+				$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $filterExpression) | Select;
+			}
 		}
 	}
-	
-	elseif ($PSCmdlet.ParameterSetName -eq 'id')
-	{
-		$Exp = @();
-		$Exp += ("Id eq {0}" -f $Id);
-		
-	}
 
-	elseif ($PSCmdlet.ParameterSetName -eq 'entityReference')
-	{
-		
-	}
-	
-	# elseif ($PSCmdlet.ParameterSetName -eq 'entity')
-	# {
-	
-	# }
-
-	$FilterExpression = [String]::Join(' and ', $Exp);
-	if($PSBoundParameters.ContainsKey('First'))
-	{
-		$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top', $First) | Select -Property $Select;
-	}
-	else
-	{
-		$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select -Property $Select;
-	}
 	if(1 -eq $Select.Count -And $ValueOnly)
 	{
 		$response = $response.$Select;
