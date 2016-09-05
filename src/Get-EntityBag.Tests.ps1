@@ -99,24 +99,24 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$result[0].Id | Should Be $null;
 		}
 
-		It "Get-EntityBag-ShouldReturnFirstEntity" -Test {
+		It "Get-EntityBagFirst-ShouldReturnFirstEntity" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -First $ShowFirst;
+			$result = Get-EntityBag -svc $svc -First $showFirst;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.EntityBag] | Should Be $true;
 		}
 		
-		It "Get-EntityBag-ShouldReturnFirstEntityById" -Test {
+		It "Get-EntityBag-ShouldReturnEntityById" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$resultFirst = Get-EntityBag -svc $svc -First $showFirst;
 			$Id = $resultFirst.Id;
 			$result = Get-EntityBag -Id $Id -svc $svc;
 
@@ -128,14 +128,14 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		
 		It "Get-EntityBag-ShouldReturnFiveEntities" -Test {
 			# Arrange
-			$ShowFirst = 5;
+			$showFirst = 5;
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -First $ShowFirst;
+			$result = Get-EntityBag -svc $svc -First $showFirst;
 
 			# Assert
 			$result | Should Not Be $null;
-			$ShowFirst -eq $result.Count | Should Be $true;
+			$showFirst -eq $result.Count | Should Be $true;
 			$result[0] -is [biz.dfch.CS.Appclusive.Api.Core.EntityBag] | Should Be $true;
 		}
 
@@ -153,21 +153,21 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		It "Get-EntityBagThatDoesNotExist-ShouldReturnDefaultValue" -Test {
 			# Arrange
 			$entityBagName = 'EntityBag-that-does-not-exist';
-			$DefaultValue = 'MyDefaultValue';
+			$defaultValue = 'MyDefaultValue';
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -Name $entityBagName -DefaultValue $DefaultValue;
+			$result = Get-EntityBag -svc $svc -Name $entityBagName -DefaultValue $defaultValue;
 
 			# Assert
-			$result | Should Be $DefaultValue;
+			$result | Should Be $defaultValue;
 		}
 		
-		It "Get-EntityBag-ShouldReturnXML" -Test {
+		It "Get-EntityBagAsXml-ShouldReturnXML" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -First $ShowFirst -As xml;
+			$result = Get-EntityBag -svc $svc -First $showFirst -As xml;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -176,10 +176,10 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		
 		It "Get-EntityBag-ShouldReturnJSON" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -First $ShowFirst -As json;
+			$result = Get-EntityBag -svc $svc -First $showFirst -As json;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -203,10 +203,10 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		
 		It "Get-EntityBagByCreatedByThatDoesNotExist-ShouldReturnNull" -Test {
 			# Arrange
-			$User = 'User-that-does-not-exist';
+			$user = 'User-that-does-not-exist';
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -CreatedBy $User;
+			$result = Get-EntityBag -svc $svc -CreatedBy $user;
 
 			# Assert
 		   	$result | Should Be $null;
@@ -214,10 +214,10 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		
 		It "Get-EntityBagByCreatedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
-			$User = 'SYSTEM';
+			$user = 'SYSTEM';
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -CreatedBy $User;
+			$result = Get-EntityBag -svc $svc -CreatedBy $user;
 
 			# Assert
 		   	$result | Should Not Be $null;
@@ -227,10 +227,10 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 		
 		It "Get-EntityBagByModifiedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
-			$User = 'SYSTEM';
+			$user = 'SYSTEM';
 			
 			# Act
-			$result = Get-EntityBag -svc $svc -ModifiedBy $User;
+			$result = Get-EntityBag -svc $svc -ModifiedBy $user;
 
 			# Assert
 		   	$result | Should Not Be $null;
@@ -240,9 +240,9 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 
 		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
-			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$resultFirst = Get-EntityBag -svc $svc -First $showFirst;
 			$entityKindId = $resultFirst.EntityKindId;
 			$entityId = $resultFirst.EntityId;
 		
@@ -255,11 +255,11 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$result.EntityId | Should Be $entityId;
 		}
 		
-		It "Get-EntityBagByEntityKindIdandEntityId" -Test {
+		It "Get-EntityBag-ByNameEntityKindIdAndEntityId" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
-			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$resultFirst = Get-EntityBag -svc $svc -First $showFirst;
 			$entityKindId = $resultFirst.EntityKindId;
 			$entityId = $resultFirst.EntityId;
 			$name = $resultFirst.Name;
@@ -274,11 +274,11 @@ Describe "Get-EntityBag" -Tags "Get-EntityBag" {
 			$result.Name | Should Be $name;
 		}
 		
-		It "Get-EntityBagByEntityKindIdAndEntityId" -Test {
+		It "Get-EntityBag-ByNameEntityKindIdEntityIdAndProtectionLevel" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
-			$resultFirst = Get-EntityBag -svc $svc -First $ShowFirst;
+			$resultFirst = Get-EntityBag -svc $svc -First $showFirst;
 			$entityKindId = $resultFirst.EntityKindId;
 			$entityId = $resultFirst.EntityId;
 			$name = $resultFirst.Name;
