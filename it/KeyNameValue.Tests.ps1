@@ -111,27 +111,36 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			$resultGetNew.Count | Should Be 2;
 			$resultGetRemove | Should Be $null;
 		}
-		<#
+		
 		It "KeyNameValue-CreateItemWithSetAndUpdateItemSucceeds" -Test {
 			# Arrange
 			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
 			$Key2 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name1 = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Name2 = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name1 = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name2 = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();		
 			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNewSet = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
-			$resultGetNewSet = Get-ApcKeyNameValue -Key $Key1;
+			#create a new KNV
+			$resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
 			
-			$resultSetValue = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2;
-			$resultSetName = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 -NewName $Name2 -Value $Value2;
-			$resultSetKey = Set-ApcKeyNameValue $Key1 -NewKey $Key2 -Name $Name2 -Value $Value2;
+			$resultGetNewSet = Get-ApcKeyNameValue -svc $svc -Key $Key1;
 			
-			$resultGetSetAll = Get-ApcKeyNameValue -Key $Key2;
+			#update with new value
+			$resultSetValue = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2;
+			
+			#update with new name
+			$svc = Enter-Appclusive;
+			$resultSetName = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -NewName $Name2 -Value $Value2;
+			
+			#update with new key
+			$svc = Enter-Appclusive;
+			$resultSetKey = Set-ApcKeyNameValue $Key1 -NewKey $Key2 -Name $Name2 -Value $Value2 -svc $svc;
+			
+			$resultGetSetAll = Get-ApcKeyNameValue -svc $svc -Key $Key2;
 
-			$null = Remove-ApcKeyNameValue -Key $Key2 -Confirm:$false;
+			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key2 -Confirm:$false;
 						
 			# Assert
 			$resultGetNewSet | Should Not Be $null;
@@ -140,9 +149,11 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			$resultGetNewSet.Value | Should Not Be $resultGetSetAll.Value;
 			$resultGetNewSet.Name | Should Not Be $resultGetSetAll.Name;
 			$resultGetNewSet.Key | Should Not Be $resultGetSetAll.Key;
+			
+			$resultNewSet.Id | Should Be $resultSetKey.Id;
 		}
 		
-		
+		<#
 		It "KeyNameValue-SetNonExcsitingItemThrowsException" -Test {
 			# Arrange
 			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
