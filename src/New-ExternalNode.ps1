@@ -114,17 +114,17 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$ExternalNodeContents = @($Name);
-	$Exp = @();
-	$Exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$Exp += "(tolower(ExternalId) eq '{0}')" -f $ExternalId.toLower();
-	$Exp += "(NodeId eq {0})" -f $NodeId;
-	$FilterExpression = [String]::Join(' and ', $Exp);
+	$externalNodeContents = @($Name);
+	$exp = @();
+	$exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
+	$exp += "(tolower(ExternalId) eq '{0}')" -f $ExternalId.toLower();
+	$exp += "(NodeId eq {0})" -f $NodeId;
+	$FilterExpression = [String]::Join(' and ', $exp);
 	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 	
 	Contract-Assert (!$entity) 'Entity does already exist';
 
-	if($PSCmdlet.ShouldProcess($ExternalNodeContents))
+	if($PSCmdlet.ShouldProcess($externalNodeContents))
 	{
 		$r = Set-ExternalNode @PSBoundParameters -CreateIfNotExist:$true;
 		$OutputParameter = $r;
