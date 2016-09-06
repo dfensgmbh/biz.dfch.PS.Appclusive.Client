@@ -71,7 +71,7 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 			$result.Description | Should Be $description;
 		}
 		
-		It "New-ExternalNode-WithInvalidNodeIdShouldThrowArgument" -Test {
+		It "New-ExternalNode-WithInvalidNodeIdShouldThrowsArgument" -Test {
 			# Arrange
 			# N/A
 			
@@ -79,7 +79,7 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 			{ $result = New-ExternalNode -svc $svc -Name $Name -NodeId 0 -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Argument';
 		}
 
-		It "New-ExternalNodeWithDuplicate-ShouldThrowContract" -Test {
+		It "New-ExternalNodeWithDuplicate-ShouldThrowsContractException" -Test {
 			# Arrange
 			# N/A
 			
@@ -88,7 +88,7 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 			{ New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Contract';
 		}
 		
-		It "New-ExternalNode-WithNonExistingNodeIdShouldThrowContractException" -Test {
+		It "New-ExternalNode-WithNonExistingNodeIdShouldThrowsContractException" -Test {
 			# Arrange
 			$nonExistingNodeId = [long]::MaxValue;
 
