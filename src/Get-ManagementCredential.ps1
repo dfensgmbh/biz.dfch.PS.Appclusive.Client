@@ -259,7 +259,7 @@ Process
 		$Exp = @();
 		if($PSCmdlet.ParameterSetName -eq 'id')
 		{
-			$Exp += ("Id eq {0}" -f $Id);
+			$Exp += ("Id eq {0}L" -f $Id);
 		}
 		if($Name) 
 		{ 
@@ -273,7 +273,7 @@ Process
 				# User not found
 				return;
 			}
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("(CreatedById eq {0}L)" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
@@ -283,7 +283,7 @@ Process
 				# User not found
 				return;
 			}			
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			$Exp += ("(ModifiedById eq {0}L)" -f $ModifiedById);
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 	

@@ -119,7 +119,7 @@ Process
 	$exp = @();
 	$exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
 	$exp += "(tolower(ExternalId) eq '{0}')" -f $ExternalId.toLower();
-	$exp += "(NodeId eq {0})" -f $NodeId;
+	$exp += "(NodeId eq {0}L)" -f $NodeId;
 	$FilterExpression = [String]::Join(' and ', $exp);
 	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 	
