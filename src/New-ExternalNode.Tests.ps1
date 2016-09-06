@@ -17,25 +17,43 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 	. "$here\Format-ResultAs.ps1"
 	
 	$entityPrefix = "New-ExternalNode";
-	
-    BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-
-        $svc = Enter-ApcServer;
-		
-		$nodeName = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-		$currentTenant = Get-Tenant -Current -svc $svc;
-		$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-
-		$testNode = New-Node -svc $svc -Name $nodeName -ParentId $currentTenant.NodeId -EntityKindId $entityKindId;
-		$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-		$externalType = "ExternalType-{0}" -f [guid]::NewGuid().ToString();
-		$externalId = "ExternalId-{0}" -f [guid]::NewGuid().ToString();
-	}
+	$usedEntitySets = @("ExternalNodes", "Nodes");
 
 	Context "New-ExternalNode" {
+		
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+			
+			$nodeName = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$currentTenant = Get-Tenant -Current -svc $svc;
+			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+
+			$testNode = New-Node -svc $svc -Name $nodeName -ParentId $currentTenant.NodeId -EntityKindId $entityKindId;
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$externalType = "ExternalType-{0}" -f [guid]::NewGuid().ToString();
+			$externalId = "ExternalId-{0}" -f [guid]::NewGuid().ToString();
+		}
+		
+		AfterAll {
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+			write-host $entityFilter;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+				write-host $entitySet;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
 	
 		# Context wide constants
 		# N/A
