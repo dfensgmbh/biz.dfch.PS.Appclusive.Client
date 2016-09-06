@@ -42,7 +42,7 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 		it "Warmup" -Test {
 			$true | Should Be $true;
 		}
-<#
+
 		It "New-ExternalNode-ShouldReturnNewEntity" -Test {
 			# Arrange
 			# N/A
@@ -87,7 +87,7 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId;
 			{ New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Contract';
 		}
-#>		
+		
 		It "New-ExternalNode-WithNonExistingNodeIdShouldThrowContractException" -Test {
 			# Arrange
 			$nonExistingNodeId = [long]::MaxValue;
