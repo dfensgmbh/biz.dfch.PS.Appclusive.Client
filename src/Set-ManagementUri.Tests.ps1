@@ -8,6 +8,7 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-ManagementCredential.ps1"
 
 	$entityPrefix = "Set-ManagementUri";
 	$usedEntitySets = @("ManagementUris");
@@ -19,6 +20,10 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "type-{0}" -f [guid]::NewGuid().ToString();
+			$value = "value-{0}" -f [guid]::NewGuid().ToString();
 
 			$svc = Enter-ApcServer;
 		}
@@ -43,9 +48,7 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 
 		It "Set-ManagementUri-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "value-{0}" -f [guid]::NewGuid().ToString();
+			# N/A
 			
 			# Act
 			$result = Set-ManagementUri -svc $svc -Name $name -Type $type -Value $value -CreateIfNotExist;
@@ -59,9 +62,6 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 		
 		It "Set-ManagementUri-ShouldReturnNewEntityWithDescription" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
@@ -74,13 +74,9 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 
 		It "Set-ManagementUriWithNewValueAndDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
 			
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			
 			$result1 = Set-ManagementUri -svc $svc -Name $name -Description $description -Value $value -Type $type -CreateIfNotExist;
@@ -97,9 +93,6 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 		
 		It "Set-ManagementUriWithNewNameAndType-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			
 			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$newType = "NewType-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -112,6 +105,14 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$result | Should Not Be $null;
 			$result.Name | Should Be $newName;
 			$result.Type | Should Be $newType;
+		}
+		
+		It "Set-ManagementUri-WithNotExistingManagementCredentialIdShouldThrowContractException" -Test {
+			# Arrange
+			$notExistingManagementCredentialId = [long]::MaxValue;
+			
+			# Act/Assert
+			{ Set-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $invalidManagementCredentialId } | Should ThrowErrorId 'Contract';
 		}
 	}
 }
@@ -245,15 +246,15 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMTE5MTcwN1owIwYJKoZIhvcNAQkEMRYEFLsShSbVpe6gVMoiRt5Ajfjtkzyl
+# MDgyNDE1NTQzNlowIwYJKoZIhvcNAQkEMRYEFLsShSbVpe6gVMoiRt5Ajfjtkzyl
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCgcQnWX/bWdpU07Upx
-# yZQ9bCR7LZlPzERJA7Krfl/s4jCxaQyapD5EID3mQTXDkcOLCjzlJpalvgMLZJrY
-# zMH+ceBsPgoS7HDHOOE8Mh4mYp5o2B2MxE/SBsJs9lYX/Ez4o/nKAhAXlG11KXsK
-# fl2SVdFxfjQ4Uxwqt/TsYUY5a9iwGdukJVzsgVZnZnsLzFg7YWC8T/9720KZQqt7
-# FCb9vCi0HunpQFAB9Coq3cwEKZ4sx0uFBQzaXYoqqEOd331815gSzsC5o/v7DAFa
-# 9nCHaaoJAQg0v0oX/DhqOdfkifVMXlkDpjB/HZJb3DFukSeCFYKteN19jX+gUMSZ
-# wAxC
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAYdgjfrICEIC+jgVPB
+# GwKJqMM3xcXjcNySs3+KWTjqiKBuC2pt6n5MlMqRpWboec8z1ykvrJtaLrDPoJWW
+# vI5NEVUYGZgYlgZx1vEMQCBG/h/MWzo7Mg4aDHhLMhvsTuVRLl0Wsat+bNc6X93M
+# E8D5W2oMGqGaJaaWhRtbBiYpiMM9allpd4G1Isyef7qJsEL/mm5//UA/DrAYuYKa
+# By3zeXE0m/di1OPnNwn/Ht1i1UMpKibA2UkjeZqh5A8AM+B8TKZRt/z/UpZycaUN
+# oWTTCTfWg/aRqZksZMq9IUUt5UGl1H9/DptRlIvdrl/MFxBxYdnX80jWLJUzdEUm
+# C83s
 # SIG # End signature block
