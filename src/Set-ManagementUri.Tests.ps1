@@ -109,8 +109,8 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 		
 		It "Set-ManagementUri-WithNotExistingManagementCredentialIdShouldThrowContractException" -Test {
 			# Arrange
-			$managementCredentials = Get-ManagementCredential -svc $svc
-			$invalidManagementCredentialId = $managementCredentials[$managementCredentials.Count - 1].Id + 1;
+			$notExistingManagementCredentialId = [long]::MaxValue;
+			
 			# Act/Assert
 			{ Set-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $invalidManagementCredentialId } | Should ThrowErrorId 'Contract';
 		}
