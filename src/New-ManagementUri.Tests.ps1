@@ -10,6 +10,7 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 	. "$here\$sut"
 	. "$here\Set-ManagementUri.ps1"
 	. "$here\Set-ManagementCredential.ps1"
+	. "$here\Get-ManagementCredential.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
 	$entityPrefix = "New-ManagementUri";
@@ -23,6 +24,10 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
+			
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
+			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 		}
 		
 		AfterAll {
@@ -48,9 +53,7 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 
 		It "New-ManagementUri-ShouldReturnNewEntityWithProvidedValue" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
+			# N/A
 			
 			# Act
 			$result = New-ManagementUri -svc $svc -Type $type -Name $name -Value $value;
@@ -65,9 +68,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 
 		It "New-ManagementUriWithDescription-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
@@ -84,10 +84,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 
 		It "New-ManagementUriWithManagementCredential-ShouldReturnNewEntityReferencingProvidedManagementCredential" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 
@@ -107,9 +103,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 		
 		It "New-ManagementUriWithDescripionAndWithManagementCredentialId-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
@@ -130,15 +123,29 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$result.ManagementCredentialId | Should Be $managementCredential.id;
 		}
 		
-		It "New-ManagementUri-ShouldThrowContractException" -Test {
+		It "New-ManagementUri-CreateAlreadyExistingManagementUriShouldThrowContractException" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
+			# N/A
 			
 			# Act/Assert
 			$result = New-ManagementUri -svc $svc -Type $type -Name $name -Value $value;
 			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value } | Should ThrowErrorId 'Contract'; 
+		}
+		
+		It "New-ManagementUri-WithInvalidManagementCredentialIdShouldThrowArgumentException" -Test {
+			# Arrange
+			# N/A
+			
+			# Act/Assert
+			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId 0 } | Should ThrowErrorId 'Argument';
+		}
+		
+		It "New-ManagementUri-WithNotExistingManagementCredentialIdShouldThrowContractException" -Test {
+			# Arrange
+			$managementCredentials = Get-ManagementCredential -svc $svc
+			$invalidManagementCredentialId = $managementCredentials[$managementCredentials.Count - 1].Id + 1;
+			# Act/Assert
+			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $invalidManagementCredentialId } | Should ThrowErrorId 'Contract';
 		}
 	}
 }
@@ -273,15 +280,15 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMTE5MTY1NVowIwYJKoZIhvcNAQkEMRYEFGGymmkHs9pxvkvpd1Wwf144XT+L
+# MDgyNDE1NTQyMlowIwYJKoZIhvcNAQkEMRYEFGGymmkHs9pxvkvpd1Wwf144XT+L
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBfYEP+fyPHFP4UWaMG
-# c8yr3hBE9onTAE5I4x96M5fY7DvDeXZo/LL+pXcTWmroPFIZljNRgev06flUFywd
-# wTSPV1rmpYGjdbE4f9I5aQIGcX7SCH0J48JGz0KwdApJs5goODSnNB+SowtSdCK9
-# NBVyR5O+BbEFJOrcdhxzDt2cXwm1XFSCaRsZh9I06DX3r1m0LQkX4OaPKf7CAqtb
-# +tpHMRkwW/y62dLc8/zNRPoy8jKnKXTJgxTwncCwqgnWb+rcnJf8zjlYrTvGMHoR
-# Loynp3tTsjJO1XMNfpZuz9i1B1eFlt8y+zFaE6cXsonirdWJZhDP97DBi4fEfYHb
-# kSiG
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAxGqMwArLf3UF9I5TO
+# hqs+C/NWe15MOW8ebxCgAwgy5RnE24F9qaSmy939Qyw85xs4rHYIqgU6THmRWwiC
+# EP60QAiqB6y+HlAWLc07CxXeG0E1UftVk7JMU0bkBZnt/9R+i2KIWLZ+Au1dP8/f
+# ChyucjuTF+1/ydV9R+LDIsEykW7gp7kiXwI5NNkBrWxEnZuorD4WZUEbDEF8XYjG
+# 7xYfElmJP8kll67bFbkzLbufDd3vMj97FSsXiQ95xGGMJ9isOI8sf5fb1zjV9MQn
+# 8p7PFLpUwiUcYcgIXCqmOqRtjOh+h4PfjIMyDecrt4Y6r1R/DhidUA30hZkDHZB0
+# pFOy
 # SIG # End signature block
