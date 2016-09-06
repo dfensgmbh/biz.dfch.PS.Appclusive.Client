@@ -64,6 +64,7 @@ Param
 	,
 	# Specifies the Node id for this entity
 	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateRAnge(1, [long]::MaxValue)]
 	[long] $NodeId
 	,
 	# Specifies the External id for this entity
@@ -100,6 +101,9 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+	
+	$node = Get-Node -Id $NodeId -svc $svc;
+	Contract-Assert (!!$node) 'Node with $NodeId does not Exist';
 	
 	$EntitySetName = 'ExternalNodes';
 }
