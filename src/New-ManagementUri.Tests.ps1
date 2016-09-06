@@ -123,7 +123,7 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$result.ManagementCredentialId | Should Be $managementCredential.id;
 		}
 		
-		It "New-ManagementUri-CreateAlreadyExistingManagementUriShouldThrowContractException" -Test {
+		It "New-ManagementUri-WithAlreadyExistingManagementUriNameShouldThrowContractException" -Test {
 			# Arrange
 			# N/A
 			

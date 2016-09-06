@@ -143,9 +143,10 @@ Begin
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 
-	if ($ManagementCredentialId) {
+	if ($ManagementCredentialId) 
+	{
 		$mgmtCred = Get-ManagementCredential -Id $ManagementCredentialId -svc $svc;
-		Contract-Assert (!!$mgmtCred) 'Invalid ManagementCredentialId';
+		Contract-Assert (!!$mgmtCred) "MgmtCredential with $ManagementCredentialId does not exist";
 	}
 }
 # Begin
