@@ -73,52 +73,45 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 
 			$resultReGet | Should Be $null;
 		}
-		<#
+		
 		It "KeyNameValue-AddingDuplicateItemThrowsException" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNew1 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-			try
-			{
-				$resultNew2 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-				$ExceptionThrown = $false;
-			}
-			catch
-			{
-				$ExceptionThrown = $true;
-			}
-
+			$resultNew1 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			{ $resultNew2 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value; } | Should Throw;
+			
 			# Assert
 			$resultNew2 | Should Be $null;
-			$ExceptionThrown | Should Be $true;
-
-			$null = Remove-ApcKeyNameValue -Key $Key -Name $Name -Value $Value -Confirm:$false;
+			$error[0].Exception.ToString().contains('Entity does already exist') | Should Be $true;
+			
+			# Cleanup
+			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
 		}
 		
 		It "KeyNameValue-RemovingMultipleItemsSucceeds" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();
 							
 			# Act
-			$resultNew1 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value1;
-			$resultNew2 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value2;
-			$resultGetNew = Get-ApcKeyNameValue -Key $Key;
+			$resultNew1 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value1;
+			$resultNew2 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value2;
+			$resultGetNew = Get-ApcKeyNameValue -svc $svc -Key $Key;
 
-			$null = Remove-ApcKeyNameValue -Key $Key -Confirm:$false;
-			$resultGetRemove = Get-ApcKeyNameValue -Key $Key;
+			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key -Confirm:$false;
+			$resultGetRemove = Get-ApcKeyNameValue -svc $svc -Key $Key;
 			
 			# Assert
 			$resultGetNew.Count | Should Be 2;
 			$resultGetRemove | Should Be $null;
 		}
-		
+		<#
 		It "KeyNameValue-CreateItemWithSetAndUpdateItemSucceeds" -Test {
 			# Arrange
 			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
