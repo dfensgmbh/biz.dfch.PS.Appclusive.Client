@@ -290,7 +290,7 @@ Process
 		$Exp = @();
 		if($PSCmdlet.ParameterSetName -eq 'id')
 		{
-			$Exp += ("Id eq {0}" -f $Id);
+			$Exp += ("Id eq {0}L" -f $Id);
 		}
 		if($Name) 
 		{ 
@@ -306,7 +306,7 @@ Process
 		}
 		if($NodeId) 
 		{ 
-			$Exp += ("NodeId eq {0}" -f $NodeId);
+			$Exp += ("NodeId eq {0}L" -f $NodeId);
 		}
 		if($CreatedBy) 
 		{ 
@@ -316,7 +316,7 @@ Process
 				# User not found
 				return;
 			}
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("(CreatedById eq {0}L)" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
@@ -326,7 +326,7 @@ Process
 				# User not found
 				return;
 			}			
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			$Exp += ("(ModifiedById eq {0}L)" -f $ModifiedById);
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 	
@@ -359,7 +359,7 @@ Process
 				{
 					if ( $item )
 					{
-						$Response_ = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', 'ExternaldNodeId eq {0}' -f $item.Id);
+						$Response_ = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', 'ExternaldNodeId eq {0}L' -f $item.Id);
 						$null = $ResponseTemp.Add($Response_);
 					}
 				}

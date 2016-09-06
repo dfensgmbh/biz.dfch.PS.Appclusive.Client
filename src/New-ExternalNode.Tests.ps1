@@ -1,172 +1,142 @@
-function New-ExternalNode {
-<#
-.SYNOPSIS
-Creates a ExternalNode entry in Appclusive.
 
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-.DESCRIPTION
-Creates a ExternalNode entry in Appclusive.
+Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 
-You must specify all four parameters 'Name', 'NodeId', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
-
-
-.OUTPUTS
-[biz.dfch.CS.Appclusive.Api.Core.ExternalNode]
-
-
-.EXAMPLE
-New-ApcExternalNode -Name "Arbitrary Name" -NodeId 42 -ExternalType ArbitraryType -ExternalId "http://example.com/api/items/1"
-
-NodeId       : 42
-ExternalType : ArbitraryType
-ExternalId   : http://example.com/api/items/1
-Id           : 61059
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : Arbitrary Name
-Description  :
-CreatedById  : 1
-ModifiedById : 1
-Created      : 22.08.2016 09:27:39 +02:00
-Modified     : 22.08.2016 09:27:39 +02:00
-RowVersion   : {0, 0, 0, 0...}
-Node         :
-Properties   : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
-
-Create a new ExternalNode entry if it not already exists.
-
-
-.LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ExternalNode/
-Set-ExternalNode: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ExternalNode/
-
-
-.NOTES
-See module manifest for dependencies and further requirements.
-
-
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ExternalNode/'
-)]
-Param 
-(
-	# Specifies the name for this entity
-	[Parameter(Mandatory = $true, Position = 0)]
-	[ValidateNotNullOrEmpty()]
-	[string] $Name
-	,
-	# Specifies the Node id for this entity
-	[Parameter(Mandatory = $true, Position = 1)]
-	[ValidateRAnge(1, [long]::MaxValue)]
-	[long] $NodeId
-	,
-	# Specifies the External id for this entity
-	[Parameter(Mandatory = $true, Position = 2)]
-	[string] $ExternalId
-	,
-	# Specifies the EntityKind name for this entity
-	[Parameter(Mandatory = $true, Position = 3)]
-	[string] $ExternalType
-	,
-	# Specifies the attributes for this entity
-	[Parameter(Mandatory = $false)]
-	[Alias("Parameters")]
-	[Alias("Bags")]
-	[hashtable] $Attributes
-	,
-	# Specifies the description for this entity
-	[Parameter(Mandatory = $false)]
-	[string] $Description
-	,
-	# Service reference to Appclusive
-	[Parameter(Mandatory = $false)]
-	[Alias('Services')]
-	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
-)
-
-Begin 
-{
-	trap { Log-Exception $_; break; }
-
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
-
-	# Parameter validation
-	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+	Mock Export-ModuleMember { return $null; }
 	
-	$EntitySetName = 'ExternalNodes';
-}
-# Begin
-
-Process
-{
-	trap { Log-Exception $_; break; }
-
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
-
-	$externalNodeContents = @($Name);
-	$exp = @();
-	$exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$exp += "(tolower(ExternalId) eq '{0}')" -f $ExternalId.toLower();
-	$exp += "(NodeId eq {0}L)" -f $NodeId;
-	$FilterExpression = [String]::Join(' and ', $exp);
-	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
+	. "$here\$sut"
+	. "$here\Get-Job.ps1"
+	. "$here\Get-Node.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Get-Tenant.ps1"
+	. "$here\Set-ExternalNode.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\New-Node.ps1"
+	. "$here\Format-ResultAs.ps1"
 	
-	Contract-Assert (!$entity) 'Entity does already exist';
+	$entityPrefix = "New-ExternalNode";
+	$usedEntitySets = @("ExternalNodes", "Nodes");
 
-	if($PSCmdlet.ShouldProcess($externalNodeContents))
-	{
-		$r = Set-ExternalNode @PSBoundParameters -CreateIfNotExist:$true;
-		$OutputParameter = $r;
+	Context "New-ExternalNode" {
+		
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+			
+			$nodeName = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$currentTenant = Get-Tenant -Current -svc $svc;
+			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+
+			$testNode = New-Node -svc $svc -Name $nodeName -ParentId $currentTenant.NodeId -EntityKindId $entityKindId;
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$externalType = "ExternalType-{0}" -f [guid]::NewGuid().ToString();
+			$externalId = "ExternalId-{0}" -f [guid]::NewGuid().ToString();
+		}
+		
+		AfterAll {
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+			write-host $entityFilter;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+				write-host $entitySet;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
+	
+		# Context wide constants
+		# N/A
+		it "Warmup" -Test {
+			$true | Should Be $true;
+		}
+
+		It "New-ExternalNode-ShouldReturnNewEntity" -Test {
+			# Arrange
+			# N/A
+			
+			# Act
+			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId;
+
+			# Assert
+			$result.Id | Should Not Be 0;
+			$result.Name | Should Be $name;
+			$result.NodeId | Should Be $testNode.Id;
+			$result.ExternalType | Should Be $externalType;
+			$result.ExternalId | Should Be $externalId;
+		}
+
+		It "New-ExternalNodeWithDescription-ShouldReturnNewExternalNode" -Test {
+			# Arrange
+			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId -Description $description;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.Description | Should Be $description;
+		}
+		
+		It "New-ExternalNode-WithInvalidNodeIdShouldThrowsArgument" -Test {
+			# Arrange
+			# N/A
+			
+			# Act/Assert
+			{ $result = New-ExternalNode -svc $svc -Name $Name -NodeId 0 -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Argument';
+		}
+
+		It "New-ExternalNodeWithDuplicate-ShouldThrowsContractException" -Test {
+			# Arrange
+			# N/A
+			
+			# Act/Assert
+			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId;
+			{ New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Contract';
+		}
+		
+		It "New-ExternalNode-WithNonExistingNodeIdShouldThrowsContractException" -Test {
+			# Arrange
+			$nonExistingNodeId = [long]::MaxValue;
+
+			# Act/Assert
+			{ New-ExternalNode -svc $svc -Name $Name -NodeId $nonExistingNodeId -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Contract';
+		}
 	}
-	$fReturn = $true;
 }
-# Process
 
-End 
-{
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	# Return values are always and only returned via OutputParameter.
-	return $OutputParameter;
-}
-# End
-
-}
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ExternalNode; } 
-
-# 
-# Copyright 2014-2015 d-fens GmbH
-# 
+#
+# Copyright 2016 d-fens GmbH
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEn422/uoKjo1tOq9NSmw9kn1
-# piagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZrYmXh2oLHFNE6HLJOewqmHg
+# iBygghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -265,26 +235,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ExternalNode; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQvj7t7A0JrrOGY
-# nonRnnLEIiCStjANBgkqhkiG9w0BAQEFAASCAQBOeD67uULj6we7xwwu/nnYeLan
-# 1N+OmY+dIkyxn+9EfizzUhc4l7Vx2AUOETLVSxFvEACn7/aocRa/Rd6GPIMc6sPv
-# BIGA1WcrI/AVVhhXdi5r065zfm/49V1SlrsPonPSJY2d75+Ab4P9nWczZRfiXqA8
-# CuhHE0TM37bQdjRd5MlhsP7qwiDN7T5H63DBMRRVqwWuzFU7MbLeKesqP9KpSVM5
-# Saz5S8m01I/6TcZylmHyTnHkUV4Qt1zx81cNnyLoHrmfsseLTYUThaKsfowdOow4
-# 3ObFeU+LpjgmD9dYEh2Isx5bQp10v+7srS/lM36Vq0IuxL1tvNpB1HzkHWteoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT6+9kgMwLbCuzC
+# xNZGznwZyZaxXTANBgkqhkiG9w0BAQEFAASCAQCti3GBRnp3tGRz7+ZI3m+df+OM
+# cKJ+CUKOSwFrQ2JQCSBkjchQHfwFGoa9zGQh17na+R/Y64skhL6f1IZw838919Qy
+# WbXLRhmlGFBeiwb/JcC79KgJOJ95izMC7hDFrOfkaTFiLHYe02m1a9ud1ay7DBQv
+# UUjm64ToQPAAVBJK3CZxFXeHyzpqukNMO2QskEmMXxVbQzqfYwtN83Uar7HRi1T8
+# yG9xR10Hd3jmaKjGFFNCY3hc24qQ4ZikQVRB+fliXemz1B62HiVKsIi8BXanoSD+
+# 4QBVCLr3p4MEEdqH3lf1Lo+Yr0nRCgIWSd6aZ+zuuiIAfnLVjz1hLa5JC0oQoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMTE5MTY1MlowIwYJKoZIhvcNAQkEMRYEFGmKGwC5XH2FSmRG5MsI4mq1tSBl
+# MDgzMTE5MTY1M1owIwYJKoZIhvcNAQkEMRYEFBN5bBFm5mcAdXQJyb13cDAZrwco
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBCjh+Hoau0CDJIwSYZ
-# Kypv358DUlYv3Esaw6CbYGremt9t2/vDTpN4ChWu5cuLpM+u3VTpFLguhqmGL7Ae
-# ejk4sAvmlLOqoD+bWAruJ4kMts130WA0VsCI4/atrya8mdRWodH0Lp644TVhfrcv
-# arj3OopS0PAFdfcRTNadj6CeuQArpMpjlvTapaHTqqOyO6CfFBSkLw2O7bYhcymm
-# YO/T3Ory7E5DS4TI7Euo0P6PDdWCEHm+Ys2s8XsCLWof1FEJRB7cE+IudmB8Csf+
-# 4P5N1+s7AgJqMztXAUWNinuUKGxDMffD1AVkPp686LKJPda/072XGeop9oo0yq7d
-# f+te
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCi1P+scCsfNXfuJNvX
+# BZi7PJ9pFilgn1rMzF+vWMcHP3XCdI2dQy2i5KUdNmmzFGyVTUrfTvFJye8SFGPq
+# 6y7p0zaJA1POrN7vkEZYLcjJnWqHogys7tpRoAWe5ZErKYeO0tf8HgOzizmFnwhR
+# 2I+8wqPiHgZAH+KLYZsr9lDEtV2tYikp4mxGMtjv7Hptrje5njpBoX9cc5oyH3mJ
+# C1aIcZYgTI1vP8C6+3FlUvlDD1RLeQu/FkGUy9nMKkJldWDXpm+8zhH5tSDTO7TW
+# gI5IuX3cxhZ8gf0RbTFLfsBd96MUjgGUai+PR/9xB6I28FxOvOs2uFurZEfviQ1s
+# +Y+q
 # SIG # End signature block

@@ -146,7 +146,7 @@ Begin
 	if ($ManagementCredentialId) 
 	{
 		$mgmtCred = Get-ManagementCredential -Id $ManagementCredentialId -svc $svc;
-		Contract-Assert (!!$mgmtCred) "MgmtCredential with $ManagementCredentialId does not exist";
+		Contract-Assert (!!$mgmtCred) "MgmtCredential with Id = $ManagementCredentialId does not exist";
 	}
 }
 # Begin
