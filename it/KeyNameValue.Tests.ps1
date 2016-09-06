@@ -1,3 +1,4 @@
+# includes tests for CLOUDTCL-1884
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -15,27 +16,45 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 
 	. "$here\$sut"
 	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("KeyNameValues");
+	
 	Context "#CLOUDTCL-1884-KeyNameValueTests" {
 		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
+		
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 		
 		It "KeyNameValue-AddingAndRemovingItemSucceeds" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNew = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-			$resultGet = Get-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-			$resultRemove = Remove-ApcKeyNameValue -Key $Key -Name $Name -Value $Value -Confirm:$false;
-			$resultReGet = Get-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-
+			$resultNew = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			$resultGet = Get-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			$resultRemove = Remove-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
+			$resultReGet = Get-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			
 			# Assert
 			$resultNew | Should Not Be $null;
 			$resultNew.Key | Should Be $Key;
@@ -54,7 +73,7 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 
 			$resultReGet | Should Be $null;
 		}
-
+		<#
 		It "KeyNameValue-AddingDuplicateItemThrowsException" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
@@ -153,7 +172,7 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			# Assert
 			$resultNewSet | Should Be $null;
 			$ExceptionThrown | Should Be $true;
-		}
+		}#>
 		
 	}
 }
