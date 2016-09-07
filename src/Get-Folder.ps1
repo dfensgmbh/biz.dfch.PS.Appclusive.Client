@@ -154,11 +154,11 @@ See module manifest for required software versions and dependencies.
 PARAM 
 (
 	# Specifies the id of the entity
-	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
 	[long] $Id
 	,
 	# Specifies the name of the entity
-	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias('n')]
 	[string] $Name
 	,
@@ -265,7 +265,7 @@ Process
 	{
 		if($PSBoundParameters.ContainsKey('First'))
 		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name').AddQueryOption('$top', $First) | Select;
+			$Response = $svc.Core.$EntitySetName.AddQueryOption('$top', $First) | Select;
 		}
 		else
 		{
@@ -318,7 +318,7 @@ Process
 	
 		if($PSBoundParameters.ContainsKey('First'))
 		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$expand', 'Children').AddQueryOption('$top', $First) | Select;
+			$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 		}
 	
 		if($Select) 
