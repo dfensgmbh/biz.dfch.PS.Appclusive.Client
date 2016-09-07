@@ -14,6 +14,7 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-User.ps1"
 	
 		Context "Get-Folder" {
         BeforeEach {
@@ -108,6 +109,23 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Folder] | Should Be $true;
 		}
 		
+		It "Get-Folder-ShouldReturnByParentId" -Test {
+			# Arrange
+			$ShowFirst = 1;
+			
+			# Act
+			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			
+			$parentId = $resultFirst.parentId;
+			$result = Get-Folder -Parentid $parentId -svc $svc | Select -First $ShowFirst;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result | Should Be $resultFirst;
+			$result.parentId | Should Be $resultFirst.parentId;
+			$result -is [biz.dfch.CS.Appclusive.Api.Core.Folder] | Should Be $true;
+		}
+		
 		It "Get-Folder-ShouldReturnThreeEntities" -Test {
 			# Arrange
 			$ShowFirst = 3;
@@ -151,18 +169,18 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			
 			# Act
 			$result = Get-Folder -svc $svc -First $ShowFirst -As json;
-			Write-Host ($result | out-string);
+			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Substring(0, 1) | Should Be '{';
 			$result.Substring($result.Length -1, 1) | Should Be '}';
 		}
-		<#
-		It "Get-Job-WithInvalidId-ShouldReturnException" -Test {
+		
+		It "Get-Folder-WithInvalidId-ShouldReturnException" -Test {
 			# Act
 			try 
 			{
-				$result = Get-Job -Id 'myJob';
+				$result = Get-Folder -Id 'myJob';
 				'throw exception' | Should Be $true;
 			} 
 			catch
@@ -172,29 +190,35 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			}
 		}
 		
-		It "Get-JobByCreatedByThatDoesNotExist-ShouldThrowContractException" -Test {
+		It "Get-FolderByCreatedByThatDoesNotExist-ShouldThrowContractException" -Test {
 			# Arrange
 			$User = 'User-that-does-not-exist';
 			
 			# Act
-			{ Get-Job -svc $svc -CreatedBy $User; } | Should ThrowErrorId "Contract";
+			{ Get-Folder -svc $svc -CreatedBy $User; } | Should ThrowErrorId "Contract";
 
 			# Assert
 		   	# N/A
 		}
 		
-		It "Get-JobByCreatedBy-ShouldReturnListWithEntities" -Test {
+		It "Get-FolderByCreatedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
-			$User = 'SYSTEM';
+			$ShowFirst = 1;
 			
 			# Act
-			$result = Get-Job -svc $svc -CreatedBy $User;
-
+			$result = Get-Folder -svc $svc -First $ShowFirst;
+			
+			$UserId = $result.CreatedById;
+			$User = Get-User -svc $svc -Id $UserId -Select Name -ValueOnly;
+			
+			# Act
+			$result1 = Get-Folder -svc $svc -CreatedBy $User;
+			
 			# Assert
-		   	$result | Should Not Be $null;
-			0 -lt $result.Count | Should Be $true;
+		   	$result1 | Should Not Be $null;
+			0 -lt $result1.Count | Should Be $true;
 		}
-		
+		<#
 		It "Get-JobByModifiedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
 			$User = 'SYSTEM';
