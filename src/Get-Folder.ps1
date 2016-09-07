@@ -24,7 +24,7 @@ In addition output can be filtered on specified properties.
 
 
 .EXAMPLE
-Get-Node -ListAvailable -Select Id, Name
+Get-Folder -ListAvailable -Select Id, Name
 
   Id Name
   -- ----
@@ -200,12 +200,6 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[switch] $ListAvailable = $false
 	,
-	# Indicates to return job information
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[Alias('ExpandStatus')]
-	[switch] $ExpandJob = $false
-	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
@@ -300,42 +294,10 @@ Process
 		{
 			$Response = $Response.$Select;
 		}
-		
-		<#
-		
-		
-		
-		if($EntityKindId)
+		if($First)
 		{
-			$Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+			$Response = $Response | Select -First 1;
 		}
-		$FilterExpression = [String]::Join(' and ', $Exp);
-	
-		if($PSBoundParameters.ContainsKey('First'))
-		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
-		}
-	
-		
-		else 
-		{
-			if ( $ExpandJob )
-			{
-				$ResponseTemp = New-Object System.Collections.ArrayList;
-				foreach ($item in $Response)
-				{
-					if ( $item )
-					{
-						$Response_ = $svc.Core.InvokeEntityActionWithSingleResult($item, 'Status', [System.Object], $null);
-						$null = $ResponseTemp.Add($Response_);
-					}
-				}
-				$Response = $ResponseTemp.ToArray();
-			}
-		}
-
-
-#>
 	}
 
 	$OutputParameter = Format-ResultAs $Response $As;

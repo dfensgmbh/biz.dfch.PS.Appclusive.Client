@@ -8,7 +8,7 @@ function Stop-Pester($message = "Unrepresentative, because no entities existing.
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe "Get-Folder"  -Tags "Get-Folder" {
+Describe "Get-Folder" -Tags "Get-Folder" {
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -126,7 +126,7 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Folder] | Should Be $true;
 		}
 		
-		It "Get-Folder-ValueOnly" -Test {
+		It "Get-Folder-CombineParentIdAndFirst" -Test {
 			# Arrange
 			$ShowFirst = 1;
 			
@@ -134,12 +134,29 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
 			
 			$parentId = $resultFirst.parentId;
-			$result = Get-Folder -Parentid $parentId -svc $svc -Select Name -ValueOnly;
-			Write-Host ($result | out-string);
-			Write-Host ($result.gettype() | out-string);
+			$result = Get-Folder -Parentid $parentId -svc $svc;
+			
+			$result1 = Get-Folder -Parentid $parentId -svc $svc -First $ShowFirst;
+			
 			# Assert
 			$result | Should Not Be $null;
-			$result -is [Array] | Should Be $true;
+			$result.Count -gt 1 | Should  Be $true;
+			$result1.Count -eq 1 | Should Be $true;
+		}
+		
+		It "Get-Folder-SelectTwoPropertiesAndValueOnly-ShouldThrow" -Test {
+			# Arrange
+			$ShowFirst = 1;
+			
+			# Act
+			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			
+			$parentId = $resultFirst.parentId;
+			{ $result = Get-Folder -ParentId $parentId -svc $svc -Select Name, Id -ValueOnly;} | Should Throw;
+			
+			# Assert
+			$result | Should Be $null;
+			$error[0].Exception.ToString().contains("You must specify exactly one 'Select' property when using 'ValueOnly'.") | Should Be $true;
 		}
 		
 		It "Get-Folder-ShouldReturnThreeEntities" -Test {
@@ -165,7 +182,6 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			# Assert
 			$result | Should Be $null;
 		}
-		
 		
 		It "Get-Folder-ShouldReturnXML" -Test {
 			# Arrange
@@ -196,7 +212,7 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			# Act
 			try 
 			{
-				$result = Get-Folder -Id 'myJob';
+				$result = Get-Folder -Id 'myFolder';
 				'throw exception' | Should Be $true;
 			} 
 			catch
@@ -235,7 +251,7 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			0 -lt $result1.Count | Should Be $true;
 		}
 		
-		It "Get-JobByModifiedBy-ShouldReturnListWithEntities" -Test {
+		It "Get-FolderByModifiedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
 			$ShowFirst = 1;
 			
@@ -252,24 +268,5 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 		   	$result1 | Should Not Be $null;
 			0 -lt $result1.Count | Should Be $true;
 		}
-		
-		
-		
-		<#
-		It "Get-JobExpandNode-ShouldReturnNode" -Test {
-			# Arrange
-			. "$here\Get-Node.ps1"
-			Mock Get-Node { return New-Object biz.dfch.CS.Appclusive.Api.Core.Node };
-			$ShowFirst = 1;
-			
-			# Act
-			$resultFirst = Get-Job -svc $svc -First $ShowFirst;
-			$result = Get-Job -svc $svc -Id $resultFirst.Id -ExpandNode;
-
-			# Assert
-		   	Assert-MockCalled Get-Node -Exactly 1;
-		   	$result | Should Not Be $null;
-		   	$result.GetType().Name | Should Be 'Node';
-		}#>
 	}
 }
