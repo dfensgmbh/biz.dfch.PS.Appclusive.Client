@@ -174,10 +174,6 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[long] $ParentId
 	,
-	# Specifies the EntityKind id for this entity
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[long] $EntityKindId
-	,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
 	[string[]] $Select = @()
@@ -189,18 +185,6 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
 	[Alias('HideTableHeaders')]
 	[switch] $ValueOnly
-	,
-	# This value is only returned if the regular search would have returned no results
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[Alias('default')]
-	$DefaultValue
-	,
-	# Specifies to deserialize JSON payloads
-	[ValidateScript( { if($ValueOnly -And $_) { $true; } else { throw("You must set the 'ValueOnly' switch when using 'ConvertFromJson'."); } } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[Alias('Convert')]
-	[switch] $ConvertFromJson
 	,
 	# Limits the output to the specified number of entries
 	[Parameter(Mandatory = $false)]
@@ -296,7 +280,7 @@ Process
 		{ 
 			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$CreatedById ) 'User not found';
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("CreatedById eq {0}" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
@@ -304,12 +288,23 @@ Process
 			Contract-Assert ( !!$ModifiedById ) 'User not found';
 			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
 		}
-		if($CreatedBy)
-		{ 
-			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
-			Contract-Assert ( !!$CreatedById ) 'User not found';
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+		
+		$FilterExpression = [String]::Join(' and ', $Exp);
+		$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
+		
+		if($Select) 
+		{
+			$Response = $Response | Select -Property $Select;
 		}
+		if(1 -eq $Select.Count -And $ValueOnly)
+		{
+			$Response = $Response.$Select;
+		}
+		
+		<#
+		
+		
+		
 		if($EntityKindId)
 		{
 			$Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
@@ -321,10 +316,7 @@ Process
 			$Response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 		}
 	
-		if($Select) 
-		{
-			$Response = $Response | Select -Property $Select;
-		}
+		
 		else 
 		{
 			if ( $ExpandJob )
@@ -341,30 +333,9 @@ Process
 				$Response = $ResponseTemp.ToArray();
 			}
 		}
-		if(1 -eq $Select.Count -And $ValueOnly)
-		{
-			$Response = $Response.$Select;
-		}
-		if($PSBoundParameters.ContainsKey('DefaultValue') -And !$Response)
-		{
-			$Response = $DefaultValue;
-		}
-		if($ValueOnly -And $ConvertFromJson)
-		{
-			$ResponseTemp = New-Object System.Collections.ArrayList;
-			foreach($item in $Response)
-			{
-				try
-				{
-					$null = $ResponseTemp.Add((ConvertFrom-Json -InputObject $item));
-				}
-				catch
-				{
-					$null = $ResponseTemp.Add($item);
-				}
-			}
-			$Response = $ResponseTemp.ToArray();
-		}
+
+
+#>
 	}
 
 	$OutputParameter = Format-ResultAs $Response $As;

@@ -126,6 +126,22 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Folder] | Should Be $true;
 		}
 		
+		It "Get-Folder-ValueOnly" -Test {
+			# Arrange
+			$ShowFirst = 1;
+			
+			# Act
+			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			
+			$parentId = $resultFirst.parentId;
+			$result = Get-Folder -Parentid $parentId -svc $svc -Select Name -ValueOnly;
+			Write-Host ($result | out-string);
+			Write-Host ($result.gettype() | out-string);
+			# Assert
+			$result | Should Not Be $null;
+			$result -is [Array] | Should Be $true;
+		}
+		
 		It "Get-Folder-ShouldReturnThreeEntities" -Test {
 			# Arrange
 			$ShowFirst = 3;
@@ -218,19 +234,28 @@ Describe "Get-Folder"  -Tags "Get-Folder" {
 		   	$result1 | Should Not Be $null;
 			0 -lt $result1.Count | Should Be $true;
 		}
-		<#
+		
 		It "Get-JobByModifiedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
-			$User = 'SYSTEM';
+			$ShowFirst = 1;
 			
 			# Act
-			$result = Get-Job -svc $svc -ModifiedBy $User;
-
+			$result = Get-Folder -svc $svc -First $ShowFirst;
+			
+			$UserId = $result.ModifiedById;
+			$User = Get-User -svc $svc -Id $UserId -Select Name -ValueOnly;
+			
+			# Act
+			$result1 = Get-Folder -svc $svc -ModifiedBy $User;
+			
 			# Assert
-		   	$result | Should Not Be $null;
-			0 -lt $result.Count | Should Be $true;
+		   	$result1 | Should Not Be $null;
+			0 -lt $result1.Count | Should Be $true;
 		}
 		
+		
+		
+		<#
 		It "Get-JobExpandNode-ShouldReturnNode" -Test {
 			# Arrange
 			. "$here\Get-Node.ps1"
