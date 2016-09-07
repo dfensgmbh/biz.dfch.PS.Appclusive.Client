@@ -26,33 +26,38 @@ In addition output can be filtered on specified properties.
 .EXAMPLE
 Get-Folder -ListAvailable -Select Id, Name
 
-  Id Name
-  -- ----
-   8  SomeArbitraryNode
-  15  SomeOtherNode
-  42  TheAnswerToEverythingNode
- 667  NeighbourNode
+   Id Name
+   -- ----
+34239 abc
+34253 Test-1
+34255 folder_os1
+34256 folder_os2
+34257 child_test1
+34295 abc2
+34301 abc2-sub
+34303 test folder
 
-Retrieves the id and name of all Nodes.
+Retrieves the id and name of all Folders.
 
 
 .EXAMPLE
-Get-Node 218
+Get-Folder -Id 34253 -svc $svc OR Get-Folder 34253 -svc $svc
 
-Parameters     : {"Hostname":"Server01"}
-EntityKindId   : 27
-ParentId       : 1
-Id             : 218
-Tid            : 22222222-2222-2222-2222-222222222222
-Name           : abhenry
-Description    : abhenry is a whiles for timeous purposes
-CreatedById    : 1
-ModifiedById   : 1
-Created        : 15.12.2015 12:06:49 +01:00
-Modified       : 15.12.2015 12:06:49 +01:00
+EntityId       :
+Parameters     : {}
+EntityKindId   : 28
+ParentId       : 1680
+Id             : 34253
+Tid            : ad8f50df-2a5d-4ea5-9fcc-05882f16a9fe
+Name           : Test-1
+Description    :
+CreatedById    : 653
+ModifiedById   : 653
+Created        : 09.06.2016 14:28:56 +02:00
+Modified       : 09.06.2016 14:28:56 +02:00
 RowVersion     : {0, 0, 0, 0...}
-Parent         :
 EntityKind     :
+Parent         :
 Children       : {}
 IncomingAssocs : {}
 OutgoingAssocs : {}
@@ -60,18 +65,22 @@ Tenant         :
 CreatedBy      :
 ModifiedBy     :
 
-Retrieves the Node object with Id 218 and returns all properties of it.
+Retrieves the Folder object with Id 34253 and returns all properties of it.
 
 
 .EXAMPLE
-Get-Node 218 -Select Parameters -ValueOnly -ConvertFromJson
+Get-Folder -ParentId 1680 -Select Name -ValueOnly -svc $svc
 
-Hostname
----
-Server01
+abc
+Test-1
+abc2
+efg
+folder_os1
+sibetest
+test-99
+folder_os2
 
-Similar to the previous example, but only returns the 'Parameters' property 
-of it. In addition the contents of the property will be converted from JSON.
+Returns the names (just the value) of the folders that have parentId with id 1680.
 
 
 .EXAMPLE
@@ -154,7 +163,7 @@ See module manifest for required software versions and dependencies.
 PARAM 
 (
 	# Specifies the id of the entity
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
 	[long] $Id
 	,
 	# Specifies the name of the entity
