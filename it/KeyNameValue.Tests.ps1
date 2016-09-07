@@ -120,35 +120,34 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			
 			# Act
 			#create a new KNV
-			$resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
-			
-			$resultGetNewSet = Get-ApcKeyNameValue -svc $svc -Key $Key1;
 			Push-ApcChangeTracker -Svc $svc;
+			$resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			Push-ApcChangeTracker -Svc $svc;
+			$resultGetNewSet = Get-ApcKeyNameValue -svc $svc -Key $Key1;
+			Pop-ApcChangeTracker -Svc $svc;
 			#update with new value
+			Push-ApcChangeTracker -Svc $svc;
 			$resultSetValue = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -NewValue $Value2;
-			Write-Host ($resultSetValue | out-string);
+			Pop-ApcChangeTracker -Svc $svc;
 			
 			#update with new name
-			
-			Pop-ApcChangeTracker -Svc $svc;
 			Push-ApcChangeTracker -Svc $svc;
-			#Push-ApcChangeTracker -Svc $svc;
 			$resultSetName = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value2 -NewName $Name2;
-			Write-Host ($resultSetName | out-string);
-			#Pop-ApcChangeTracker -Svc $Svc;
+			Pop-ApcChangeTracker -Svc $Svc;
 			
 			
 			#update with new key
 			Push-ApcChangeTracker -Svc $Svc;
 			$resultSetKey = Set-ApcKeyNameValue $Key1 -NewKey $Key2 -Name $Name2 -Value $Value2 -svc $svc;
-			Write-Host ($resultSetKey | out-string);
 			Pop-ApcChangeTracker -Svc $Svc;
 			
 			
 			$resultGetSetAll = Get-ApcKeyNameValue -svc $svc -Key $Key2;
 
 			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key2 -Confirm:$false;
-						
+			
 			# Assert
 			$resultGetNewSet | Should Not Be $null;
 			$resultGetSetAll | Should Not Be $null;
