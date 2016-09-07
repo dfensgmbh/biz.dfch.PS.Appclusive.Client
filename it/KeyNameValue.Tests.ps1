@@ -114,29 +114,39 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 		
 		It "KeyNameValue-CreateItemWithSetAndUpdateItemSucceeds" -Test {
 			# Arrange
-			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Key2 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name1 = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Name2 = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();		
-			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();
+			$Key1 = "Key1-{0}" -f [guid]::NewGuid().ToString();
+			$Key2 = "Key2-{0}" -f [guid]::NewGuid().ToString();
+			$Name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$Name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
+			$Value1 = "Value1-{0}" -f [guid]::NewGuid().ToString();		
+			$Value2 = "Value2-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
 			#create a new KNV
 			$resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
 			
 			$resultGetNewSet = Get-ApcKeyNameValue -svc $svc -Key $Key1;
-			
+			Push-ApcChangeTracker -Svc $svc;
 			#update with new value
 			$resultSetValue = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2;
+			Write-Host ($resultSetValue | out-string);
 			
 			#update with new name
-			$svc = Enter-Appclusive;
+			
+			Pop-ApcChangeTracker -Svc $svc;
+			Push-ApcChangeTracker -Svc $svc;
+			#Push-ApcChangeTracker -Svc $svc;
 			$resultSetName = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -NewName $Name2 -Value $Value2;
+			Write-Host ($resultSetName | out-string);
+			#Pop-ApcChangeTracker -Svc $Svc;
+			
 			
 			#update with new key
-			$svc = Enter-Appclusive;
+			Push-ApcChangeTracker -Svc $Svc;
 			$resultSetKey = Set-ApcKeyNameValue $Key1 -NewKey $Key2 -Name $Name2 -Value $Value2 -svc $svc;
+			Write-Host ($resultSetKey | out-string);
+			Pop-ApcChangeTracker -Svc $Svc;
+			
 			
 			$resultGetSetAll = Get-ApcKeyNameValue -svc $svc -Key $Key2;
 
@@ -153,31 +163,21 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			$resultNewSet.Id | Should Be $resultSetKey.Id;
 		}
 		
-		<#
-		It "KeyNameValue-SetNonExcsitingItemThrowsException" -Test {
+		It "KeyNameValue-SetNonExistingItemThrowsException" -Test {
 			# Arrange
 			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name1 = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name1 = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();			
 			$resultNewSet = $null; 
-				
+			
 			# Act
-			try
-			{
-				$resultNewSet = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2;
-				$ExceptionThrown = $false;
-			}
-			catch
-			{
-				$ExceptionThrown = $true;
-			}
-
+			{ $resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2; } | Should Throw;
+			
 			# Assert
+			$error[0].Exception.ToString().contains('Entity does not exist') | Should Be $true;
 			$resultNewSet | Should Be $null;
-			$ExceptionThrown | Should Be $true;
-		}#>
-		
+		}
 	}
 }
 
