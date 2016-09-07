@@ -87,9 +87,6 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			# Assert
 			$resultNew2 | Should Be $null;
 			$error[0].Exception.ToString().contains('Entity does already exist') | Should Be $true;
-			
-			# Cleanup
-			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
 		}
 		
 		It "KeyNameValue-RemovingMultipleItemsSucceeds" -Test {
@@ -98,7 +95,7 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();
-							
+			
 			# Act
 			$resultNew1 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value1;
 			$resultNew2 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value2;
