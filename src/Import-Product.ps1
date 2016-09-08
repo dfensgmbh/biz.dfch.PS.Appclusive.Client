@@ -1,153 +1,158 @@
 function Import-Product {
-<#
-.SYNOPSIS
-Creates or Updates a Product (based on .NET Class)
+    <#
+    .SYNOPSIS
+    Creates or Updates a Product (based on .NET Class)
 
-.DESCRIPTION
-Creates or Updates a Product (based on .NET Class)
+    .DESCRIPTION
+    Creates or Updates a Product (based on .NET Class)
 
-Inspects the .NET Class, based on it's attributes it will import the Class. Creating EntityKinds, Connectors, Interfaces, DataTypes and will even expand it to more Classes in the same Assembly which Require an Interface provided by the imported class.
+    Inspects the .NET Class, based on it's attributes it will import the Class. Creating EntityKinds, Connectors, Interfaces, DataTypes and will even expand it to more Classes in the same Assembly which Require an Interface provided by the imported class.
 
-.OUTPUTS
-default | json | json-pretty | xml | xml-pretty
+    .OUTPUTS
+    default | json | json-pretty | xml | xml-pretty
 
-.EXAMPLE
+    .EXAMPLE
 
-# output suppressed
+    # output suppressed
 
-.LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Import-Product/
+    .LINK
+    Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Import-Product/
 
-.NOTES
-See module manifest for dependencies and further requirements.
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Medium'
-	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Import-Product/'
-)]
-Param 
-(
-	# Specifies the Name of the Class to be imported
-	[Parameter(Mandatory = $true, Position = 0)]
-    [Alias("FQCN")]
-	[string] $Class
-	,
-	# Specifies to not also import dependent classes (connected children).
-	[Parameter(Mandatory = $false, Position = 1)]
-	[switch] $ExcludeDependent = $false
-	,
-	# Specifies to update existing data
-	[Parameter(Mandatory = $false, Position = 2)]
-	[switch] $Force = $false
-	,
-	# Service reference to Appclusive
-	[Parameter(Mandatory = $false, Position = 3)]
-	[Alias('Services')]
-	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
-	,
-	# Specifies the return format of the Cmdlet
-	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
-	[Parameter(Mandatory = $false)]
-	[Alias('ReturnFormat')]
-	[string] $As = 'default'
-)
+    .NOTES
+    See module manifest for dependencies and further requirements.
+    #>
+    [CmdletBinding(
+        SupportsShouldProcess = $true
+	    ,
+        ConfirmImpact = 'Medium'
+	    ,
+	    HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Import-Product/'
+    )]
+    Param 
+    (
+	    # Specifies the Name of the Class to be imported
+	    [Parameter(Mandatory = $true, Position = 0)]
+        [Alias("FQCN")]
+	    [string] $Class
+	    ,
+	    # Specifies to not also import dependent classes (connected children).
+	    [Parameter(Mandatory = $false, Position = 1)]
+	    [switch] $ExcludeDependent = $false
+	    ,
+	    # Specifies to update existing data
+	    [Parameter(Mandatory = $false, Position = 2)]
+	    [switch] $Force = $false
+	    ,
+	    # Service reference to Appclusive
+	    [Parameter(Mandatory = $false, Position = 3)]
+	    [Alias('Services')]
+	    [hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
+	    ,
+	    # Specifies the return format of the Cmdlet
+	    [ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
+	    [Parameter(Mandatory = $false)]
+	    [Alias('ReturnFormat')]
+	    [string] $As = 'default'
+    )
 
-Begin 
-{
-	trap { Log-Exception $_; break; }
-
-    $entitySetName = "DataTypes";
-
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. EntityKindVersion '{1}'." -f ($svc -is [Object]), $EntityKindVersion) -fac 1;
-
-	# Parameter validation
-	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-}
-# Begin
-
-Process 
-{
-    # Default test variable for checking function response codes.
-    [Boolean] $fReturn = $false;
-    # Return values are always and only returned via OutputParameter.
-    $OutputParameter = $null;
-
-    try
+    Begin 
     {
-        $r = New-Object System.Collections.ArrayList($null);
+	    trap { Log-Exception $_; break; }
 
-	    $instance = New-Object $Class;
-	    Contract-Assert (!!$instance)
-        
-        $entityType = $instance.GetType();
-        $entityKind = Get-ApcEntityKind -Version $Class;
-        
-        if ($entityKind -and -not $Force)
+        $entitySetName = "DataTypes";
+
+	    $datBegin = [datetime]::Now;
+	    [string] $fn = $MyInvocation.MyCommand.Name;
+	    Log-Debug -fn $fn -msg ("CALL. svc '{0}'. EntityKindVersion '{1}'." -f ($svc -is [Object]), $EntityKindVersion) -fac 1;
+
+	    # Parameter validation
+	    Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+    }
+    # Begin
+
+    Process 
+    {
+        # Default test variable for checking function response codes.
+        [Boolean] $fReturn = $false;
+        # Return values are always and only returned via OutputParameter.
+        $OutputParameter = $null;
+
+        try
         {
-            Write-Host "Stopping. EntityKind already exists, use Force to update. This is not recommended";
-            return;
+            $r = New-Object System.Collections.ArrayList($null);
+
+	        $instance = New-Object $Class;
+	        Contract-Assert (!!$instance)
+        
+            $entityType = $instance.GetType();
+            $entityKind = Get-ApcEntityKind -Version $Class;
+        
+            if ($entityKind -and -not $Force)
+            {
+                Write-Host "Stopping. EntityKind already exists, use Force to update. This is not recommended";
+                return;
+            }
+        
+            RecursivelyImportProducts $entityType;
+
+	        $OutputParameter = $null;
+            $fReturn = $true;
         }
-        
-        Import-EntityKind $Class;
+        catch
+        {
+            Write-Host ($error[0] | out-string);
 
-        # $OutputParameter = biz.dfch.PS.Appclusive.Client\Format-ResultAs $r $As;
-	    $OutputParameter = $r;
-        $fReturn = $true;
+        }
     }
-    catch
+    # Process
+
+    End 
     {
-        Write-Host ($error[0] | out-string);
+        $datEnd = [datetime]::Now;
+        Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 
+        # Return values are always and only returned via OutputParameter.
+        return $OutputParameter;
     }
-}
-# Process
+    # End
 
-End 
+}
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Product; } 
+
+function RecursivelyImportProducts([Type] $entityKindType, [System.Collections.ArrayList] $importedEntityKinds)
 {
-    $datEnd = [datetime]::Now;
-    Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-
-    # Return values are always and only returned via OutputParameter.
-    return $OutputParameter;
-
-}
-# End
-
-}
-
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-DataType; } 
-
-function ApplyStringLength([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.StringLengthAttribute], $true);
-
-    if (!$attr)
+    if (-not $importedEntityKinds)
     {
-		return;
+        $importedEntityKinds = New-Object System.Collections.ArrayList($null);
     }
+    
+    # import EntityKind (incl. all stuff)
+    Import-EntityKind $entityKindType;
 
-	$dataType.Maximum = $attr.MaximumLength;
-	$dataType.Minimum = $attr.MinimumLength;
+    # remember we imported it.
+    $importedEntityKinds.Add($entityKindType);
+
+    # find attached EntityKinds
+    $provides = $entityKindType.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ProvideInterfaceAttribute], $true);
+    $possibleImports = GetPossibleImports $entityKindType;
+    
+    foreach ($provide in $provides)
+    {
+        Write-Host ("  Searching For Children for {0}" -f $provide.Name);
+        $children = RequiresInterface $possibleImports $provide.Name $importedEntityKinds;
+        
+        foreach ($child in $children)
+        {
+            RecursivelyImportProducts $child $importedEntityKinds;
+        }
+    }
 }
 
-function Import-EntityKind([string] $EntityKindVersion)
+function Import-EntityKind([Type] $entityType)
 {
-    $instance = New-Object $Class;
-	Contract-Assert (!!$instance)
-        
-    $entityType = $instance.GetType();
-    $entityKind = Get-ApcEntityKind -Version $Class;
-        
-    if ($entityKind -and -not $Force)
-    {
-        Write-Host "Stopping. EntityKind already exists, use Force to update. This is not recommended";
-        return;
-    }
+    Write-Host ("    Importing {0}" -f $entityType.FullName);
+    $entityKind = Get-ApcEntityKind -Version $entityType.FullName;
         
     if (-not $entityKind)
     {
@@ -155,7 +160,7 @@ function Import-EntityKind([string] $EntityKindVersion)
 		$svc.Core.AddToEntityKinds($entityKind);
 
         $entityKind.Name = ("{0}.{1}" -f $entityType.Namespace.Substring(0, $entityType.Namespace.LastIndexOf(".")), $entityType.Name);
-        $entityKind.Version = $Class;
+        $entityKind.Version = $entityType.FullName;
     }
 
     $entityKind.Parameters = $instance.GetStateMachine().ToString();
@@ -163,6 +168,10 @@ function Import-EntityKind([string] $EntityKindVersion)
     $r.Add($entityKind);
 
     $connectors = CreateOrUpdateConnectors $entityKind $entityType;
+    # Import-DataType -FQCN $entityKind.Version -svc $svc -RecreateIfExist -Confirm:$false;
+
+    HandleAppclusiveProductAttribute $entityKind $entityType;
+    HandleIconAttribute $entityKind $entityType;
 }
 
 function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
@@ -218,6 +227,96 @@ function GetInterfaceIdByName([string] $name)
     }
 
     return $interface;
+}
+
+function HandleAppclusiveProductAttribute([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
+{
+    $appclusiveProduct = $entityKindType.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.AppclusiveProductAttribute], $true);
+        
+    if ($appclusiveProduct)
+    {
+        $name = $appclusiveProduct.DisplayName;
+        $product = $svc.Core.Products.AddQueryOption('$filter', ("EntityKindId eq {0} and Name eq '{1}'" -f $entityKind.Id,$name)).AddQueryOption('$top', 1) | SELECT;
+
+        if (-not $product)
+        {
+            $product = New-Object biz.dfch.CS.Appclusive.Api.Core.Product;
+
+            $product.Name = $name;
+            $product.EntityKindId = $entityKind.Id;
+            $product.ValidFrom = [System.DateTimeOffset]::MinValue;
+            $product.ValidUntil = [System.DateTimeOffset]::MaxValue;
+            $product.EndOfLife = [System.DateTimeOffset]::MaxValue;
+
+            # DFTODO : Get Type from Product
+            $product.Type = "Product";
+        }
+    }
+}
+
+function HandleIconAttribute([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
+{
+    $IconAttribute = $entityKindType.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.IconAttribute], $true);
+
+    if ($IconAttribute)
+    {
+        $key = $entityKind.Version;
+        $name = ("Icon-{0}" -f $IconAttribute.Type);
+        $value = ("picto-{0}" -f $IconAttribute.Name);
+
+        Set-KeyNameValue -Key $key -Name $name -Value $value -svc $svc -CreateIfNotExist;
+    }
+}
+
+function GetPossibleImports([Type] $entityKindType)
+{
+    $list = New-Object System.Collections.ArrayList($null); 
+    $types = $entityKindType.Assembly.GetTypes();   
+    $baseEntityKindInterface = [biz.dfch.CS.Appclusive.Public.Configuration.IEntityKindBaseDto];
+
+    foreach ($type in $types)
+    {
+        $isOfEntityKindBaseDtoType = $baseEntityKindInterface.IsAssignableFrom($type);
+        if ($isOfEntityKindBaseDtoType)
+        {
+            $null = $list.Add($type);
+        }
+    }
+
+    return $list;
+}
+
+function RequiresInterface([System.Collections.ArrayList] $types, [string] $interfaceName, [System.Collections.ArrayList] $except)
+{
+    $list = New-Object System.Collections.ArrayList($null);
+
+    foreach ($type in $types)
+    {
+        $isExcepted = $except.Contains($type);
+
+        if ($isExcepted)
+        {
+            continue;
+        }
+
+        $attributes = $type.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.RequireInterfaceAttribute], $true);
+        $requires = $false;
+
+        foreach ($attribute in $attributes)
+        {
+            if ($attribute.Name -eq $interfaceName)
+            {
+                $requires = $true;
+            }
+        }
+
+        if ($requires)
+        {
+            $null = $list.Add($type);
+        }        
+    }
+
+    return $list;
 }
 
 #

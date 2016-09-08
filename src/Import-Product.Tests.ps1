@@ -27,6 +27,9 @@ Describe "Import-Product" -Tags "Import-Product" {
 	
 	. "$here\$sut"
 	. "$here\Remove-Entity.ps1"
+	. "$here\Set-KeyNameValue.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Import-DataType.ps1"
 	. "$here\Format-ResultAs.ps1"
 
     BeforeAll
