@@ -47,23 +47,35 @@ Create a new Folder entry if it does not exist.
 
 
 .EXAMPLE
-Set-KeyNameValue myKey -NewKey myNewKey myName myValue -NewValue myNewValue
+Set-Folder -Name TestItem -NewName TestItemUpdated -NewDescription DescriptionUpdated -svc $svc 
 
-Id         : 3131
-Key        : myNewKey
-Name       : myName
-Value      : myNewValue
-CreatedBy  : SERVER1\Administrator
-Created    : 11/13/2014 11:08:46 PM +00:00
-ModifiedBy : SERVER1\Administrator
-Modified   : 11/13/2014 11:08:46 PM +00:00
-RowVersion : {0, 0, 0, 0...}
+EntityId       :
+Parameters     : {}
+EntityKindId   : 28
+ParentId       : 1
+Id             : 79560
+Tid            : 11111111-1111-1111-1111-111111111111
+Name           : TestItemUpdated
+Description    : DescriptionUpdated
+CreatedById    : 1
+ModifiedById   : 1
+Created        : 08.09.2016 11:33:32 +02:00
+Modified       : 08.09.2016 11:33:32 +02:00
+RowVersion     : {0, 0, 0, 0...}
+EntityKind     :
+Parent         :
+Children       : {}
+IncomingAssocs : {}
+OutgoingAssocs : {}
+Tenant         :
+CreatedBy      :
+ModifiedBy     :
 
 Update an existing Folder with new Name and new Description.
 
 
 .EXAMPLE
-Set-KeyNameValue myNewKey -NewKey myNewKey2 myName myNewValue -NewValue myNewValue2 -as json-pretty
+Set-Folder -Name $Name -NewName $newName -NewDescription $newDescription -svc $svc 
 {
   "Id":  3131,
   "Key":  "myNewKey2",
@@ -237,7 +249,6 @@ try
 	
 	
 	$Name = $folder.Name;
-	Write-Host ($Name | out-string);
 	
 	$svc.Core.UpdateObject($folder);
 	$r = $svc.Core.SaveChanges();
@@ -246,10 +257,8 @@ try
 	$query = "Name eq '{0}'" -f $Name;
 	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
 	
-	Write-Host ($folder | out-string);
 	$r = $folder;
 	$OutputParameter = Format-ResultAs $r $As;
-	Write-Host ($OutputParameter | out-string);
 	$fReturn = $true;
 
 }

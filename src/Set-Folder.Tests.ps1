@@ -51,56 +51,46 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 		
 		It "Set-Folder-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$result = Set-Folder -svc $svc -Name $Name -CreateIfNotExist;
-			Write-Host ($result | out-string);
+			$result = Set-Folder -svc $svc -Name $name -CreateIfNotExist;
+			
 			# Assert
 			$result | Should Not Be $null;
-			$result.Name | Should Be $Name;
+			$result.Name | Should Be $name;
 			$result.Id | Should Not Be 0;
 		}
 		
-		It "Set-Folder-ShouldReturnNewEntity" -Test {
+		It "Set-Folder-UpdateWithNewNameAndDescription" -Test {
 			# Arrange
-			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			$description = "Description";
+			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
+			$newDescription = "Description Updated";
 			
 			# Act
-			$result = Set-Folder -svc $svc -Name $Name -CreateIfNotExist;
-			Write-Host ($result | out-string);
+			Push-ApcChangeTracker -svc $svc;
+			$result1 = Set-Folder -svc $svc -Name $name -Description $description -CreateIfNotExist;
+			Pop-ApcChangeTracker -svc $svc;
+			
+			#Act update the folder
+			Push-ApcChangeTracker -svc $svc;
+			$result2 = Set-Folder -svc $svc -Name $Name -NewName $newName -NewDescription $newDescription;
+			Pop-ApcChangeTracker -svc $svc;
+			
 			# Assert
-			$result | Should Not Be $null;
-			$result.Name | Should Be $Name;
-			$result.Id | Should Not Be 0;
+			$result1 | Should Not Be $null;
+			$result1.Name | Should Be $name;
+			$result1.Description | Should Be $description;
+			$result1.Id | Should Not Be 0;
+			$result2 | Should Not Be $null;
+			$result2.Name | Should Be $newName;
+			$result2.Description | Should Be $newDescription;
+			$result2.Id | Should Be $result1.Id;
 		}
 		
 		
-		It "Set-NodeWithNewDescription-ShouldReturnUpdatedEntity" -Test {
-			
-			# Arrange
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			$NewDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
-			$node = Set-Node -svc $svc -Name $Name -Description $Description -EntityKindId 1 -CreateIfNotExist;
-			$node | Should Not Be $null;
-			
-			$svc = Enter-Apc;
-			
-			# Act
-			$result = Set-Node -svc $svc -Name $Name -Description $NewDescription -EntityKindId 1;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result.Description | Should Be $NewDescription;
-			
-			# Cleanup
-			$query = "RefId eq '{0}' and EntityKindId eq 1" -f $result.Id;
-			$nodeJob = $svc.Core.Jobs.AddQueryOption('$filter', $query) | Select;
-			Remove-ApcEntity -svc $svc -Id $nodeJob.Id -EntitySetName 'Jobs' -Force -Confirm:$false;
-			Remove-ApcEntity -svc $svc -Id $result.Id -EntitySetName 'Nodes' -Force -Confirm:$false;
-		}
-	}
 }
 
 # 
