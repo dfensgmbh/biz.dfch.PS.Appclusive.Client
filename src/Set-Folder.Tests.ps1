@@ -62,7 +62,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result.Id | Should Not Be 0;
 		}
 		
-		It "Set-Folder-UpdateWithNewNameAndDescription" -Test {
+		It "Set-Folder-UpdateUsingName" -Test {
 			# Arrange
 			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description";
@@ -90,7 +90,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result2.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-Folder-UpdateUsingOnlyId" -Test {
+		It "Set-Folder-UpdateUsingId" -Test {
 			# Arrange
 			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description";
@@ -175,6 +175,18 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			
 			# Assert
 			$result | Should Be $null;
+		}
+		
+		It "Set-Folder-ShouldReturnXML" -Test {
+			# Arrange
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = Set-Folder -svc $svc -Name $name -CreateIfNotExist -As xml;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Substring(0,5) | Should Be '<?xml';
 		}
 	}
 }

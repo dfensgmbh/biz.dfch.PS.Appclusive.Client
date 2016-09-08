@@ -75,29 +75,31 @@ Update an existing Folder with new Name and new Description.
 
 
 .EXAMPLE
-Set-Folder -Name $Name -NewName $newName -NewDescription $newDescription -svc $svc 
-{
-  "Id":  3131,
-  "Key":  "myNewKey2",
-  "Name":  "myName",
-  "Value":  "myNewValue2",
-  "CreatedBy":  "SERVER1\\Administrator",
-  "Created":  "\/Date(1415920126010)\/",
-  "ModifiedBy":  "SERVER1\\Administrator",
-  "Modified":  "\/Date(1415920126010)\/",
-  "RowVersion":  [
-	0,
-	0,
-	0,
-	0,
-	0,
-	2,
-	152,
-	17
-    ]
-}
+Set-Folder -id 79650 -NewName TestItemUpdated -NewDescription DescriptionUpdated -svc $svc 
 
-Update an existing K/N/V with new Name and new Description. Return format is json with pretty-print.
+EntityId       :
+Parameters     : {}
+EntityKindId   : 28
+ParentId       : 1
+Id             : 79560
+Tid            : 11111111-1111-1111-1111-111111111111
+Name           : TestItemUpdated
+Description    : DescriptionUpdated
+CreatedById    : 1
+ModifiedById   : 1
+Created        : 08.09.2016 11:33:32 +02:00
+Modified       : 08.09.2016 11:33:32 +02:00
+RowVersion     : {0, 0, 0, 0...}
+EntityKind     :
+Parent         :
+Children       : {}
+IncomingAssocs : {}
+OutgoingAssocs : {}
+Tenant         :
+CreatedBy      :
+ModifiedBy     :
+
+Update an existing folder with a new name and description using its Id
 
 .LINK
 
