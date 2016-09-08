@@ -101,6 +101,7 @@ See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detail
 	<file src="Get-Interface.ps1" target="tools\Get-Interface.ps1" />
 	<file src="Remove-Interface.ps1" target="tools\Remove-Interface.ps1" />		
 	<file src="Test-Connect.ps1" target="tools\Test-Connect.ps1" />		
+	<file src="Import-DataType.ps1" target="tools\Import-DataType.ps1" />
 	<file src="Format-Exception.ps1" target="tools\Format-Exception.ps1" />
     <file src="New-ManagementUri.ps1" target="tools\New-ManagementUri.ps1" />
     <file src="Set-ManagementUri.ps1" target="tools\Set-ManagementUri.ps1" />
