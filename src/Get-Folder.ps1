@@ -84,66 +84,34 @@ Returns the names (just the value) of the folders that have parentId with id 168
 
 
 .EXAMPLE
-Get-Node -ListAvailable -Select Id -First 3
+Get-Folder -ListAvailable -Select Id -First 3 -svc $svc
 
-Id
---
-218
-271
-358
+   Id
+   --
+34239
+34253
+34255
 
-Retrieves the id of the first 3 Nodes.
-
-
-.EXAMPLE
-Get-Node 218 -Select Name -ValueOnly
-
-abhenry
-
-Retrieves the name of the Node with Id 218.
+Retrieves the id of the first 3 Folders.
 
 
 .EXAMPLE
-Get-Node -ModifiedBy SYSTEM -Select Id, Name
+Get-Folder -ModifiedBy TestUser -Select Id, Name -svc $svc
 
-Id Name
--- ----
- 1 Root Node
- 2 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 3 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 4 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 5 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 6 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 7 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 8 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
- 9 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-10 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-11 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-12 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-13 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-14 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-15 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-16 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-17 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-18 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-19 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
-20 biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node
+   Id Name
+   -- ----
+34239 abc
+34240 TestUserFolder
+34295 abc2
+34301 abc2-sub
+34303 test folder
 
-Retrieves id and name of all Nodes that have been modified by user 
-with name 'SYSTEM' (case insensitive substring match).
-
-
-.EXAMPLE
-Get-Node AppclusiveScheduler -Select Name -ValueOnly -DefaultValue 'AppclusiveSchedulerNotAvailable'
-
-AppclusiveSchedulerNotAvailable
-
-Retrieves the 'Name' property of a Node with Name 'AppclusiveScheduler' 
-and AppclusiveSchedulerNotAvailable if the entity is not found.
+Retrieves id and name of all Folders that have been modified by user
+with name 'TestUser' (case insensitive substring match).
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Node/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Folder/
 
 
 .NOTES
