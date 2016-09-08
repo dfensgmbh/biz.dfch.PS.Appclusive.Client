@@ -19,17 +19,29 @@ By updating a Folder entry you can specify if you want to update the Name, Descr
 default | json | json-pretty | xml | xml-pretty | PSCredential | Clear
 
 .EXAMPLE
-Set-Folder myName myDescription -CreateIfNotExist
+Set-Folder -Name TestItem -CreateIfNotExist -svc $svc
 
-Id         : 3131
-Key        : myKey
-Name       : myName
-Value      : myValue
-CreatedBy  : SERVER1\Administrator
-Created    : 11/13/2014 11:08:46 PM +00:00
-ModifiedBy : SERVER1\Administrator
-Modified   : 11/13/2014 11:08:46 PM +00:00
-RowVersion : {0, 0, 0, 0...}
+EntityId       :
+Parameters     : {}
+EntityKindId   : 28
+ParentId       : 1
+Id             : 79560
+Tid            : 11111111-1111-1111-1111-111111111111
+Name           : TestItem
+Description    :
+CreatedById    : 1
+ModifiedById   : 1
+Created        : 08.09.2016 11:33:32 +02:00
+Modified       : 08.09.2016 11:33:32 +02:00
+RowVersion     : {0, 0, 0, 0...}
+EntityKind     :
+Parent         :
+Children       : {}
+IncomingAssocs : {}
+OutgoingAssocs : {}
+Tenant         :
+CreatedBy      :
+ModifiedBy     :
 
 Create a new Folder entry if it does not exist.
 
@@ -104,7 +116,7 @@ Param
 	[string] $NewName
 	,
 	# Specifies the description to modify
-	[Parameter(Mandatory = $true, Position = 2)]
+	[Parameter(Mandatory = $false, Position = 2)]
 	[Alias('d')]
 	[string] $Description
 	,
@@ -115,17 +127,17 @@ Param
 	# Specifies the parent Id for this entity
 	[Parameter(Mandatory = $false)]
 	[Alias("pid")]
-	[hashtable] $ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
+	$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 	,
 	# Specifies the tenant Id for this entity
 	[Parameter(Mandatory = $false)]
-	[Alias("tid")]
-	[hashtable] $Tid = (Get-ApcTenant -Current -svc $svc).Id
+	[Alias("t")]
+	$Tid = (Get-ApcTenant -Current -svc $svc).Id
 	,
 	# Specifies the parameters for this entity
 	[Parameter(Mandatory = $false)]
 	[Alias("p")]
-	[hashtable] $Parameters = @{}
+	$Parameters = '{}'
 	,
 	# Specifies to create a folder if it does not exist
 	[Parameter(Mandatory = $false)]
@@ -150,7 +162,7 @@ Begin
 
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'. ParentId '{2}'." -f ($svc -is [Object]), $Name, $ParentId) -fac 1;
+	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
@@ -209,8 +221,8 @@ try
 	if(!$folder) #executed when user executes command with -CreateIfNotExist
 	{
 		$folder = New-Object biz.dfch.CS.Appclusive.Api.Core.Folder;
-		$svc.Core.AddToFolders($newFolder);
-		$AddedEntity = $newFolder;
+		$svc.Core.AddToFolders($folder);
+		$AddedEntity = $folder;
 		$folder.Name = $Name;
 		$folder.Description = $Description;
 		$folder.EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Folder.value__;
@@ -218,16 +230,26 @@ try
 		$folder.Tid = $Tid;
 		$folder.Parameters = $Parameters;
 		$folder.Created = [System.DateTimeOffset]::Now;
-		$folder.Modified = $newFolder.Created;
+		$folder.Modified = $folder.Created;
 	}
 	if($NewName) { $folder.Name = $NewName; }
 	if($NewDescription) { $folder.Description = $NewDescription; }
 	
+	
+	$Name = $folder.Name;
+	Write-Host ($Name | out-string);
+	
 	$svc.Core.UpdateObject($folder);
 	$r = $svc.Core.SaveChanges();
-
+	
+	#get folder
+	$query = "Name eq '{0}'" -f $Name;
+	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+	
+	Write-Host ($folder | out-string);
 	$r = $folder;
 	$OutputParameter = Format-ResultAs $r $As;
+	Write-Host ($OutputParameter | out-string);
 	$fReturn = $true;
 
 }
