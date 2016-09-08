@@ -126,10 +126,10 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "Description Updated";
 			
-			#Act update the folder using the id parameter
+			# Act update the folder using the id parameter
 			try
 			{
-				$result2 = Set-Folder -svc $svc -NewName $newName -NewDescription $newDescription;
+				$result = Set-Folder -svc $svc -NewName $newName -NewDescription $newDescription;
 			}
 			catch [System.Exception]
 			{
@@ -139,9 +139,43 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			}
 			
 			# Assert
-			$result2 | Should Be $null;
+			$result | Should Be $null;
 		}
 		
+		It "Set-Folder-CreateWithId-FolderIsNotCreated" -Test {
+			# Arrange
+			$id = 1000;
+			
+			# Act
+			$result = Set-Folder -svc $svc -Id $id;
+			
+			$query = "Id eq {0}" -f $id;
+			$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+			
+			# Assert
+			$result | Should Be $null;
+			$folder | Should Be $null;
+		}
+		
+		It "Set-Folder-CreateWithIdAndCreateIfNotExist-ShouldFail" -Test {
+			# Arrange
+			$id = 1000;
+			
+			# Act
+			try
+			{
+				$result = Set-Folder -svc $svc -Id $id -CreateIfNotExist;
+			}
+			catch [System.Exception]
+			{
+				$threw = $true
+				$_.CategoryInfo.Reason | Should be 'ParameterBindingException'
+				$_.Exception -is [System.Management.Automation.ParameterBindingException] | Should be $true
+			}
+			
+			# Assert
+			$result | Should Be $null;
+		}
 	}
 }
 
