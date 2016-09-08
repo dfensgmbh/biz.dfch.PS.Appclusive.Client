@@ -90,7 +90,59 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result2.Id | Should Be $result1.Id;
 		}
 		
+		It "Set-Folder-UpdateUsingOnlyId" -Test {
+			# Arrange
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			$description = "Description";
+			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
+			$newDescription = "Description Updated";
+			
+			# Act
+			Push-ApcChangeTracker -svc $svc;
+			$result1 = Set-Folder -svc $svc -Name $name -Description $description -CreateIfNotExist;
+			Pop-ApcChangeTracker -svc $svc;
+			
+			#get the id of the folder
+			$folderId = $result1.Id;
+			
+			#Act update the folder using the id parameter
+			Push-ApcChangeTracker -svc $svc;
+			$result2 = Set-Folder -svc $svc -Id $folderId -NewName $newName -NewDescription $newDescription;
+			Pop-ApcChangeTracker -svc $svc;
+			
+			# Assert
+			$result1 | Should Not Be $null;
+			$result1.Name | Should Be $name;
+			$result1.Description | Should Be $description;
+			$result1.Id | Should Not Be 0;
+			$result2 | Should Not Be $null;
+			$result2.Name | Should Be $newName;
+			$result2.Description | Should Be $newDescription;
+			$result2.Id | Should Be $result1.Id;
+		}
 		
+		It "Set-Folder-WithoutIdOrNameShouldFail" -Test {
+			# Arrange
+			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
+			$newDescription = "Description Updated";
+			
+			#Act update the folder using the id parameter
+			try
+			{
+				$result2 = Set-Folder -svc $svc -NewName $newName -NewDescription $newDescription;
+			}
+			catch [System.Exception]
+			{
+				$threw = $true
+				$_.CategoryInfo.Reason | Should be 'ParameterBindingException'
+				$_.Exception -is [System.Management.Automation.ParameterBindingException] | Should be $true
+			}
+			
+			# Assert
+			$result2 | Should Be $null;
+		}
+		
+	}
 }
 
 # 

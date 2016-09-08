@@ -118,41 +118,45 @@ See module manifest for dependencies and further requirements.
 )]
 Param 
 (
+	# Specifies the id of the entity
+	[Parameter(Mandatory = $true, ParameterSetName = 'id')]
+	[long] $Id = $null
+	,
 	# Specifies the name to modify
-	[Parameter(Mandatory = $true, Position = 1)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
 	[Alias("n")]
 	[string] $Name
 	,
 	# Specifies the new name
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[string] $NewName
 	,
 	# Specifies the description to modify
-	[Parameter(Mandatory = $false, Position = 2)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias('d')]
 	[string] $Description
 	,
 	# Specifies the new description
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[string] $NewDescription
 	,
 	# Specifies the parent Id for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
 	[Alias("pid")]
 	$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 	,
-	# Specifies the tenant Id for this entity
-	[Parameter(Mandatory = $false)]
-	[Alias("t")]
-	$Tid = (Get-ApcTenant -Current -svc $svc).Id
-	,
 	# Specifies the parameters for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias("p")]
 	$Parameters = '{}'
 	,
 	# Specifies to create a folder if it does not exist
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
 	[Alias("c")]
 	[switch] $CreateIfNotExist = $false
 	,
@@ -183,7 +187,6 @@ Begin
 
 Process 
 {
-
 # Default test variable for checking function response codes.
 [Boolean] $fReturn = $false;
 # Return values are always and only returned via OutputParameter.
@@ -204,6 +207,12 @@ try
 		$Exp += ("(tolower(Description) eq '{0}')" -f $Description.ToLower());
 		$FolderContents += $Description;
 	}
+	if($Id) 
+	{ 
+		$Exp += ("Id eq {0}" -f $Id);
+		$FolderContents += $Id;
+	}
+	
 	$FilterExpression = [String]::Join(' and ', $Exp);
 	$FolderContentsString = [String]::Join(',', $FolderContents);
 	
@@ -224,6 +233,8 @@ try
 		
 		throw;
 	}
+	
+	
 	if(!$CreateIfNotExist -And !$folder) #executed if folder doesn't exist > can't be updated
 	{
 		$msg = "Folder: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $FolderContentsString;
@@ -239,7 +250,6 @@ try
 		$folder.Description = $Description;
 		$folder.EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Folder.value__;
 		$folder.ParentId = $ParentId;
-		$folder.Tid = $Tid;
 		$folder.Parameters = $Parameters;
 		$folder.Created = [System.DateTimeOffset]::Now;
 		$folder.Modified = $folder.Created;
