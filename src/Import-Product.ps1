@@ -35,18 +35,22 @@ Param
     [Alias("FQCN")]
 	[string] $Class
 	,
-	# Specifies to delete already existing entities during import
-	[Parameter(Mandatory = $false, Position = 3)]
+	# Specifies to not also import dependent classes (connected children).
+	[Parameter(Mandatory = $false, Position = 1)]
 	[switch] $ExcludeDependent = $false
 	,
+	# Specifies to update existing data
+	[Parameter(Mandatory = $false, Position = 2)]
+	[switch] $Force = $false
+	,
 	# Service reference to Appclusive
-	[Parameter(Mandatory = $false, Position = 5)]
+	[Parameter(Mandatory = $false, Position = 3)]
 	[Alias('Services')]
 	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
 	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
-	[Parameter(Mandatory = $false, Position = 6)]
+	[Parameter(Mandatory = $false)]
 	[Alias('ReturnFormat')]
 	[string] $As = 'default'
 )
@@ -75,41 +79,31 @@ Process
 
     try
     {
-        Write-Host $Class;
-        $entityFqcn = biz.dfch.PS.System.Utilities\Get-DataType $Class;
-        Write-Host ($entityFqcn | out-string);
-	    Contract-Assert (1 -eq $entityFqcn.Count)
+        $r = New-Object System.Collections.ArrayList($null);
 
-	    $instance = New-Object $entityFqcn;
+	    $instance = New-Object $Class;
 	    Contract-Assert (!!$instance)
         
         $entityType = $instance.GetType();
-
-        $entityKind = biz.dfch.PS.Appclusive.Client\Get-EntityKind -Version $entityFqcn;
-
-        if ($entityKind)
+        $entityKind = Get-ApcEntityKind -Version $Class;
+        
+        if ($entityKind -and -not $Force)
         {
+            Write-Host "Stopping. EntityKind already exists, use Force to update. This is not recommended";
             return;
         }
-    
-        $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
-		$svc.Core.AddToEntityKinds($dataType);
-
-        $entityKind.Name = ("{0}.{1}" -f $entityType.Namespace.Substring(0, $t.Namespace.LastIndexOf(".")), $entityType.Name);
-        $entityKind.Version = $entityFqcn;
-
-        $entityKind.Parameters = $instance.GetStateMachine().ToString();
-        $svc.Core.SaveChanges();
         
-	    # $OutputParameter = biz.dfch.PS.Appclusive.Client\Format-ResultAs $r $As;
+        Import-EntityKind $Class;
+
+        # $OutputParameter = biz.dfch.PS.Appclusive.Client\Format-ResultAs $r $As;
 	    $OutputParameter = $r;
-	    $fReturn = $true;
+        $fReturn = $true;
     }
     catch
     {
+        Write-Host ($error[0] | out-string);
 
     }
-	
 }
 # Process
 
@@ -128,145 +122,6 @@ End
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-DataType; } 
 
-function HasEntityBagAttribute($property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Converters.EntityBagAttribute], $true);
-    
-    return ($attr.Count -eq 1);
-}
-
-function ApplyEntityBagAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Converters.EntityBagAttribute], $true);
-    Contract-Assert (!!$attr) "EntityBagAttribute does not exist $($dataType.Type)"
-	
-    $dataType.Name = $attr.Name;
-}
-
-function ApplyPropertyDescriptionAttribute([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.EntityBagDescriptionAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-
-	$dataType.Description = $attr.Name;
-}
-
-function ApplyDefaultValue([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([System.ComponentModel.DefaultValueAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-
-	$dataType.Default = $attr.Value;
-}
-
-function ApplyRequired([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.RequiredAttribute], $true);
-
-	$dataType.IsRequired = $false;
-    
-	if (!$attr)
-    {
-		return;
-    }
-	
-	$dataType.IsRequired = $true;
-}
-
-function ApplyRange([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.RangeAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-
-	$dataType.Minimum = $attr.Minimum;
-	$dataType.Maximum = $attr.Maximum;
-}
-
-function ApplyIncrement([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.IncrementAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-
-	$dataType.Increment = $attr.Increment;
-	$dataType.IncrementFunction = $attr.IncrementFunction;
-}
-
-function ApplyUnit([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.UnitAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-	
-	$dataType.Unit = $attr.Unit;
-}
-
-function ApplyValidateSet([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ValidateSetIfNotDefaultAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-
-	$dataType.ValidateSet = $attr.Set;
-}
-
-function ApplyValidateScript([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ValidateScriptIfNotDefaultAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-	
-	$dataType.ValidateScript = $attr.Script;
-}
-
-function ApplyValidatePattern([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.ValidatePatternIfNotDefaultAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-	
-	$dataType.ValidatePattern = $attr.Pattern;
-}
-
-function ApplyKeyNameValueFilter([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
-{
-    $attr = $property.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.KeyNameValueFilterAttribute], $true);
-
-    if (!$attr)
-    {
-		return;
-    }
-	
-	$dataType.KeyNameValueFilter = $attr.Pattern;
-}
-
 function ApplyStringLength([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostics.DataType] $dataType, $property)
 {
     $attr = $property.GetCustomAttributes([System.ComponentModel.DataAnnotations.StringLengthAttribute], $true);
@@ -278,6 +133,91 @@ function ApplyStringLength([biz.dfch.CS.Appclusive.Core.OdataServices.Diagnostic
 
 	$dataType.Maximum = $attr.MaximumLength;
 	$dataType.Minimum = $attr.MinimumLength;
+}
+
+function Import-EntityKind([string] $EntityKindVersion)
+{
+    $instance = New-Object $Class;
+	Contract-Assert (!!$instance)
+        
+    $entityType = $instance.GetType();
+    $entityKind = Get-ApcEntityKind -Version $Class;
+        
+    if ($entityKind -and -not $Force)
+    {
+        Write-Host "Stopping. EntityKind already exists, use Force to update. This is not recommended";
+        return;
+    }
+        
+    if (-not $entityKind)
+    {
+        $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
+		$svc.Core.AddToEntityKinds($entityKind);
+
+        $entityKind.Name = ("{0}.{1}" -f $entityType.Namespace.Substring(0, $entityType.Namespace.LastIndexOf(".")), $entityType.Name);
+        $entityKind.Version = $Class;
+    }
+
+    $entityKind.Parameters = $instance.GetStateMachine().ToString();
+    $svc.Core.SaveChanges();
+    $r.Add($entityKind);
+
+    $connectors = CreateOrUpdateConnectors $entityKind $entityType;
+}
+
+function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
+{
+    $existingConnectors = $svc.Core.Connectors.AddQueryOption('$filter', ("EntityKindId eq {0}" -f $entityKind.Id)) | Select;
+    $shouldConnectors = $entityKindType.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.InterfaceBaseAttribute], $true);
+    
+    $finalConnectors = New-Object System.Collections.ArrayList($null);
+
+    foreach ($shouldConnector in $shouldConnectors)
+    {
+        $interface = GetInterfaceIdByName $shouldConnector.Name;
+        $existingConnector = $existingConnectors | where { $_.InterfaceId -eq $interface.Id -and $_.ConnectionType -eq $shouldConnector.ConnectorType };
+
+        if (-not $existingConnector)
+        {
+            $existingConnector = New-Object biz.dfch.CS.Appclusive.Api.Core.Connector;
+            $null = $svc.Core.AddToConnectors($existingConnector);
+
+            $existingConnector.Name = "{0}_{1}::{2}" -f $entityKind.Id, $interface.Id, $shouldConnector.ConnectorType;
+            $existingConnector.InterfaceId = $interface.Id;
+            $existingConnector.EntityKindId = $entityKind.Id;
+            $existingConnector.ConnectionType = $shouldConnector.ConnectorType;
+        }
+
+        $existingConnector.Multiplicity = $shouldConnector.Multiplicity;
+
+        $null = $finalConnectors.Add($existingConnector);
+    }
+
+    foreach ($existingConnector in $existingConnectors)
+    {
+        $match = $finalConnectors | where { $_.InterfaceId -eq $existingConnector.InterfaceId -and $_.ConnectionType -eq $existingConnector.ConnectionType };
+
+        if (-not $match)
+        {
+            $null = $svc.Core.DeleteObject($existingConnector);
+        }
+    }
+    
+    $null = $svc.Core.SaveChanges();
+
+    return $finalConnectors;
+}
+
+function GetInterfaceIdByName([string] $name)
+{
+    $interface = $svc.Core.Interfaces.AddQueryOption('$filter', ("Name eq '{0}'" -f $name)).AddQueryOption('$top', 1L) | SELECT;
+
+    if (-not $interface)
+    {
+        $interface = Set-ApcInterface -Name $name -svc $svc -CreateIfNotExist;
+    }
+
+    return $interface;
 }
 
 #

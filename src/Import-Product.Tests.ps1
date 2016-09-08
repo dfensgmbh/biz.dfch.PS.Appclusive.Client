@@ -36,17 +36,7 @@ Describe "Import-Product" -Tags "Import-Product" {
         Import-Module $moduleName;
         
         $svc = Enter-ApcServer;
-
-        # $source = Get-Content -Raw C:\GitRepos\biz.dfch.PS.Appclusive.Client\src\lib\biz.dfch.Appclusive.Products.Tests.Mock.SimpleProductOne.cs -Encoding Default
-
         Add-Type -Path C:\GitRepos\biz.dfch.CS.Appclusive\src\biz.dfch.Appclusive.Products\bin\Debug\biz.dfch.Appclusive.Products.dll
-
-        Add-Type -AssemblyName ('System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35');
-        $assemblies = New-Object System.Collections.ArrayList
-        $assemblies.Add([System.ComponentModel.DataAnnotations.RequiredAttribute].Assembly.Location)
-        $assemblies.Add([biz.dfch.CS.Appclusive.Public.Converters.EntityBagAttribute].Assembly.Location)
-
-        # Add-Type -TypeDefinition $source -ReferencedAssemblies $assemblies
     }
 
     BeforeEach {
@@ -93,10 +83,9 @@ Describe "Import-Product" -Tags "Import-Product" {
 		}
 
 	    It "ImportDataTypes-ShouldImportSimpleProductOne" -Test {
-            $t = [biz.dfch.Appclusive.Products.Infrastructure.V001.VirtualMachine]
-            Write-Host ($t | out-string);
-            Import-Product -FQCN "biz.dfch.Appclusive.Products.Infrastructure.V001.VirtualMachine" -svc $svc;
+            Add-Type -Path C:\GitRepos\biz.dfch.CS.Appclusive\src\biz.dfch.Appclusive.Products\bin\Debug\biz.dfch.Appclusive.Products.dll
 
+            Import-Product -FQCN "biz.dfch.Appclusive.Products.Infrastructure.V001.VirtualMachine" -svc $svc -force;
 		}
 	}
 }
