@@ -42,9 +42,6 @@ Describe "New-Folder" -Tags "New-Folder" {
                 }
             }
         }
-	
-		# Context wide constants
-		# N/A
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
@@ -95,8 +92,6 @@ Describe "New-Folder" -Tags "New-Folder" {
 			# Act
 			$folder1 = New-Folder -svc $svc -Name $name1;
 			$folder2 = New-Folder -svc $svc -Name $name2 -ParentId $folder1.Id;
-			Write-Host ($folder1 | out-string);
-			Write-Host ($folder2 | out-string);
 
 			# Assert
 			$folder1 | Should Not Be $null;
@@ -108,7 +103,18 @@ Describe "New-Folder" -Tags "New-Folder" {
 			$folder2.ParentId | Should Be $folder1.Id;
 			
 			#remove child folder otherwise cleanup won't work
-			Remove-ApcEntity -svc $svc -id $folder2.Id -EntitySetName "folders" -Confirm:$false;
+			Remove-ApcEntity -svc $svc -Id $folder2.Id -EntitySetName "folders" -Confirm:$false;
+		}
+		
+		It "New-Folder-CreateWithNonexistingParentId-ShouldNotCreate" -Test {
+			# Arrange
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = New-Folder -svc $svc -Name $name -ParentId 9999999;
+			
+			# Assert
+			$result | Should  Be $null;
 		}
 	}
 }
