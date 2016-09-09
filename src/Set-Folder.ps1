@@ -236,7 +236,6 @@ try
 		throw;
 	}
 	
-	
 	if(!$CreateIfNotExist -And !$folder) #executed if folder doesn't exist > can't be updated
 	{
 		$msg = "Folder: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $FolderContentsString;
@@ -256,9 +255,15 @@ try
 		$folder.Created = [System.DateTimeOffset]::Now;
 		$folder.Modified = $folder.Created;
 	}
-	if($NewName) { $folder.Name = $NewName; }
-	if($NewDescription) { $folder.Description = $NewDescription; }
-	
+	# new values when the folder is to be updated: 
+	if($NewName) 
+	{ 
+		$folder.Name = $NewName; 
+	}
+	if($NewDescription) 
+	{ 
+		$folder.Description = $NewDescription; 
+	}
 	
 	$Name = $folder.Name;
 	
@@ -341,7 +346,7 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-KeyNameValue; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Folder; } 
 
 # 
 # Copyright 2014-2015 d-fens GmbH

@@ -15,17 +15,42 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-User.ps1"
+	. "$here\New-Folder.ps1"
+	. "$here\Set-Folder.ps1"
 	
-		Context "Get-Folder" {
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Folders");
+	
+	Context "Get-Folder" {
         BeforeEach {
             $moduleName = 'biz.dfch.PS.Appclusive.Client';
             Remove-Module $moduleName -ErrorAction:SilentlyContinue;
             Import-Module $moduleName;
             $svc = Enter-Appclusive;
         }
+		AfterAll {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 	
 		# Context wide constants
-		# N/A
+		#create three folders so there is at least three in the list
+		$name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+		$name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
+		$name3 = $entityPrefix + "Name3-{0}" -f [guid]::NewGuid().ToString();
+		$folder1 = New-Folder -svc $svc -Name $name1;
+		$folder2 = New-Folder -svc $svc -Name $name2;
+		$folder3 = New-Folder -svc $svc -Name $name3;
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
@@ -37,10 +62,6 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 			
 			# Act
 			$result = Get-Folder -svc $svc -ListAvailable;
-			if ( $result.Count -eq 0 )
-			{
-				Stop-Pester
-			}
 			
 			# Assert
 			$result | Should Not Be $null;
