@@ -114,8 +114,6 @@ Process
 	$instance = New-Object $entityFqcn;
 	Contract-Assert (!!$instance)
 	$properties = $instance.GetType().GetProperties([System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::FlattenHierarchy -bor [System.Reflection.BindingFlags]::Instance);
-	Contract-Assert (!!$properties);
-	Contract-Assert ($properties -is [Array])
 	
 	$r = @();
 	
