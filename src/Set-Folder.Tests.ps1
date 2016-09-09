@@ -168,7 +168,6 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			}
 			catch [System.Exception]
 			{
-				$threw = $true
 				$_.CategoryInfo.Reason | Should be 'ParameterBindingException'
 				$_.Exception -is [System.Management.Automation.ParameterBindingException] | Should be $true
 			}
