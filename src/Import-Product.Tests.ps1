@@ -88,7 +88,9 @@ Describe "Import-Product" -Tags "Import-Product" {
 	    It "ImportDataTypes-ShouldImportSimpleProductOne" -Test {
             Add-Type -Path C:\GitRepos\biz.dfch.CS.Appclusive\src\biz.dfch.Appclusive.Products\bin\Debug\biz.dfch.Appclusive.Products.dll
 
-            Import-Product -FQCN "biz.dfch.Appclusive.Products.Infrastructure.V001.VirtualMachine" -svc $svc -force;
+            $t = Import-Product -FQCN "biz.dfch.Appclusive.Products.Infrastructure.V001.VirtualMachine" -svc $svc -force;
+
+            write-Host ($t | out-string);
 		}
 	}
 }

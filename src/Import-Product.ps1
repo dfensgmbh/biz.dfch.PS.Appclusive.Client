@@ -79,7 +79,7 @@ function Import-Product {
 
         try
         {
-            $r = New-Object System.Collections.ArrayList($null);
+            $ImportProduct_r = @();
 
 	        $instance = New-Object $Class;
 	        Contract-Assert (!!$instance)
@@ -93,9 +93,10 @@ function Import-Product {
                 return;
             }
         
-            RecursivelyImportProducts $entityType;
+            $null = RecursivelyImportProducts $entityType;
 
-	        $OutputParameter = $null;
+            write-host ("OUT: {0}" -f ($ImportProduct_r | out-string));
+	        $OutputParameter = Format-ResultAs $ImportProduct_r $As;
             $fReturn = $true;
         }
         catch
@@ -115,7 +116,6 @@ function Import-Product {
         return $OutputParameter;
     }
     # End
-
 }
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Product; } 
@@ -128,7 +128,7 @@ function RecursivelyImportProducts([Type] $entityKindType, [System.Collections.A
     }
     
     # import EntityKind (incl. all stuff)
-    Import-EntityKind $entityKindType;
+    $null = Import-EntityKind $entityKindType;
 
     # remember we imported it.
     $importedEntityKinds.Add($entityKindType);
@@ -139,44 +139,33 @@ function RecursivelyImportProducts([Type] $entityKindType, [System.Collections.A
     
     foreach ($provide in $provides)
     {
-        Write-Host ("  Searching For Children for {0}" -f $provide.Name);
         $children = RequiresInterface $possibleImports $provide.Name $importedEntityKinds;
         
         foreach ($child in $children)
         {
-            RecursivelyImportProducts $child $importedEntityKinds;
+            $null = RecursivelyImportProducts $child $importedEntityKinds;
         }
     }
 }
 
 function Import-EntityKind([Type] $entityType)
 {
-    Write-Host ("    Importing {0}" -f $entityType.FullName);
+    Log-Info ("Importing {0}" -f $entityType.FullName);
 
     $instance = New-Object $entityType;
     Contract-Assert (!!$instance)
 
-    $entityKind = Get-ApcEntityKind -Version $entityType.FullName;
-        
-    if (-not $entityKind)
-    {
-        $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
-		$svc.Core.AddToEntityKinds($entityKind);
-
-        $entityKind.Name = ("{0}.{1}" -f $entityType.Namespace.Substring(0, $entityType.Namespace.LastIndexOf(".")), $entityType.Name);
-        $entityKind.Version = $entityType.FullName;
-    }
+    $entityKind = CreateOrGetEntityKind $entityType.FullName;
 
     $entityKind.Parameters = $instance.GetStateMachine().ToString();
-    $svc.Core.SaveChanges();
-    $r.Add($entityKind);
+    $null = $svc.Core.SaveChanges();
+
+    $null = Import-DataType -FQCN $entityType.FullName -svc $svc -RecreateIfExist -Confirm:$false;
 
     $connectors = CreateOrUpdateConnectors $entityKind $entityType;
-    # Import-DataType -FQCN $entityKind.Version -svc $svc -RecreateIfExist -Confirm:$false;
-
-    HandleAppclusiveProductAttribute $entityKind $entityType;
-    HandleIconAttribute $entityKind $entityType;
-    ImportEntityKindTransitionAction $instance $entityType;
+    $null = HandleAppclusiveProductAttribute $entityKind $entityType;
+    $null = HandleIconAttribute $entityKind $entityType;
+    $null = ImportEntityKindTransitionAction $instance $entityType;
 }
 
 function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
@@ -203,7 +192,6 @@ function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $
         }
 
         $existingConnector.Multiplicity = $shouldConnector.Multiplicity;
-
         $null = $finalConnectors.Add($existingConnector);
     }
 
@@ -228,8 +216,6 @@ function ImportEntityKindTransitionAction([biz.dfch.CS.Appclusive.Public.Configu
     {
         $transitionName = $transition.Transition;
 
-        Write-Host ("    Importing Action:{0}" -f $transition.Transition);
-
         $transitionType = $null;
         [Type] $currentType = $entityKindType;
         $transitionType = $currentType.GetNestedType($transitionName);
@@ -241,8 +227,32 @@ function ImportEntityKindTransitionAction([biz.dfch.CS.Appclusive.Public.Configu
         }
 
         Contract-Assert ($transitionType -ne $null);
-        Write-Host $transitionType;
+
+        Log-Info ("Adding Transition {0}" -f $transitionType.FullName);
+        $entityKind = CreateOrGetEntityKind $transitionType;
+
+        $null = Import-DataType $transitionType.FullName -svc $svc -RecreateIfExist -Confirm:$false;
     }
+}
+
+function CreateOrGetEntityKind([Type] $entityType)
+{
+    $entityKind = Get-EntityKind -Version $entityType.FullName -svc $svc;
+
+    if (-not $entityKind)
+    {
+        $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
+		$null = $svc.Core.AddToEntityKinds($entityKind);
+
+        $entityKind.Name = ("{0}.{1}" -f $entityType.Namespace.Substring(0, $entityType.Namespace.LastIndexOf(".")), $entityType.Name);
+        $entityKind.Version = $entityType.FullName;
+        $null = $svc.Core.SaveChanges();
+    }
+
+    $ImportProduct_r += $entityKind;
+    write-host ("Added {0}" -f $entityKind);
+
+    return $entityKind;
 }
 
 function GetInterfaceIdByName([string] $name)
@@ -292,7 +302,7 @@ function HandleIconAttribute([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entit
         $name = ("Icon-{0}" -f $IconAttribute.Type);
         $value = ("picto-{0}" -f $IconAttribute.Name);
 
-        Set-KeyNameValue -Key $key -Name $name -Value $value -svc $svc -CreateIfNotExist;
+        $null = Set-KeyNameValue -Key $key -Name $name -Value $value -svc $svc -CreateIfNotExist;
     }
 }
 
@@ -305,7 +315,7 @@ function GetPossibleImports([Type] $entityKindType)
     foreach ($type in $types)
     {
         $isOfEntityKindBaseDtoType = $baseEntityKindInterface.IsAssignableFrom($type);
-        if ($isOfEntityKindBaseDtoType)
+        if ($isOfEntityKindBaseDtoType -and -not $type.IsAbstract)
         {
             $null = $list.Add($type);
         }
