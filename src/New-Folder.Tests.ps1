@@ -22,10 +22,10 @@ Describe "New-Folder" -Tags "New-Folder" {
 	
 		Context "New-Folder" {
         BeforeEach {
-            $moduleName = 'biz.dfch.PS.Appclusive.Client';
-            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-            Import-Module $moduleName;
-            $svc = Enter-Appclusive;
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-Appclusive;
         }
 		
 		AfterEach {
@@ -56,12 +56,38 @@ Describe "New-Folder" -Tags "New-Folder" {
 			
 			# Act
 			$result = New-Folder -svc $svc -Name $name;
-			Write-Host ($result | out-string);
+			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.Id | Should Not Be 0;
 		}
+		
+		It "New-Folder-CreateDuplicateShouldFail" -Test {
+			# Arrange
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = New-Folder -svc $svc -Name $name;
+			
+			try
+			{
+				$result1 = New-Folder -svc $svc -Name $name;
+			}
+			catch [System.Exception]
+			{
+				$_.CategoryInfo.Reason | Should be 'RuntimeException';
+				$_.Exception -is [System.Management.Automation.RuntimeException] | Should be $true;
+			}
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.Id | Should Not Be 0;
+			$result1 | Should Be $null;
+		}
+		
+		
 	}
 }
 
