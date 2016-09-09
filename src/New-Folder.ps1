@@ -7,40 +7,43 @@ Creates a folder entry in Appclusive.
 .DESCRIPTION
 Creates a folder entry in Appclusive.
 
-You must specify all four parameters 'Name', 'NodeId', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
+You must specify parameter 'Name'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
-[biz.dfch.CS.Appclusive.Api.Core.ExternalNode]
+[biz.dfch.CS.Appclusive.Api.Core.Folder]
 
 
 .EXAMPLE
-New-ApcExternalNode -Name "Arbitrary Name" -NodeId 42 -ExternalType ArbitraryType -ExternalId "http://example.com/api/items/1"
+New-Folder -svc $svc -Name TestItem
 
-NodeId       : 42
-ExternalType : ArbitraryType
-ExternalId   : http://example.com/api/items/1
-Id           : 61059
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : Arbitrary Name
-Description  :
-CreatedById  : 1
-ModifiedById : 1
-Created      : 22.08.2016 09:27:39 +02:00
-Modified     : 22.08.2016 09:27:39 +02:00
-RowVersion   : {0, 0, 0, 0...}
-Node         :
-Properties   : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
+EntityId       :
+Parameters     : {}
+EntityKindId   : 28
+ParentId       : 1
+Id             : 79780
+Tid            : 11111111-1111-1111-1111-111111111111
+Name           : TestItem
+Description    :
+CreatedById    : 1
+ModifiedById   : 1
+Created        : 09.09.2016 13:31:36 +02:00
+Modified       : 09.09.2016 13:31:36 +02:00
+RowVersion     : {0, 0, 0, 0...}
+EntityKind     :
+Parent         :
+Children       : {}
+IncomingAssocs : {}
+OutgoingAssocs : {}
+Tenant         :
+CreatedBy      :
+ModifiedBy     :
 
-Create a new ExternalNode entry if it not already exists.
+Create a new Folder entry if it not already exists.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ExternalNode/
-Set-ExternalNode: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ExternalNode/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Folder/
 
 
 .NOTES
@@ -53,7 +56,7 @@ See module manifest for dependencies and further requirements.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-ExternalNode/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Folder/'
 )]
 Param 
 (
@@ -66,15 +69,15 @@ Param
 	[Parameter(Mandatory = $false)]
 	[string] $Description
 	,
-	# Specifies the parent Id for this entity
+	# Specifies the parent Id for this entity, default is the root folder
 	[Parameter(Mandatory = $false)]
 	[Alias("pid")]
-	[hashtable] $ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
+	$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 	,
 	# Specifies the parameters for this entity
 	[Parameter(Mandatory = $false)]
 	[Alias("p")]
-	[hashtable] $Parameters = @{}
+	$Parameters = '{}'
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -135,7 +138,7 @@ End
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ExternalNode; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Folder; } 
 
 # 
 # Copyright 2014-2015 d-fens GmbH
