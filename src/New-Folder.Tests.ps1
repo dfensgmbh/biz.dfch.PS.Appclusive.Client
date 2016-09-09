@@ -87,7 +87,29 @@ Describe "New-Folder" -Tags "New-Folder" {
 			$result1 | Should Be $null;
 		}
 		
-		
+		It "New-Folder-CreateInSelectedFolder" -Test {
+			# Arrange
+			$name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$folder1 = New-Folder -svc $svc -Name $name1;
+			$folder2 = New-Folder -svc $svc -Name $name2 -ParentId $folder1.Id;
+			Write-Host ($folder1 | out-string);
+			Write-Host ($folder2 | out-string);
+
+			# Assert
+			$folder1 | Should Not Be $null;
+			$folder1.Name | Should Be $name1;
+			$folder1.Id | Should Not Be 0;
+			$folder2 | Should Not Be $null;
+			$folder2.Name | Should Be $name2;
+			$folder2.Id | Should Not Be 0;
+			$folder2.ParentId | Should Be $folder1.Id;
+			
+			#remove child folder otherwise cleanup won't work
+			Remove-ApcEntity -svc $svc -id $folder2.Id -EntitySetName "folders" -Confirm:$false;
+		}
 	}
 }
 
