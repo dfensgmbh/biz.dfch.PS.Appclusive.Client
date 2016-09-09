@@ -152,6 +152,10 @@ function RecursivelyImportProducts([Type] $entityKindType, [System.Collections.A
 function Import-EntityKind([Type] $entityType)
 {
     Write-Host ("    Importing {0}" -f $entityType.FullName);
+
+    $instance = New-Object $entityType;
+    Contract-Assert (!!$instance)
+
     $entityKind = Get-ApcEntityKind -Version $entityType.FullName;
         
     if (-not $entityKind)
@@ -172,6 +176,7 @@ function Import-EntityKind([Type] $entityType)
 
     HandleAppclusiveProductAttribute $entityKind $entityType;
     HandleIconAttribute $entityKind $entityType;
+    ImportEntityKindTransitionAction $instance $entityType;
 }
 
 function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
@@ -215,6 +220,29 @@ function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $
     $null = $svc.Core.SaveChanges();
 
     return $finalConnectors;
+}
+
+function ImportEntityKindTransitionAction([biz.dfch.CS.Appclusive.Public.Configuration.IEntityKindBaseDto] $instance, [type] $entityKindType)
+{
+    foreach ($transition in $instance.GetStateMachine())
+    {
+        $transitionName = $transition.Transition;
+
+        Write-Host ("    Importing Action:{0}" -f $transition.Transition);
+
+        $transitionType = $null;
+        [Type] $currentType = $entityKindType;
+        $transitionType = $currentType.GetNestedType($transitionName);
+
+        while ($transitionType -eq $null -and $currentType.BaseType -ne $null)
+        {
+            $currentType = $currentType.BaseType;
+            $transitionType = $currentType.GetNestedType($transitionName);
+        }
+
+        Contract-Assert ($transitionType -ne $null);
+        Write-Host $transitionType;
+    }
 }
 
 function GetInterfaceIdByName([string] $name)
