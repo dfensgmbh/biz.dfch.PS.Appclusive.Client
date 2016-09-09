@@ -119,9 +119,10 @@ Process
 	
 	$q = "EntityKindId eq {0}" -f $entityKind.Id;
 	$dataTypes = $svc.Diagnostics.DataTypes.AddQueryOption('$filter', $q) | Select;
+
 	if ($PSBoundParameters.ContainsKey('RecreateIfExist'))
 	{
-		$null = $dataTypes | Remove-Entity -svc $svc -Confirm:$Confirm;
+		$null = $dataTypes | Remove-Entity -svc $svc;
 		$dataTypes = @();
 	}
 
