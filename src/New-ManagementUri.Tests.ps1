@@ -10,11 +10,11 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 	. "$here\$sut"
 	. "$here\Set-ManagementUri.ps1"
 	. "$here\Set-ManagementCredential.ps1"
+	. "$here\Get-ManagementCredential.ps1"
 	. "$here\Format-ResultAs.ps1"
 	
 	$entityPrefix = "New-ManagementUri";
 	$usedEntitySets = @("ManagementUris", "ManagementCredentials");
-	
 
 	Context "New-ManagementUri" {
 	
@@ -24,6 +24,10 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
+			
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
+			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 		}
 		
 		AfterAll {
@@ -49,9 +53,7 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 
 		It "New-ManagementUri-ShouldReturnNewEntityWithProvidedValue" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
+			# N/A
 			
 			# Act
 			$result = New-ManagementUri -svc $svc -Type $type -Name $name -Value $value;
@@ -66,9 +68,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 
 		It "New-ManagementUriWithDescription-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
@@ -85,10 +84,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 
 		It "New-ManagementUriWithManagementCredential-ShouldReturnNewEntityReferencingProvidedManagementCredential" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
-			
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 
@@ -108,9 +103,6 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 		
 		It "New-ManagementUriWithDescripionAndWithManagementCredentialId-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
@@ -131,15 +123,29 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$result.ManagementCredentialId | Should Be $managementCredential.id;
 		}
 		
-		It "New-ManagementUri-ShouldThrowContractException" -Test {
+		It "New-ManagementUri-WithAlreadyExistingManagementUriNameShouldThrowContractException" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
+			# N/A
 			
 			# Act/Assert
 			$result = New-ManagementUri -svc $svc -Type $type -Name $name -Value $value;
 			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value } | Should ThrowErrorId 'Contract'; 
+		}
+		
+		It "New-ManagementUri-WithInvalidManagementCredentialIdShouldThrowArgumentException" -Test {
+			# Arrange
+			# N/A
+			
+			# Act/Assert
+			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId 0 } | Should ThrowErrorId 'Argument';
+		}
+		
+		It "New-ManagementUri-WithNotExistingManagementCredentialIdShouldThrowContractException" -Test {
+			# Arrange
+			$notExistingManagementCredentialId = [long]::MaxValue;
+			
+			# Act/Assert
+			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $invalidManagementCredentialId } | Should ThrowErrorId 'Contract';
 		}
 	}
 }

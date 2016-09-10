@@ -99,6 +99,7 @@ Param
 	# Specifies the ManagementCredential to modify
 	[Parameter(Mandatory = $false)]
 	[Alias('m')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $ManagementCredentialId
 	,
 	# Specifies the value to modify

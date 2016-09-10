@@ -290,7 +290,7 @@ Process
 		$Exp = @();
 		if($PSCmdlet.ParameterSetName -eq 'id')
 		{
-			$Exp += ("Id eq {0}" -f $Id);
+			$Exp += ("Id eq {0}L" -f $Id);
 		}
 		if($Name) 
 		{ 
@@ -306,7 +306,7 @@ Process
 		}
 		if($NodeId) 
 		{ 
-			$Exp += ("NodeId eq {0}" -f $NodeId);
+			$Exp += ("NodeId eq {0}L" -f $NodeId);
 		}
 		if($CreatedBy) 
 		{ 
@@ -316,7 +316,7 @@ Process
 				# User not found
 				return;
 			}
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("(CreatedById eq {0}L)" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
@@ -326,7 +326,7 @@ Process
 				# User not found
 				return;
 			}			
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			$Exp += ("(ModifiedById eq {0}L)" -f $ModifiedById);
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 	
@@ -359,7 +359,7 @@ Process
 				{
 					if ( $item )
 					{
-						$Response_ = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', 'ExternaldNodeId eq {0}' -f $item.Id);
+						$Response_ = $svc.Core.ExternalNodeBags.AddQueryOption('$filter', 'ExternaldNodeId eq {0}L' -f $item.Id);
 						$null = $ResponseTemp.Add($Response_);
 					}
 				}
@@ -544,15 +544,15 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-ExternalNode; }
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgyNDE1NTQwN1owIwYJKoZIhvcNAQkEMRYEFITcC9zfOH+KluBNhNv6aIPPodqw
+# MDgzMTE5MTY0MVowIwYJKoZIhvcNAQkEMRYEFITcC9zfOH+KluBNhNv6aIPPodqw
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCbfoNEO/6bbpg+V7ap
-# aWsazOzFVUutcMQ3SnUaCW0UM/+OlxOkxlZ4cTpTEQsCJsPwm1VZE1TX07G6hOwv
-# dMcP/QVy+2xavDSK8fBEASiaxlvx436pyLJ63IooZTUO/kZKbg/t9N3D4Sd4rtrl
-# 21iPRh4P8Uv2FlUUiasn4gGedeWHS/i4TplLEwg9F74snds0CWQQdTSChPQmdN7X
-# Yl5lIlpsSIX98n/N/djaFQyHF0PyP+OCb/dgH59f7jNxrylHUc5cSEeLVADhgydh
-# QsNGumntw2ALZcC+DCGqWqsow1Kfw+DGdqXqTAxOQDvf4uM3gRwoszL9o1zNY2wc
-# Ls7V
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCioh2XOsCOS1dOBvGW
+# ipCGrZXarpBbsEtc1jNYGyqhJ5/PBSWvYkmQ6HZHYS3Wmwd/pbzq6G5LnZkBfp00
+# ZIQzEssC6WI92uaHXLA+G8PGQJfL8wXQE6fltRyK9KERSQO3OstusWWokNB2FJ9X
+# e841gs8by/C7iGvKq68JffTuzWmD3laEhlwGArLhYinzgH3Ct4lqYsHMdsEJkZiT
+# VRnyY4lxwdJ+iULlClsacxuVpAqzvaGMdaboPhbbCxFtYR2R3hIa9S+b96rhaJe3
+# TmoOLw3yVuc/rCg5rMB2nn4sXTGwjWzZdABwj3TwLtXNPOXWnicds9SS1dBozux0
+# tebs
 # SIG # End signature block

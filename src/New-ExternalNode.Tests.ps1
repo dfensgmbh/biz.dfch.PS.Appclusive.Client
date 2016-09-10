@@ -1,127 +1,121 @@
-function New-Connector {
-<#
-.SYNOPSIS
-Creates an Connector entry in Appclusive.
-.DESCRIPTION
-Creates an Connector entry in Appclusive.
-You must specify a Name, InterfaceId and EntityKindId.
-.OUTPUTS
-default | json | json-pretty | xml | xml-pretty
-.EXAMPLE
-.LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Connector/
-Set-Connector: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Connector/
-.NOTES
-See module manifest for dependencies and further requirements.
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Connector/'
-)]
-Param 
-(
-	# Specifies the new name name
-	[Parameter(Mandatory = $true)]
-	[string] $Name
-    ,
-	# Specifies the description
-	[Parameter(Mandatory = $true)]
-	[long] $InterfaceId = 1
-	,
-	# Specifies the description
-	[Parameter(Mandatory = $true)]
-	[long] $EntityKindId = 1
-	,
-	# Specifies the description
-	[Parameter(Mandatory = $false)]
-	[string] $Description
-	,
-	# Service reference to Appclusive
-	[Parameter(Mandatory = $false)]
-	[Alias('Services')]
-	[hashtable] $svc = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Services
-	,
-	# Specifies the return format of the Cmdlet
-	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
-	[Parameter(Mandatory = $false)]
-	[alias('ReturnFormat')]
-	[string] $As = 'default'
-)
 
-Begin 
-{
-	trap { Log-Exception $_; break; }
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-	$datBegin = [datetime]::Now;
+Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 
-    $entitySetName = "Connectors";
-
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
-
-	# Parameter validation
-	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-}
-# Begin
-
-Process
-{
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
-
-	$Exp = @();
-	if($Name) 
-	{ 
-		$Exp += ("(Name eq '{0}')" -f $Name);
-	}
-
-	$FilterExpression = [String]::Join(' and ', $Exp);
-	$entity = $svc.Core.$entitySetName.AddQueryOption('$filter',$FilterExpression).AddQueryOption('$top', 1);
-
-	if ($entity)
-	{
-		$msg = "{0}: Parameter validation FAILED. Entity with Name '{1}' already exists." -f $entitySetName,$Name;
-		Log-Error $fn $msg;
-		$e = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
-		throw($gotoError);
-	}
+	Mock Export-ModuleMember { return $null; }
 	
-	if($PSCmdlet.ShouldProcess($Name))
-	{
-		if($PSBoundParameters.ContainsKey('Description'))
-		{
-			$r = Set-Connector -Name $Name -InterfaceId $InterfaceId -EntityKindId $EntityKindId -Description $Description -CreateIfNotExist -svc $svc -As $As;
-		}
-		else
-		{
-			$r = Set-Connector -Name $Name -InterfaceId $InterfaceId -EntityKindId $EntityKindId -CreateIfNotExist -svc $svc -As $As;
+	. "$here\$sut"
+	. "$here\Get-Job.ps1"
+	. "$here\Get-Node.ps1"
+	. "$here\Get-EntityKind.ps1"
+	. "$here\Get-Tenant.ps1"
+	. "$here\Set-ExternalNode.ps1"
+	. "$here\Set-Node.ps1"
+	. "$here\New-Node.ps1"
+	. "$here\Format-ResultAs.ps1"
+	
+	$entityPrefix = "New-ExternalNode";
+	$usedEntitySets = @("ExternalNodes", "Nodes");
+
+	Context "New-ExternalNode" {
+		
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+			
+			$nodeName = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$currentTenant = Get-Tenant -Current -svc $svc;
+			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
+
+			$testNode = New-Node -svc $svc -Name $nodeName -ParentId $currentTenant.NodeId -EntityKindId $entityKindId;
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$externalType = "ExternalType-{0}" -f [guid]::NewGuid().ToString();
+			$externalId = "ExternalId-{0}" -f [guid]::NewGuid().ToString();
 		}
 		
-		$OutputParameter = $r;
-	}
+		AfterAll {
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+			write-host $entityFilter;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+				write-host $entitySet;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
 	
-	$fReturn = $true;
-}
-# Process
+		# Context wide constants
+		# N/A
+		it "Warmup" -Test {
+			$true | Should Be $true;
+		}
 
-End 
-{
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	# Return values are always and only returned via OutputParameter.
-	return $OutputParameter;
-}
-# End
+		It "New-ExternalNode-ShouldReturnNewEntity" -Test {
+			# Arrange
+			# N/A
+			
+			# Act
+			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId;
 
+			# Assert
+			$result.Id | Should Not Be 0;
+			$result.Name | Should Be $name;
+			$result.NodeId | Should Be $testNode.Id;
+			$result.ExternalType | Should Be $externalType;
+			$result.ExternalId | Should Be $externalId;
+		}
+
+		It "New-ExternalNodeWithDescription-ShouldReturnNewExternalNode" -Test {
+			# Arrange
+			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId -Description $description;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.Description | Should Be $description;
+		}
+		
+		It "New-ExternalNode-WithInvalidNodeIdShouldThrowsArgument" -Test {
+			# Arrange
+			# N/A
+			
+			# Act/Assert
+			{ $result = New-ExternalNode -svc $svc -Name $Name -NodeId 0 -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Argument';
+		}
+
+		It "New-ExternalNodeWithDuplicate-ShouldThrowsContractException" -Test {
+			# Arrange
+			# N/A
+			
+			# Act/Assert
+			$result = New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId;
+			{ New-ExternalNode -svc $svc -Name $Name -NodeId $testNode.Id -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Contract';
+		}
+		
+		It "New-ExternalNode-WithNonExistingNodeIdShouldThrowsContractException" -Test {
+			# Arrange
+			$nonExistingNodeId = [long]::MaxValue;
+
+			# Act/Assert
+			{ New-ExternalNode -svc $svc -Name $Name -NodeId $nonExistingNodeId -ExternalType $externalType -ExternalId $externalId } | Should ThrowErrorId 'Contract';
+		}
+	}
 }
 
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Connector; } 
- 
 #
 # Copyright 2016 d-fens GmbH
 #
@@ -141,8 +135,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Connector; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUBK86lmzOlwCDoB6Xq4JmM2+g
-# s5egghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZrYmXh2oLHFNE6HLJOewqmHg
+# iBygghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -241,26 +235,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-Connector; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTErHEfVbirWqhp
-# 5p9Jeu/6VzFuyzANBgkqhkiG9w0BAQEFAASCAQBZPp2bJZOzAy+uKiGrppjTpUfy
-# 1LZwM0f5LGB8iFQMeYpTb8oU4KyrJklAJyDw5wSY5MqywuCtHZQQgoku2LZCS2oF
-# OJjUjeogZZFgXdteNN4eW/8o9q8oVgoBszwhqWctdZBEmu3jK3vqbMmtYx95Rf4w
-# m+zWEj7oBIjNLVoMM1C9GRiCVO6SNxq9UVdelWnpGK11MlufR9vK36jp0peoRP3R
-# rSwtTguTARjLK0rZehKZgJ8MW7Sn18P8LzBCaPl5VaefhNW87Mg3TRKaDUV91s6y
-# sbtjd3eTf0MtCyFX+Pssi4EprCRJf3t3NAnli8ISdNPdmis84WDzC8zsur9xoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT6+9kgMwLbCuzC
+# xNZGznwZyZaxXTANBgkqhkiG9w0BAQEFAASCAQCti3GBRnp3tGRz7+ZI3m+df+OM
+# cKJ+CUKOSwFrQ2JQCSBkjchQHfwFGoa9zGQh17na+R/Y64skhL6f1IZw838919Qy
+# WbXLRhmlGFBeiwb/JcC79KgJOJ95izMC7hDFrOfkaTFiLHYe02m1a9ud1ay7DBQv
+# UUjm64ToQPAAVBJK3CZxFXeHyzpqukNMO2QskEmMXxVbQzqfYwtN83Uar7HRi1T8
+# yG9xR10Hd3jmaKjGFFNCY3hc24qQ4ZikQVRB+fliXemz1B62HiVKsIi8BXanoSD+
+# 4QBVCLr3p4MEEdqH3lf1Lo+Yr0nRCgIWSd6aZ+zuuiIAfnLVjz1hLa5JC0oQoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMTE5MTY1MlowIwYJKoZIhvcNAQkEMRYEFKuiUV7MTmlbgKDQ/lolwTMBF7ZS
+# MDgzMTE5MTY1M1owIwYJKoZIhvcNAQkEMRYEFBN5bBFm5mcAdXQJyb13cDAZrwco
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBpnpFJQdDTzjyjj9gf
-# Pteb5nZMZcJ6X2di4nZw5EdzizlXbFn51zbvIPUDmyvDPlAKCFpYG757XqlOl28W
-# Sc226fWPVdyKv6Se6+AtqZm1/T9Secb0Q6qW7sqmswsU28ubkRhwHyaXy/EXogJD
-# Enn3h9BR7zNpsrNttPoTH//Z6kbPBVSeu3A04bz3/WMo6xGRHxTNQES7YvzNch5q
-# /98dRArJKx3QYCpXnHAJenjc/ns9/M4UBaaJwOhsokPC+FEFqVx9VPRjATef0sZj
-# DBHy0CX8WrUqZDgQQObjMPR+fcLXvwRIuMw5/PtBJJFcyBpJgG0RRaBNOZZwCmEB
-# l2a2
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCi1P+scCsfNXfuJNvX
+# BZi7PJ9pFilgn1rMzF+vWMcHP3XCdI2dQy2i5KUdNmmzFGyVTUrfTvFJye8SFGPq
+# 6y7p0zaJA1POrN7vkEZYLcjJnWqHogys7tpRoAWe5ZErKYeO0tf8HgOzizmFnwhR
+# 2I+8wqPiHgZAH+KLYZsr9lDEtV2tYikp4mxGMtjv7Hptrje5njpBoX9cc5oyH3mJ
+# C1aIcZYgTI1vP8C6+3FlUvlDD1RLeQu/FkGUy9nMKkJldWDXpm+8zhH5tSDTO7TW
+# gI5IuX3cxhZ8gf0RbTFLfsBd96MUjgGUai+PR/9xB6I28FxOvOs2uFurZEfviQ1s
+# +Y+q
 # SIG # End signature block

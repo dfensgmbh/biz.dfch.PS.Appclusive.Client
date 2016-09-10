@@ -64,6 +64,7 @@ Param
 	,
 	# Specifies the Node id for this entity
 	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateRAnge(1, [long]::MaxValue)]
 	[long] $NodeId
 	,
 	# Specifies the External id for this entity
@@ -114,17 +115,17 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$ExternalNodeContents = @($Name);
-	$Exp = @();
-	$Exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$Exp += "(tolower(ExternalId) eq '{0}')" -f $ExternalId.toLower();
-	$Exp += "(NodeId eq {0})" -f $NodeId;
-	$FilterExpression = [String]::Join(' and ', $Exp);
+	$externalNodeContents = @($Name);
+	$exp = @();
+	$exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
+	$exp += "(tolower(ExternalId) eq '{0}')" -f $ExternalId.toLower();
+	$exp += "(NodeId eq {0}L)" -f $NodeId;
+	$FilterExpression = [String]::Join(' and ', $exp);
 	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 	
 	Contract-Assert (!$entity) 'Entity does already exist';
 
-	if($PSCmdlet.ShouldProcess($ExternalNodeContents))
+	if($PSCmdlet.ShouldProcess($externalNodeContents))
 	{
 		$r = Set-ExternalNode @PSBoundParameters -CreateIfNotExist:$true;
 		$OutputParameter = $r;
@@ -275,15 +276,15 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ExternalNode; }
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgyNDE1NTQxOVowIwYJKoZIhvcNAQkEMRYEFGmKGwC5XH2FSmRG5MsI4mq1tSBl
+# MDgzMTE5MTY1MlowIwYJKoZIhvcNAQkEMRYEFGmKGwC5XH2FSmRG5MsI4mq1tSBl
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCrYqQatNtbgLpN85P5
-# vG3krjkAzAAKFounIsSw8EvlWHfa3FmqHZ3MP/xt9yI2GNGV8GplOsbxCQEil+0J
-# FAqH3kDIn0VR/+wsM/WwRqeVVXm2wULVXUseM8Va083AMMNaTW3TF7fQDF7bA+aV
-# 0mgWkBULl2QiXV2iL+2lIi0lZk6c56PKlj1Loa1wAes78/+DqwYHgImHzDNPCFL2
-# kHr2keucRvV7uQyHKJSbUxBxlRII4UOTdfEZLVZ44Z73ew+QvZHV91uR2c5aREom
-# vTPMaczb05pnmjoak8wiFF8HuPZXP3lMsVLUbyw2KjtYbxCbO9rbJ8GgtLJGRQco
-# N/oB
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBCjh+Hoau0CDJIwSYZ
+# Kypv358DUlYv3Esaw6CbYGremt9t2/vDTpN4ChWu5cuLpM+u3VTpFLguhqmGL7Ae
+# ejk4sAvmlLOqoD+bWAruJ4kMts130WA0VsCI4/atrya8mdRWodH0Lp644TVhfrcv
+# arj3OopS0PAFdfcRTNadj6CeuQArpMpjlvTapaHTqqOyO6CfFBSkLw2O7bYhcymm
+# YO/T3Ory7E5DS4TI7Euo0P6PDdWCEHm+Ys2s8XsCLWof1FEJRB7cE+IudmB8Csf+
+# 4P5N1+s7AgJqMztXAUWNinuUKGxDMffD1AVkPp686LKJPda/072XGeop9oo0yq7d
+# f+te
 # SIG # End signature block

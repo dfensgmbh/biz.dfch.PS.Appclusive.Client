@@ -8,6 +8,7 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-ManagementCredential.ps1"
 
 	$entityPrefix = "Set-ManagementUri";
 	$usedEntitySets = @("ManagementUris");
@@ -19,6 +20,10 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
+
+			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$type = "type-{0}" -f [guid]::NewGuid().ToString();
+			$value = "value-{0}" -f [guid]::NewGuid().ToString();
 
 			$svc = Enter-ApcServer;
 		}
@@ -43,9 +48,7 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 
 		It "Set-ManagementUri-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "value-{0}" -f [guid]::NewGuid().ToString();
+			# N/A
 			
 			# Act
 			$result = Set-ManagementUri -svc $svc -Name $name -Type $type -Value $value -CreateIfNotExist;
@@ -59,9 +62,6 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 		
 		It "Set-ManagementUri-ShouldReturnNewEntityWithDescription" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
@@ -74,13 +74,9 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 
 		It "Set-ManagementUriWithNewValueAndDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
 			
-			$value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			
 			$result1 = Set-ManagementUri -svc $svc -Name $name -Description $description -Value $value -Type $type -CreateIfNotExist;
@@ -97,9 +93,6 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 		
 		It "Set-ManagementUriWithNewNameAndType-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$type = "Type-{0}" -f [guid]::NewGuid().ToString();
-			
 			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$newType = "NewType-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -112,6 +105,14 @@ Describe "Set-ManagementUri" -Tags "Set-ManagementUri" {
 			$result | Should Not Be $null;
 			$result.Name | Should Be $newName;
 			$result.Type | Should Be $newType;
+		}
+		
+		It "Set-ManagementUri-WithNotExistingManagementCredentialIdShouldThrowContractException" -Test {
+			# Arrange
+			$notExistingManagementCredentialId = [long]::MaxValue;
+			
+			# Act/Assert
+			{ Set-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $invalidManagementCredentialId } | Should ThrowErrorId 'Contract';
 		}
 	}
 }

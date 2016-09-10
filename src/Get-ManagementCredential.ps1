@@ -114,6 +114,7 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'list'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
 PARAM 
 (
 	# Specifies an reference object of the entity
@@ -258,7 +259,7 @@ Process
 		$Exp = @();
 		if($PSCmdlet.ParameterSetName -eq 'id')
 		{
-			$Exp += ("Id eq {0}" -f $Id);
+			$Exp += ("Id eq {0}L" -f $Id);
 		}
 		if($Name) 
 		{ 
@@ -272,7 +273,7 @@ Process
 				# User not found
 				return;
 			}
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("(CreatedById eq {0}L)" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
@@ -282,7 +283,7 @@ Process
 				# User not found
 				return;
 			}			
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			$Exp += ("(ModifiedById eq {0}L)" -f $ModifiedById);
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 	
@@ -384,8 +385,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-ManagementCrede
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUra0yAWZYsmuzMv1PSxokDJBF
-# 3mKgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKFjRh8cMqoABxYyPFibuwR50
+# 2yKgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -484,26 +485,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-ManagementCrede
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSfLnr/IpOOuX/q
-# MPz9+IsoRQmM8zANBgkqhkiG9w0BAQEFAASCAQBGfkAGLHtexEbC4jD2TI31IYQF
-# 3Pxr5Ls5sIMG9J7Uy1QeLPbSnh+HWgYsCOl4sBLyYyDu66eMYGRRQ9dpo9L50gWt
-# QNpj0e96CPDna/keEYA5/yH3DeHpJwYN4pvWu8zRsO8z0OvO6TSmFn66DOAQHkfj
-# SE1w5EMoi7K3lrGqozAnUkY9loBVuoGvPqqLEpsn92LNKt1NB54At+gfgwamFjk+
-# AUN9EemVkPCqa9bfPItK41ZDBj7XZZahKH/ba7Kd6q+WwHtkatSIRWfwGhyv/FBp
-# kLo7bFV3IFXZDpi/QO7XMmnwEJLNzl30UNJ5XQJkbKjEvqn8uk/pJiz9WPGCoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTlmC2SCf93c5Rj
+# nxIqe3xTUv/Y8jANBgkqhkiG9w0BAQEFAASCAQAQ2cDuOgA0LeJTu+mmufxAblGI
+# 0XcsyuFQcpopXg0oOxW1rfF6g4T6vQRQ1q/0tpeX2DKHOXQI2upoDJPcBIzpQg5x
+# 3Vbl8Oo6YtFzGZlAMw43yA/trMtMX0c1NGDE2jclTcir2eSH3BMYgnfOukALnjNB
+# SOKux6swsk1DZnmikJoLt79q7YQg20dvuecm2Iq7EX4UkVQQd7TXBLp3JnoUUHab
+# Cb7yN7Wt8UKrRBGO/G7+li0mU0DL4gl/bA0ZFMftCMjSE5lWagToMVMpNFrqzl9W
+# 42jSjp4dHm2tcBkx4ZrXHTehkIg35QbXx99w+nMZXtb4SaTGyCcdGV06zNvAoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgyNDE1NTQxMFowIwYJKoZIhvcNAQkEMRYEFPevGL2X5w7b5o8/Ho23d9Pza4Ey
+# MDgzMTE5MTY0M1owIwYJKoZIhvcNAQkEMRYEFI9/R1s8dRnBX1ax83bZrbupkkN2
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCBJ0tVXY1qGNTnQCnH
-# O4VGrdZA1Vo+NR89lFsM1+Vi3W5CmsR+Ka6EWRE8SlSHsq8v9GgxyzFANuj7u2qe
-# g2JLDf3UQZkkBvzTeldcpX6uIGinLeotvzwjuKOSaE0xmm3vOKLjqzwIFXIIg4GM
-# mjaf65ESUzPllI6vVmsd43qzcVIOhI5H4oggGNLEFkIuO3DNF45djqUCICWud4tr
-# Pmr8OoJOpbBAhN11W3Id0UZchjKYl8E3vqv4P1O23DugjBMdSRUA0MWFKFKY2IPB
-# 5V6WPnEnQ+xGiVex/P2rNrR6oqWI6fyjsA5GyLcM03C4g1nQSGjnU9mjy7Q2iTT1
-# HEm5
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBWCSDK0SyvOhO/nGs4
+# 9FCX7PVMYHlJCUTy2EF+0a9VTqyR49Gjk+Jm97f3Bvk6y9tjxhsaS4dxXx6UZdGu
+# SvlBy+PzSlQjx9b2NNKR7oT2ETmom3eacxQRcW7QCOijBFdq8Eot2lmvYjULMm9/
+# j4nMGPl8IAkmM4+YMsdOq57BTfQqMapCzZAHvw9Crve623xpc+oUPrIZNldDG+IW
+# h12Qj7ZPJVEEg25nAaKaSctQDIp4z6fVGC+ettqqCV+renLmaQhMJafX9LADxnYW
+# riFZpaODU2bWsyogmjHzAmSublzK0NpjYuEO8PYb7oOnFQk4/ZblHivXpLzUj1jA
+# yuDu
 # SIG # End signature block

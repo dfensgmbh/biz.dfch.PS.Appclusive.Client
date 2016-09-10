@@ -112,6 +112,7 @@ Param
 	,
 	# Specifies the ManagementCredentialId
 	[Parameter(Mandatory = $false)]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $ManagementCredentialId
 	,
 	# Specifies to create a entity if it does not exist
@@ -141,6 +142,12 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+
+	if ($ManagementCredentialId) 
+	{
+		$mgmtCred = Get-ManagementCredential -Id $ManagementCredentialId -svc $svc;
+		Contract-Assert (!!$mgmtCred) "MgmtCredential with Id = $ManagementCredentialId does not exist";
+	}
 }
 # Begin
 

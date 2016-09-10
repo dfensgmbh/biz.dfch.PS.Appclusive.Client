@@ -295,11 +295,11 @@ Process
 	{
 		if($PSBoundParameters.ContainsKey('First'))
 		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name').AddQueryOption('$top', $First) | Select;
+			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select;
 		}
 		else
 		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name') | Select;
+			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name') | Select;
 		}
 		
 		if($Select) 
@@ -330,7 +330,7 @@ Process
 		$Exp = @();
 		if($PSCmdlet.ParameterSetName -eq 'id')
 		{
-			$Exp += ("Id eq {0}" -f $Id);
+			$Exp += ("Id eq {0}L" -f $Id);
 		}
 		if($Name) 
 		{ 
@@ -338,19 +338,19 @@ Process
 		}
 		if($ParentId)
 		{
-			$Exp += ("ParentId eq {0}" -f $ParentId);
+			$Exp += ("ParentId eq {0}L" -f $ParentId);
 		}
 		if($CreatedBy) 
 		{ 
 			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$CreatedById ) 'User not found';
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("(CreatedById eq {0}L)" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
 			$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$ModifiedById ) 'User not found';
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			$Exp += ("(ModifiedById eq {0}L)" -f $ModifiedById);
 		}
 		if($CreatedBy)
 		{ 
@@ -365,7 +365,7 @@ Process
 		}
 		if($EntityKindId)
 		{
-			$Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+			$Exp += ("(EntityKindId eq {0}L)" -f $EntityKindId);
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 	
@@ -618,15 +618,15 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Node; }
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgyNDE1NTQxMVowIwYJKoZIhvcNAQkEMRYEFEhKt8XshwyXAuzEe4bUwcNAffa5
+# MDgzMTE5MTY0NVowIwYJKoZIhvcNAQkEMRYEFEhKt8XshwyXAuzEe4bUwcNAffa5
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBnA8JPRVL9VF+D1sgb
-# E2T6u+gE/LAULqKN8HJKfNL45s1ybaajn0WKuRVDgxrhKkDNUyrRdBbtuBOiKK/y
-# DpwWJJtOX9iHjsIvc9zUX+HHOieHaZgyHZDQopBGQHp+7kR1+ii8nnPczL2LJzDF
-# LAo+7q7exjLj8v4bUv0jAT7hLVZEqRwtUvUoGjRZy+oKNk4U/WQvD3TZ9t/1NLRc
-# Edsrv8u432ZnkKGCuDFAWBTqNaWXqZO7/GD0BqJiRH88Q7v0WvfmHUBRBxlWCK+s
-# wpjNm2fNyJsvsKi9UwNbQb+alSH+YPX9cl9Gzm7kMKeLCaAerPEPaMCrgTZ582e0
-# 0KRu
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQAyioTNEKyObYoAP3jH
+# D8fV/bkkzOstuWMwJGQVNb99pDfV3FyxVGweVYGwbYKUBXPBelS3s60Uxilg10TV
+# yeBofgYxwgUEJw89W30IuImDcDo+/IllRu9gyI8MdLMDBT5tAHazyTZl/45NeNbw
+# l5mnNgmRq3E/Muught/IZ49Q39nn0X0WSBB9eDAIN18ITiLosydYio1yvmTodSe6
+# OCKvC2kW2yP/g0MMbLU3zlasHtNTSsyMYPZRtlm6mX9/qnC4tryeljDL3SPRLqg+
+# nGVC7kp3EAtlnZCwNOAAaquYO2CeysEdG+Hsai4ADb96QxxkxwsqTEUoWGI5nyRs
+# NXBe
 # SIG # End signature block
