@@ -16,6 +16,7 @@ Describe "New-Folder" -Tags "New-Folder" {
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-User.ps1"
 	. "$here\Set-Folder.ps1"
+	. "$here\Get-Folder.ps1"
 	
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Folders");
@@ -67,15 +68,7 @@ Describe "New-Folder" -Tags "New-Folder" {
 			# Act
 			$result = New-Folder -svc $svc -Name $name;
 			
-			try
-			{
-				$result1 = New-Folder -svc $svc -Name $name;
-			}
-			catch [System.Exception]
-			{
-				$_.CategoryInfo.Reason | Should be 'RuntimeException';
-				$_.Exception -is [System.Management.Automation.RuntimeException] | Should be $true;
-			}
+			{ $result1 = New-Folder -svc $svc -Name $name; } | Should ThrowErrorId 'Contract-Assert';
 			
 			# Assert
 			$result | Should Not Be $null;

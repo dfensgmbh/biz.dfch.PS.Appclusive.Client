@@ -15,7 +15,7 @@ You must specify parameter 'Name'. If the entry already exists no update of the 
 
 
 .EXAMPLE
-New-Folder -svc $svc -Name TestItem
+New-Folder -svc $svc -Name "Arbitrary Name"
 
 EntityId       :
 Parameters     : {}
@@ -23,7 +23,7 @@ EntityKindId   : 28
 ParentId       : 1
 Id             : 79780
 Tid            : 11111111-1111-1111-1111-111111111111
-Name           : TestItem
+Name           : Arbitrary Name
 Description    :
 CreatedById    : 1
 ModifiedById   : 1
@@ -118,7 +118,7 @@ Process
 	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
 	
 	Contract-Assert (!$entity) 'Entity does already exist';
-
+	
 	if($PSCmdlet.ShouldProcess($FolderContents))
 	{
 		$r = Set-Folder @PSBoundParameters -CreateIfNotExist:$true;
