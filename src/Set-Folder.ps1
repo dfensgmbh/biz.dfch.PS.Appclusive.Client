@@ -125,42 +125,32 @@ Param
 	[long] $Id = $null
 	,
 	# Specifies the name to modify
-	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
 	[Alias("n")]
 	[string] $Name
 	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[string] $NewName
 	,
 	# Specifies the description to modify
-	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias('d')]
 	[string] $Description
 	,
 	# Specifies the new description
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[string] $NewDescription
 	,
 	# Specifies the parent Id for this entity
-	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias("pid")]
 	$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 	,
 	# Specifies the parameters for this entity
-	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias("p")]
 	$Parameters = '{}'
-	,
-	# Specifies to create a folder if it does not exist
-	[Parameter(Mandatory = $false, ParameterSetName = 'create')]
-	[Alias("c")]
-	[switch] $CreateIfNotExist = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -199,54 +189,49 @@ try
 {
 	$Exp = @();
 	$FolderContents = @();
-	if($Name) 
-	{ 
-		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-		$FolderContents += $Name;
-	}
-	if($Description) 
-	{ 
-		$Exp += ("(tolower(Description) eq '{0}')" -f $Description.ToLower());
-		$FolderContents += $Description;
-	}
-	if($Id) 
-	{ 
-		$Exp += ("Id eq {0}" -f $Id);
-		$FolderContents += $Id;
-	}
-	
-	$FilterExpression = [String]::Join(' and ', $Exp);
-	$FolderContentsString = [String]::Join(',', $FolderContents);
-	
-	$folder = $svc.Core.Folders.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-	
-	if(!$CreateIfNotExist -And !$folder) #executed if folder doesn't exist > can't be updated
-	{
-		$msg = "Folder: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $FolderContentsString;
-		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
-		throw($gotoError);
-	}
-	if(!$folder) #executed when user executes command with -CreateIfNotExist
+	#handles creation of folder
+	if($PSCmdlet.ParameterSetName -eq 'name')
 	{
 		$folder = New-Object biz.dfch.CS.Appclusive.Api.Core.Folder;
 		$svc.Core.AddToFolders($folder);
 		$AddedEntity = $folder;
-		$folder.Name = $Name;
-		$folder.Description = $Description;
+		if($Name)
+		{
+			$folder.Name = $Name;
+		}
+		if ($Description)
+		{
+			$folder.Description = $Description;
+		}
 		$folder.EntityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Folder.value__;
 		$folder.ParentId = $ParentId;
-		$folder.Parameters = $Parameters;
+		if ($Parameters)
+		{
+			$folder.Parameters = $Parameters;
+		}
 		$folder.Created = [System.DateTimeOffset]::Now;
 		$folder.Modified = $folder.Created;
 	}
-	# new values when the folder is to be updated: 
-	if($NewName)
-	{ 
-		$folder.Name = $NewName; 
-	}
-	if($NewDescription)
-	{ 
-		$folder.Description = $NewDescription; 
+	#handles update of folder
+	elseif($PSCmdlet.ParameterSetName -eq 'id')
+	{ 	Write-Host ($Id | out-string;)
+		$folder = Get-Folder -svc $svc -id $Id;
+		
+		Contract-Assert (!$folder) 'Entity does not exist';
+		
+		# new values when the folder is to be updated: 
+		if($NewName)
+		{ 
+			$folder.Name = $NewName;
+		}
+		if($NewDescription)
+		{ 
+			$folder.Description = $NewDescription;
+		}
+		if($Parameters)
+		{
+			$folder.Parameters = $Parameters;
+		}
 	}
 	
 	$name = $folder.Name;
