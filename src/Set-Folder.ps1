@@ -240,11 +240,11 @@ try
 		$folder.Modified = $folder.Created;
 	}
 	# new values when the folder is to be updated: 
-	if($NewName) 
+	if($NewName)
 	{ 
 		$folder.Name = $NewName; 
 	}
-	if($NewDescription) 
+	if($NewDescription)
 	{ 
 		$folder.Description = $NewDescription; 
 	}
@@ -255,8 +255,7 @@ try
 	$r = $svc.Core.SaveChanges();
 	
 	#get folder
-	Get-Folder -svc $svc -Name $name;
-	
+	$folder = Get-Folder -svc $svc -Name $name;
 	$r = $folder;
 	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
@@ -300,7 +299,7 @@ catch
 		$OutputParameter = $null;
 		
 		if($AddedEntity) 
-		{ 
+		{
 			$svc.Core.DeleteObject($AddedEntity);
 			$svc.Core.SaveChanges();
 		}
