@@ -15,6 +15,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-User.ps1"
+	. "$here\Get-Folder.ps1"
 	
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("Folders");
@@ -121,7 +122,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result2.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-Folder-WithoutIdOrNameShouldFail" -Test {
+		It "Set-Folder-WithoutIdOrName-ShouldFail" -Test {
 			# Arrange
 			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "Description Updated";
@@ -142,7 +143,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result | Should Be $null;
 		}
 		
-		It "Set-Folder-CreateWithId-FolderIsNotCreated" -Test {
+		It "Set-Folder-CreateWithId-ShouldFail" -Test {
 			# Arrange
 			$id = 1000;
 			
