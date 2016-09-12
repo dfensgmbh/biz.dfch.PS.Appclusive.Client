@@ -41,7 +41,7 @@ Retrieves the id and name of all Folders.
 
 
 .EXAMPLE
-Get-Folder -Id 34253 -svc $svc OR Get-Folder 34253 -svc $svc
+Get-Folder -Id 34253 -svc $svc
 
 EntityId       :
 Parameters     : {}
@@ -135,20 +135,22 @@ PARAM
 	[long] $Id
 	,
 	# Specifies the name of the entity
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
 	[Alias('n')]
 	[string] $Name
 	,
 	# Filter by creator
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'createdby')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'parentId')]
 	[string] $CreatedBy
 	,
 	# Filter by modifier
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'modifiedby')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'parentId')]
 	[string] $ModifiedBy
 	,
 	# Specifies the Parent id for this entity
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'parentId')]
 	[long] $ParentId
 	,
 	# Specify the attributes of the entity to return
@@ -158,8 +160,6 @@ PARAM
 	# Specifies to return only values without header information. 
 	# This parameter takes precendes over the 'Select' parameter.
 	[ValidateScript( { if(1 -eq $Select.Count -And $_) { $true; } else { throw("You must specify exactly one 'Select' property when using 'ValueOnly'."); } } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
 	[Alias('HideTableHeaders')]
 	[switch] $ValueOnly
 	,
@@ -202,6 +202,10 @@ Begin
 	{
 		$Select = $Select | Select -Unique;
 	}
+	elseif ($ValueOnly)
+    {
+        $Select = 'Value';
+    }
 }
 # Begin
 
@@ -239,21 +243,33 @@ Process
 		{
 			$Exp += ("Id eq {0}" -f $Id);
 		}
-		if($Name) 
+		elseif($PSCmdlet.ParameterSetName -eq 'name') 
 		{ 
 			$Exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
 		}
-		if($ParentId)
+		elseif($PSCmdlet.ParameterSetName -eq 'parentId')
 		{
 			$Exp += ("ParentId eq {0}" -f $ParentId);
+			if($createdby)
+			{
+				$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
+				Contract-Assert ( !!$CreatedById ) 'User not found';
+				$Exp += ("CreatedById eq {0}" -f $CreatedById)
+			}
+			if($modifiedby)
+			{
+				$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
+				Contract-Assert ( !!$ModifiedById ) 'User not found';
+				$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			}
 		}
-		if($CreatedBy) 
+		elseif($PSCmdlet.ParameterSetName -eq 'createdby')
 		{ 
 			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$CreatedById ) 'User not found';
 			$Exp += ("CreatedById eq {0}" -f $CreatedById);
 		}
-		if($ModifiedBy)
+		elseif($PSCmdlet.ParameterSetName -eq 'modifiedby')
 		{ 
 			$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$ModifiedById ) 'User not found';
