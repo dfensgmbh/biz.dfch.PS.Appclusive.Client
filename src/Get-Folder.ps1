@@ -131,12 +131,10 @@ PARAM
 	,
 	# Filter by creator
 	[Parameter(Mandatory = $false, ParameterSetName = 'createdby')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'parentId')]
 	[string] $CreatedBy
 	,
 	# Filter by modifier
 	[Parameter(Mandatory = $false, ParameterSetName = 'modifiedby')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'parentId')]
 	[string] $ModifiedBy
 	,
 	# Specifies the Parent id for this entity
@@ -254,7 +252,7 @@ Process
 			}
 		}
 		elseif($PSCmdlet.ParameterSetName -eq 'createdby')
-		{ 
+		{
 			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$CreatedById ) 'User not found';
 			$Exp += ("CreatedById eq {0}" -f $CreatedById);
