@@ -86,10 +86,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnFirstEntity" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-Folder -svc $svc -First $ShowFirst;
+			$result = Get-Folder -svc $svc -First $showFirst;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -103,8 +103,8 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 			# Act
 			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
 			
-			$Id = $resultFirst.Id;
-			$result = Get-Folder -Id $Id -svc $svc;
+			$id = $resultFirst.Id;
+			$result = Get-Folder -Id $id -svc $svc;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -115,13 +115,13 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnByName" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
-			$Name = $resultFirst.Name;
-			$result = Get-Folder -Name $Name -svc $svc | Select -First $ShowFirst;
+			$name = $resultFirst.Name;
+			$result = Get-Folder -svc $svc -Name $Name -First $ShowFirst ;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -132,13 +132,13 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnByParentId" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
 			$parentId = $resultFirst.parentId;
-			$result = Get-Folder -ParentId $parentId -svc $svc | Select -First $ShowFirst;
+			$result = Get-Folder -svc $svc -ParentId $parentId -First $ShowFirst;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -147,7 +147,7 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Folder] | Should Be $true;
 		}
 		
-		It "Get-Folder-CombineParentIdAndFirst" -Test {
+		It "Get-Folder-ReturnByParentId-GetFirst" -Test {
 			# Arrange
 			$ShowFirst = 1;
 			
@@ -182,10 +182,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnThreeEntities" -Test {
 			# Arrange
-			$ShowFirst = 3;
+			$showFirst = 3;
 			
 			# Act
-			$result = Get-Folder -svc $svc -First $ShowFirst;
+			$result = Get-Folder -svc $svc -First $showFirst;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -195,10 +195,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-FolderThatDoesNotExist-ShouldReturnNull" -Test {
 			# Arrange
-			$JobName = 'Folder-that-does-not-exist';
+			$name = 'Folder-that-does-not-exist';
 			
 			# Act
-			$result = Get-Folder -svc $svc -Name $JobName;
+			$result = Get-Folder -svc $svc -Name $name;
 			
 			# Assert
 			$result | Should Be $null;
