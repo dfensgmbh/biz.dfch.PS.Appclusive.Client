@@ -28,14 +28,10 @@ Get-Folder -ListAvailable -Select Id, Name
 
    Id Name
    -- ----
-34239 abc
-34253 Test-1
-34255 folder_os1
-34256 folder_os2
-34257 child_test1
-34295 abc2
-34301 abc2-sub
-34303 test folder
+   42 arbitrary folder
+  100 another folder
+  101 folder 2
+  666 folder 3
 
 Retrieves the id and name of all Folders.
 
@@ -48,8 +44,8 @@ Parameters     : {}
 EntityKindId   : 28
 ParentId       : 1680
 Id             : 34253
-Tid            : ad8f50df-2a5d-4ea5-9fcc-05882f16a9fe
-Name           : Test-1
+Tid            : abcd1234-abcd-1234-abcd-12345abcdefg
+Name           : Arbitrary Folder
 Description    :
 CreatedById    : 653
 ModifiedById   : 653
@@ -69,18 +65,13 @@ Retrieves the Folder object with Id 34253 and returns all properties of it.
 
 
 .EXAMPLE
-Get-Folder -ParentId 1680 -Select Name -ValueOnly -svc $svc
+Get-Folder -ParentId 42 -Select Name -ValueOnly -svc $svc
 
-abc
-Test-1
-abc2
-efg
-folder_os1
-sibetest
-test-99
-folder_os2
+arbitrary folder
+another folder
+some folder
 
-Returns the names (just the value) of the folders that have parentId with id 1680.
+Returns the names (just the value) of the folders that have parentId with id 42.
 
 
 .EXAMPLE
@@ -88,9 +79,9 @@ Get-Folder -ListAvailable -Select Id -First 3 -svc $svc
 
    Id
    --
-34239
-34253
-34255
+   42
+  100
+  101
 
 Retrieves the id of the first 3 Folders.
 
@@ -100,11 +91,10 @@ Get-Folder -ModifiedBy TestUser -Select Id, Name -svc $svc
 
    Id Name
    -- ----
-34239 abc
-34240 TestUserFolder
-34295 abc2
-34301 abc2-sub
-34303 test folder
+   42 arbitrary folder
+  100 another folder
+  101 folder 2
+  666 folder 3
 
 Retrieves id and name of all Folders that have been modified by user
 with name 'TestUser' (case insensitive substring match).
