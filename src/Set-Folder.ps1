@@ -19,7 +19,7 @@ By updating a Folder entry you can specify if you want to update the Name, Descr
 default | json | json-pretty | xml | xml-pretty | PSCredential | Clear
 
 .EXAMPLE
-Set-Folder -Name TestItem -CreateIfNotExist -svc $svc
+Set-Folder -Name ArbitraryName -CreateIfNotExist -svc $svc
 
 EntityId       :
 Parameters     : {}
@@ -27,7 +27,7 @@ EntityKindId   : 28
 ParentId       : 1
 Id             : 79560
 Tid            : 11111111-1111-1111-1111-111111111111
-Name           : TestItem
+Name           : ArbitraryName
 Description    :
 CreatedById    : 1
 ModifiedById   : 1
@@ -47,7 +47,7 @@ Create a new Folder entry if it does not exist.
 
 
 .EXAMPLE
-Set-Folder -Name TestItem -NewName TestItemUpdated -NewDescription DescriptionUpdated -svc $svc 
+Set-Folder -Name ArbitraryName -NewName ArbitraryUpdatedName -NewDescription DescriptionUpdated -svc $svc 
 
 EntityId       :
 Parameters     : {}
@@ -55,7 +55,7 @@ EntityKindId   : 28
 ParentId       : 1
 Id             : 79560
 Tid            : 11111111-1111-1111-1111-111111111111
-Name           : TestItemUpdated
+Name           : ArbitraryUpdatedName
 Description    : DescriptionUpdated
 CreatedById    : 1
 ModifiedById   : 1
@@ -75,7 +75,7 @@ Update an existing Folder with new Name and new Description.
 
 
 .EXAMPLE
-Set-Folder -id 79650 -NewName TestItemUpdated -NewDescription DescriptionUpdated -svc $svc 
+Set-Folder -id 79650 -NewName ArbitraryUpdatedName -NewDescription DescriptionUpdated -svc $svc 
 
 EntityId       :
 Parameters     : {}
@@ -83,7 +83,7 @@ EntityKindId   : 28
 ParentId       : 1
 Id             : 79560
 Tid            : 11111111-1111-1111-1111-111111111111
-Name           : TestItemUpdated
+Name           : ArbitraryUpdatedName
 Description    : DescriptionUpdated
 CreatedById    : 1
 ModifiedById   : 1
@@ -218,23 +218,7 @@ try
 	$FilterExpression = [String]::Join(' and ', $Exp);
 	$FolderContentsString = [String]::Join(',', $FolderContents);
 	
-	try
-	{
-		$folder = $svc.Core.Folders.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-	}
-	catch
-	{
-		$exceptionMsg = $error[0].Exception.InnerException.InnerException.ToString();
-		if (!!$exceptionMsg -and $exceptionMsg -match "Http Error 404\.15 - Not Found")
-		{
-			$queryStringLength = $FilterExpression.Length + '$filter='.Length;
-			$msg = "Key/Name/Value: Filter expression to query for existing entity exceeds maxQueryString (Length: '{0}'). To avoid this exception increase the maximum URL length on the IIS server." -f $queryStringLength;
-			$e = New-CustomErrorRecord -m $msg -cat LimitsExceeded -o "maxQueryString";
-			throw($gotoError);
-		}
-		
-		throw;
-	}
+	$folder = $svc.Core.Folders.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	
 	if(!$CreateIfNotExist -And !$folder) #executed if folder doesn't exist > can't be updated
 	{
@@ -265,19 +249,17 @@ try
 		$folder.Description = $NewDescription; 
 	}
 	
-	$Name = $folder.Name;
+	$name = $folder.Name;
 	
 	$svc.Core.UpdateObject($folder);
 	$r = $svc.Core.SaveChanges();
 	
 	#get folder
-	$query = "Name eq '{0}'" -f $Name;
-	$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+	Get-Folder -svc $svc -Name $name;
 	
 	$r = $folder;
 	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
-
 }
 catch 
 {
