@@ -73,7 +73,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result | Should Be $null;
 		}
 		
-		It "Set-Folder-CreateWithId-ShouldFail" -Test {
+		It "Set-Folder-CreateWithId-ShouldThrowException" -Test {
 			# Arrange
 			$id = 100000000;
 			
