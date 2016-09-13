@@ -122,15 +122,18 @@ Param
 (
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'id')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $Id = $null
 	,
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
+	[ValidateNotNullOrEmpty()]
 	[Alias("n")]
 	[string] $Name
 	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
 	# Specifies the description to modify
@@ -140,17 +143,19 @@ Param
 	,
 	# Specifies the new description
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[string] $NewDescription
 	,
 	# Specifies the parent Id for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[Alias("pid")]
-	$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
+	[long] $ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 	,
 	# Specifies the parameters for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[Alias("p")]
-	$Parameters = '{}'
+	[string] $Parameters = '{}'
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -209,23 +214,21 @@ try
 		{
 			$folder.Parameters = $Parameters;
 		}
-		$folder.Created = [System.DateTimeOffset]::Now;
-		$folder.Modified = $folder.Created;
 	}
 	#handles update of folder
 	elseif($PSCmdlet.ParameterSetName -eq 'id')
-	{ 	Write-Host ($Id | out-string;)
+	{ 	Write-Host ($Id | out-string);
 		$folder = Get-Folder -svc $svc -id $Id;
 		
 		Contract-Assert (!$folder) 'Entity does not exist';
 		
 		# new values when the folder is to be updated: 
 		if($NewName)
-		{ 
+		{
 			$folder.Name = $NewName;
 		}
 		if($NewDescription)
-		{ 
+		{
 			$folder.Description = $NewDescription;
 		}
 		if($Parameters)

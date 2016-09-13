@@ -23,10 +23,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 	
 	Context "Get-Folder" {
         BeforeEach {
-            $moduleName = 'biz.dfch.PS.Appclusive.Client';
-            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-            Import-Module $moduleName;
-            $svc = Enter-Appclusive;
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-Appclusive;
         }
 		AfterAll {
             $svc = Enter-Appclusive;
