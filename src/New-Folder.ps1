@@ -71,13 +71,14 @@ Param
 	,
 	# Specifies the parent Id for this entity, default is the root folder
 	[Parameter(Mandatory = $false)]
+	[ValidateRange(1,[long]::MaxValue)]
 	[Alias("pid")]
-	$ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
+	[long] $ParentId = (Get-ApcTenant -Current -svc $svc).NodeId
 	,
 	# Specifies the parameters for this entity
 	[Parameter(Mandatory = $false)]
 	[Alias("p")]
-	$Parameters = '{}'
+	[string] $Parameters = '{}'
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -110,18 +111,10 @@ Process
 	$OutputParameter = $null;
 
 	$FolderContents = @($Name);
-	$Exp = @();
-	$Exp += "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$Exp += "(tolower(Description) eq '{0}')" -f $Description.toLower();
-	$Exp += "(ParentId eq {0})" -f $ParentId;
-	$FilterExpression = [String]::Join(' and ', $Exp);
-	$entity = $svc.Core.$EntitySetName.AddQueryOption('$filter', $FilterExpression) | Select;
-	
-	Contract-Assert (!$entity) 'Entity does already exist';
 	
 	if($PSCmdlet.ShouldProcess($FolderContents))
 	{
-		$r = Set-Folder @PSBoundParameters -CreateIfNotExist:$true;
+		$r = Set-Folder @PSBoundParameters;
 		$OutputParameter = $r;
 	}
 	$fReturn = $true;

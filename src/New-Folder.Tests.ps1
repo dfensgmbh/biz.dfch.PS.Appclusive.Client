@@ -61,22 +61,6 @@ Describe "New-Folder" -Tags "New-Folder" {
 			$result.Id | Should Not Be 0;
 		}
 		
-		It "New-Folder-CreateDuplicateShouldFail" -Test {
-			# Arrange
-			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
-			
-			# Act
-			$result = New-Folder -svc $svc -Name $name;
-			
-			{ $result1 = New-Folder -svc $svc -Name $name; } | Should ThrowErrorId 'Contract-Assert';
-			
-			# Assert
-			$result | Should Not Be $null;
-			$result.Name | Should Be $name;
-			$result.Id | Should Not Be 0;
-			$result1 | Should Be $null;
-		}
-		
 		It "New-Folder-CreateInSelectedFolder" -Test {
 			# Arrange
 			$name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
@@ -99,7 +83,7 @@ Describe "New-Folder" -Tags "New-Folder" {
 			Remove-ApcEntity -svc $svc -Id $folder2.Id -EntitySetName "folders" -Confirm:$false;
 		}
 		
-		It "New-Folder-CreateWithNonexistingParentId-ShouldNotCreate" -Test {
+		It "New-Folder-CreateWithNonexistingParentId-ShouldNotCreateAndReturnNull" -Test {
 			# Arrange
 			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			
