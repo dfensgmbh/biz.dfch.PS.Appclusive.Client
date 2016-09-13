@@ -241,30 +241,18 @@ Process
 		elseif($PSCmdlet.ParameterSetName -eq 'parentId')
 		{
 			$Exp += ("ParentId eq {0}" -f $ParentId);
-			if($createdby)
-			{
-				$createdById = Get-User -svc $svc $createdBy -Select Id -ValueOnly;
-				Contract-Assert ( !!$createdById ) 'User not found';
-				$Exp += ("CreatedById eq {0}" -f $createdById)
-			}
-			if($modifiedby)
-			{
-				$modifiedById = Get-User -svc $svc $modifiedBy -Select Id -ValueOnly;
-				Contract-Assert ( !!$modifiedById ) 'User not found';
-				$Exp += ("(ModifiedById eq {0})" -f $modifiedById);
-			}
 		}
-		elseif($PSCmdlet.ParameterSetName -eq 'createdby')
+		elseif($PSCmdlet.ParameterSetName -eq 'createdBy')
 		{
-			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
-			Contract-Assert ( !!$CreatedById ) 'User not found';
-			$Exp += ("CreatedById eq {0}" -f $CreatedById);
+			$createdById = Get-User -svc $svc $createdBy -Select Id -ValueOnly;
+			Contract-Assert ( !!$createdById ) 'User not found';
+			$Exp += ("CreatedById eq {0}" -f $createdById);
 		}
-		elseif($PSCmdlet.ParameterSetName -eq 'modifiedby')
-		{ 
-			$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
-			Contract-Assert ( !!$ModifiedById ) 'User not found';
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+		elseif($PSCmdlet.ParameterSetName -eq 'modifiedBy')
+		{
+			$modifiedById = Get-User -svc $svc $modifiedBy -Select Id -ValueOnly;
+			Contract-Assert ( !!$modifiedById ) 'User not found';
+			$Exp += ("(ModifiedById eq {0})" -f $modifiedById);
 		}
 		
 		$FilterExpression = [String]::Join(' and ', $Exp);
