@@ -1,7 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "Unrepresentative, because no entities existing.")
+function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 {
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
@@ -98,10 +98,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnById" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
 			$id = $resultFirst.Id;
 			$result = Get-Folder -Id $id -svc $svc;
@@ -121,7 +121,7 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
 			$name = $resultFirst.Name;
-			$result = Get-Folder -svc $svc -Name $Name -First $ShowFirst ;
+			$result = Get-Folder -svc $svc -Name $Name -First $showFirst ;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -138,7 +138,7 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
 			$parentId = $resultFirst.parentId;
-			$result = Get-Folder -svc $svc -ParentId $parentId -First $ShowFirst;
+			$result = Get-Folder -svc $svc -ParentId $parentId -First $showFirst;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -149,15 +149,15 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ReturnByParentId-GetFirst" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
 			$parentId = $resultFirst.parentId;
 			$result = Get-Folder -ParentId $parentId -svc $svc;
 			
-			$result1 = Get-Folder -svc $svc -ParentId $parentId -First $ShowFirst;
+			$result1 = Get-Folder -svc $svc -ParentId $parentId -First $showFirst;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -167,13 +167,13 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-SelectTwoPropertiesAndValueOnly-ShouldThrow" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$resultFirst = Get-Folder -svc $svc -First $ShowFirst;
+			$resultFirst = Get-Folder -svc $svc -First $showFirst;
 			
 			$parentId = $resultFirst.parentId;
-			{ $result = Get-Folder -ParentId $parentId -svc $svc -Select Name, Id -ValueOnly;} | Should Throw;
+			{ $result = Get-Folder -ParentId $parentId -svc $svc -Select Name, Id -ValueOnly; } | Should ThrowErrorId ParameterArgumentValidationError;
 			
 			# Assert
 			$result | Should Be $null;
@@ -206,10 +206,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnXML" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-Folder -svc $svc -First $ShowFirst -As xml;
+			$result = Get-Folder -svc $svc -First $showFirst -As xml;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -218,10 +218,10 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-Folder-ShouldReturnJSON" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-Folder -svc $svc -First $ShowFirst -As json;
+			$result = Get-Folder -svc $svc -First $showFirst -As json;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -229,26 +229,20 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 			$result.Substring($result.Length -1, 1) | Should Be '}';
 		}
 		
-		It "Get-Folder-WithInvalidId-ShouldReturnException" -Test {
+		It "Get-Folder-WithInvalidId-ShouldThrowException" -Test {
 			# Act
-			try 
-			{
-				$result = Get-Folder -Id 'myFolder';
-				'throw exception' | Should Be $true;
-			} 
-			catch
-			{
-				# Assert
-			   	$result | Should Be $null;
-			}
+			{ $result = Get-Folder -Id 'myFolder'; } | Should ThrowErrorId ParameterArgumentTransformationError;
+			
+			# Assert
+			$result | Should Be $null;
 		}
 		
 		It "Get-FolderByCreatedByThatDoesNotExist-ShouldThrowContractException" -Test {
 			# Arrange
-			$User = 'User-that-does-not-exist';
+			$user = 'User-that-does-not-exist';
 			
 			# Act
-			{ Get-Folder -svc $svc -CreatedBy $User; } | Should ThrowErrorId "Contract";
+			{ Get-Folder -svc $svc -CreatedBy $user; } | Should ThrowErrorId "Contract";
 
 			# Assert
 		   	# N/A
@@ -256,16 +250,16 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-FolderByCreatedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-Folder -svc $svc -First $ShowFirst;
+			$result = Get-Folder -svc $svc -First $showFirst;
 			
-			$UserId = $result.CreatedById;
-			$User = Get-User -svc $svc -Id $UserId -Select Name -ValueOnly;
+			$userId = $result.CreatedById;
+			$user = Get-User -svc $svc -Id $UserId -Select Name -ValueOnly;
 			
 			# Act
-			$result1 = Get-Folder -svc $svc -CreatedBy $User;
+			$result1 = Get-Folder -svc $svc -CreatedBy $user;
 			
 			# Assert
 		   	$result1 | Should Not Be $null;
@@ -274,16 +268,16 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		
 		It "Get-FolderByModifiedBy-ShouldReturnListWithEntities" -Test {
 			# Arrange
-			$ShowFirst = 1;
+			$showFirst = 1;
 			
 			# Act
-			$result = Get-Folder -svc $svc -First $ShowFirst;
+			$result = Get-Folder -svc $svc -First $showFirst;
 			
-			$UserId = $result.ModifiedById;
-			$User = Get-User -svc $svc -Id $UserId -Select Name -ValueOnly;
+			$userId = $result.ModifiedById;
+			$user = Get-User -svc $svc -Id $userId -Select Name -ValueOnly;
 			
 			# Act
-			$result1 = Get-Folder -svc $svc -ModifiedBy $User;
+			$result1 = Get-Folder -svc $svc -ModifiedBy $user;
 			
 			# Assert
 		   	$result1 | Should Not Be $null;

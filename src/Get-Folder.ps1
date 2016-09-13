@@ -122,23 +122,26 @@ PARAM
 (
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'id')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $Id
 	,
 	# Specifies the name of the entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
+	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
 	# Filter by creator
-	[Parameter(Mandatory = $false, ParameterSetName = 'createdby')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'createdBy')]
 	[string] $CreatedBy
 	,
 	# Filter by modifier
-	[Parameter(Mandatory = $false, ParameterSetName = 'modifiedby')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'modifiedBy')]
 	[string] $ModifiedBy
 	,
 	# Specifies the Parent id for this entity
 	[Parameter(Mandatory = $false, ParameterSetName = 'parentId')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $ParentId
 	,
 	# Specify the attributes of the entity to return
@@ -232,7 +235,7 @@ Process
 			$Exp += ("Id eq {0}" -f $Id);
 		}
 		elseif($PSCmdlet.ParameterSetName -eq 'name') 
-		{ 
+		{
 			$Exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
 		}
 		elseif($PSCmdlet.ParameterSetName -eq 'parentId')
@@ -240,15 +243,15 @@ Process
 			$Exp += ("ParentId eq {0}" -f $ParentId);
 			if($createdby)
 			{
-				$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
-				Contract-Assert ( !!$CreatedById ) 'User not found';
-				$Exp += ("CreatedById eq {0}" -f $CreatedById)
+				$createdById = Get-User -svc $svc $createdBy -Select Id -ValueOnly;
+				Contract-Assert ( !!$createdById ) 'User not found';
+				$Exp += ("CreatedById eq {0}" -f $createdById)
 			}
 			if($modifiedby)
 			{
-				$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
-				Contract-Assert ( !!$ModifiedById ) 'User not found';
-				$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+				$modifiedById = Get-User -svc $svc $modifiedBy -Select Id -ValueOnly;
+				Contract-Assert ( !!$modifiedById ) 'User not found';
+				$Exp += ("(ModifiedById eq {0})" -f $modifiedById);
 			}
 		}
 		elseif($PSCmdlet.ParameterSetName -eq 'createdby')
