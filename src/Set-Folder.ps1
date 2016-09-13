@@ -143,7 +143,6 @@ Param
 	,
 	# Specifies the new description
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[ValidateRange(1,[long]::MaxValue)]
 	[string] $NewDescription
 	,
 	# Specifies the parent Id for this entity
@@ -217,10 +216,10 @@ try
 	}
 	#handles update of folder
 	elseif($PSCmdlet.ParameterSetName -eq 'id')
-	{ 	Write-Host ($Id | out-string);
+	{
 		$folder = Get-Folder -svc $svc -id $Id;
 		
-		Contract-Assert (!$folder) 'Entity does not exist';
+		Contract-Assert (!!$folder) 'Entity does not exist';
 		
 		# new values when the folder is to be updated: 
 		if($NewName)

@@ -1,7 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "Unrepresentative, because no entities existing.")
+function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 {
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
@@ -22,10 +22,10 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 	
 		Context "Set-Folder" {
         BeforeEach {
-            $moduleName = 'biz.dfch.PS.Appclusive.Client';
-            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-            Import-Module $moduleName;
-            $svc = Enter-Appclusive;
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-Appclusive;
         }
 		
 		AfterEach {
@@ -55,7 +55,7 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$result = Set-Folder -svc $svc -Name $name -CreateIfNotExist;
+			$result = Set-Folder -svc $svc -Name $name;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -63,50 +63,59 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result.Id | Should Not Be 0;
 		}
 		
-		It "Set-Folder-UpdateUsingName" -Test {
+		It "Set-Folder-CreateWithNullName-ShouldFail" -Test {
 			# Arrange
-			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
-			$description = "Description";
-			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
-			$newDescription = "Description Updated";
 			
 			# Act
-			Push-ApcChangeTracker -svc $svc;
-			$result1 = Set-Folder -svc $svc -Name $name -Description $description -CreateIfNotExist;
-			Pop-ApcChangeTracker -svc $svc;
-			
-			#Act update the folder
-			Push-ApcChangeTracker -svc $svc;
-			$result2 = Set-Folder -svc $svc -Name $Name -NewName $newName -NewDescription $newDescription;
-			Pop-ApcChangeTracker -svc $svc;
+			{ $result = Set-Folder -svc $svc -Name $name; } | Should ThrowException ParameterBindingValidationException;
 			
 			# Assert
-			$result1 | Should Not Be $null;
-			$result1.Name | Should Be $name;
-			$result1.Description | Should Be $description;
-			$result1.Id | Should Not Be 0;
-			$result2 | Should Not Be $null;
-			$result2.Name | Should Be $newName;
-			$result2.Description | Should Be $newDescription;
-			$result2.Id | Should Be $result1.Id;
+			$result | Should Be $null;
 		}
 		
-		It "Set-Folder-UpdateUsingId" -Test {
+		It "Set-Folder-CreateWithId-ShouldFail" -Test {
+			# Arrange
+			$id = 100000000;
+			
+			# Act
+			$result = Set-Folder -svc $svc -Id $id;
+			
+			$query = "Id eq {0}" -f $id;
+			$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
+			
+			# Assert
+			$result | Should Be $null;
+			$folder | Should Be $null;
+		}
+		
+		It "Set-Folder-ShouldReturnXML" -Test {
+			# Arrange
+			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act
+			$result = Set-Folder -svc $svc -Name $name -As xml;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Substring(0,5) | Should Be '<?xml';
+		}
+		
+		It "Set-Folder-UsingIdShouldUpdateFolder" -Test {
 			# Arrange
 			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$description = "Description";
 			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "Description Updated";
 			
-			# Act
+			# Act - create a folder
 			Push-ApcChangeTracker -svc $svc;
-			$result1 = Set-Folder -svc $svc -Name $name -Description $description -CreateIfNotExist;
+			$result1 = Set-Folder -svc $svc -Name $name -Description $description;
 			Pop-ApcChangeTracker -svc $svc;
 			
 			#get the id of the folder
 			$folderId = $result1.Id;
 			
-			#Act update the folder using the id parameter
+			#Act - update the folder
 			Push-ApcChangeTracker -svc $svc;
 			$result2 = Set-Folder -svc $svc -Id $folderId -NewName $newName -NewDescription $newDescription;
 			Pop-ApcChangeTracker -svc $svc;
@@ -120,73 +129,6 @@ Describe "Set-Folder" -Tags "Set-Folder" {
 			$result2.Name | Should Be $newName;
 			$result2.Description | Should Be $newDescription;
 			$result2.Id | Should Be $result1.Id;
-		}
-		
-		It "Set-Folder-WithoutIdOrName-ShouldFail" -Test {
-			# Arrange
-			$newName = $entityPrefix + "NameUpdate-{0}" -f [guid]::NewGuid().ToString();
-			$newDescription = "Description Updated";
-			
-			# Act update the folder using the id parameter
-			try
-			{
-				$result = Set-Folder -svc $svc -NewName $newName -NewDescription $newDescription;
-			}
-			catch [System.Exception]
-			{
-				$threw = $true
-				$_.CategoryInfo.Reason | Should be 'ParameterBindingException'
-				$_.Exception -is [System.Management.Automation.ParameterBindingException] | Should be $true
-			}
-			
-			# Assert
-			$result | Should Be $null;
-		}
-		
-		It "Set-Folder-CreateWithId-ShouldFail" -Test {
-			# Arrange
-			$id = 1000;
-			
-			# Act
-			$result = Set-Folder -svc $svc -Id $id;
-			
-			$query = "Id eq {0}" -f $id;
-			$folder = $svc.Core.Folders.AddQueryOption('$filter', $query) | Select;
-			
-			# Assert
-			$result | Should Be $null;
-			$folder | Should Be $null;
-		}
-		
-		It "Set-Folder-CreateWithIdAndCreateIfNotExist-ShouldFail" -Test {
-			# Arrange
-			$id = 1000;
-			
-			# Act
-			try
-			{
-				$result = Set-Folder -svc $svc -Id $id -CreateIfNotExist;
-			}
-			catch [System.Exception]
-			{
-				$_.CategoryInfo.Reason | Should be 'ParameterBindingException'
-				$_.Exception -is [System.Management.Automation.ParameterBindingException] | Should be $true
-			}
-			
-			# Assert
-			$result | Should Be $null;
-		}
-		
-		It "Set-Folder-ShouldReturnXML" -Test {
-			# Arrange
-			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
-			
-			# Act
-			$result = Set-Folder -svc $svc -Name $name -CreateIfNotExist -As xml;
-			
-			# Assert
-			$result | Should Not Be $null;
-			$result.Substring(0,5) | Should Be '<?xml';
 		}
 	}
 }
