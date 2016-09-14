@@ -22,7 +22,7 @@ See module manifest for dependencies and further requirements.
 	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Connector/'
 )]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "")]
-Param 
+PARAM 
 (
 	# Specifies the new name name
 	[Parameter(Mandatory = $true)]
