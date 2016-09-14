@@ -12,6 +12,8 @@ Describe -Tags "SpecialOperation.Tests" "SpecialOperation.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	
+	. "$here\$sut"
+	
 	Context "#CLOUDTCL-1900-CMS Appclusive Client - Special Operation SetCreatedBy" {
 	
 		$actionName = 'SetCreatedBy';

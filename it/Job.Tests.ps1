@@ -12,6 +12,8 @@ Describe -Tags "Job.Tests" "Job.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	
+	. "$here\$sut"
+	
 	Context "#CLOUDTCL-1883-JobTests" {
 		
 		BeforeEach {

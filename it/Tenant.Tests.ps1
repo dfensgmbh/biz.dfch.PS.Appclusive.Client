@@ -12,6 +12,8 @@ Describe -Tags "Tenant.Tests" "Tenant.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	
+	. "$here\$sut"
+	
 	Context "#CLOUDTCL-1882-TenantTests" {
 		
 		BeforeEach {
