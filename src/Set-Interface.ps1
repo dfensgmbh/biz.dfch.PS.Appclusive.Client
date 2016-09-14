@@ -103,7 +103,7 @@ Process
 	if(!$CreateIfNotExist -And !$interface) 
 	{
 		$msg = "Interface: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource.";
-		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		$null = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
 		throw($gotoError);
 	}
 

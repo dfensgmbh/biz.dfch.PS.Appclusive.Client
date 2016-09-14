@@ -121,7 +121,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			
 			#ASSERT that cart item is deleted
 			$filter = "Id eq {0}" -f $cartItemId;
-			$deletedCartItem = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
+			$null = $svc.Core.Carts.AddQueryOption('$filter', $filter) | Select;
 		}
 	}
 	
@@ -202,7 +202,7 @@ Describe -Tags "Cart.Tests" "Cart.Tests" {
 			$cartItemId = $cartItem.Id;
 			
 			#ACT update cart item
-			$cartItemUpdated = Update-CartItem -svc $svc -Id $cartItemId -Description $newDescription;
+			$null = Update-CartItem -svc $svc -Id $cartItemId -Description $newDescription;
 		}
 		
 		It "AddMoreThanOneCartItemsInCart" -Test {

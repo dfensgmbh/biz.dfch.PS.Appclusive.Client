@@ -91,7 +91,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aclId = $acl.Id;
 								
 			#ACT update acl
-			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
+			$null = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
 		
 		It "Acl-DeleteAclThatIsReferencedOnAce" -Test {
@@ -128,7 +128,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 				
 				#ACT Delete acl
 				$svc.Core.DeleteObject($acl);
-				$result = $svc.Core.SaveChanges();
+				$null = $svc.Core.SaveChanges();
 			}
 			
 			catch 
@@ -255,7 +255,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceId = $ace.Id;
 			
 			#ACT Update Name & Description of Ace
-			$updatedAce = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
+			$null = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
 		}
 		
 		It "Ace-CreateAceWithoutAclReferenceShouldThrowException" -Test {

@@ -252,7 +252,7 @@ Describe -Tags "CatalogueandCatalogueItems.Tests" "CatalogueandCatalogueItems.Te
 			$catalogueItemId = $newCatalogueItem.Id;
 			
 			#ACT - update description of catalogue Item
-			$updatedCatalogueItem = Update-CatalogueItem -svc $svc -catalogueItemId $catalogueItemId -newCatalogueItemDescription $newCatalogueItemDescription;
+			$null = Update-CatalogueItem -svc $svc -catalogueItemId $catalogueItemId -newCatalogueItemDescription $newCatalogueItemDescription;
 			
 			#delete catalogue item
 			Delete-CatalogueItem -svc $svc -catalogueItemId $catalogueItemId;

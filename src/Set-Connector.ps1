@@ -107,7 +107,7 @@ Process
 	if(!$CreateIfNotExist -And !$entity) 
 	{
 		$msg = "{0}: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource." -f $entitySetName;
-		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		$null = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
 		throw($gotoError);
 	}
 

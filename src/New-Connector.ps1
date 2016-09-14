@@ -88,7 +88,7 @@ Process
 	{
 		$msg = "{0}: Parameter validation FAILED. Entity with Name '{1}' already exists." -f $entitySetName,$Name;
 		Log-Error $fn $msg;
-		$e = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
+		$null = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
 		throw($gotoError);
 	}
 	

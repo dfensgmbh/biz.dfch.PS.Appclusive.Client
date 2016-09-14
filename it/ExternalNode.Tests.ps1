@@ -130,7 +130,7 @@ Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
                 $nodeBagName = ("{0}-Name-{1}" -f $nodeName,$i);
                 $nodeBagValue = ("{0}-Value-{1}" -f $nodeName,$i);
 
-                $nodeBag = Create-ExternalNodeBag -Name $nodeBagName -ExternalNodeId $extNodeId -Value $nodeBagValue -Svc $svc;
+                $null = Create-ExternalNodeBag -Name $nodeBagName -ExternalNodeId $extNodeId -Value $nodeBagValue -Svc $svc;
             }
 			
 			#get the external node bags with specific id

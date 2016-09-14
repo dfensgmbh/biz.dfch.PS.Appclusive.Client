@@ -130,12 +130,12 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			
 			#update with new value
 			Push-ApcChangeTracker -Svc $svc;
-			$resultSetValue = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -NewValue $Value2;
+			$null = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -NewValue $Value2;
 			Pop-ApcChangeTracker -Svc $svc;
 			
 			#update with new name
 			Push-ApcChangeTracker -Svc $svc;
-			$resultSetName = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value2 -NewName $Name2;
+			$null = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value2 -NewName $Name2;
 			Pop-ApcChangeTracker -Svc $Svc;
 			
 			

@@ -64,7 +64,7 @@ Describe -Tags "Order.Tests" "Order.Tests" {
 			
 			try
 			{
-				{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
+				{ $null = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			}
 			catch
 			{

@@ -92,7 +92,7 @@ Describe "Remove-KeyNameValue" -Tags "Remove-KeyNameValue" {
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			{ $result1 = Remove-KeyNameValue -svc $svc -Confirm:$false -Key $Key -Name $Name -Value $Value; } | Should Throw 'Assertion failed: ($keyNameValueExists)';
+			{ $null = Remove-KeyNameValue -svc $svc -Confirm:$false -Key $Key -Name $Name -Value $Value; } | Should Throw 'Assertion failed: ($keyNameValueExists)';
 			{ $result = Remove-KeyNameValue -svc $svc -Confirm:$false -Key $Key -Name $Name -Value $Value; } | Should Throw 'Assertion failed: ($keyNameValueExists)';
 
 			# Assert
