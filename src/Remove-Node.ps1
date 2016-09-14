@@ -1,4 +1,46 @@
 function Remove-Node {
+<#
+.SYNOPSIS
+Removes a Node entry from the inventory.
+
+
+.DESCRIPTION
+Removes a Node entry from the inventory.
+
+The Cmdlet lets you remove an existing Node entry from the Node inventory.
+
+
+.INPUTS
+The Cmdlet can either remove entities by id, by name or by object reference.
+
+
+.OUTPUTS
+default | json | json-pretty | xml | xml-pretty
+
+
+.EXAMPLE
+PS > Remove-Node $node
+
+Removes the Node '$node' from the inventory.
+
+.EXAMPLE
+PS > Remove-Node -Id 42
+
+Removes the Node with Id 42 from the inventory.
+
+.EXAMPLE
+PS > Remove-Node -Name 'ArbitraryName'
+
+Removes the Node with Name 'ArbitraryName' from the inventory.
+
+
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Remove-Node/
+
+
+.NOTES
+See module manifest for required software versions and dependencies.
+#>
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
