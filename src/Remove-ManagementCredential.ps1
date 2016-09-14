@@ -1,4 +1,35 @@
 function Remove-ManagementCredential {
+<#
+.SYNOPSIS
+Removes a ManagementCredential entry from the ManagementCredential entity set.
+
+.DESCRIPTION
+Removes a ManagementCredential entry from the ManagementCredential entity set.
+
+The Cmdlet lets you remove an existing ManagementCredential entry from the ManagementCredential entity set.
+
+
+.INPUTS
+The Cmdlet can remove entities by name.
+
+
+.OUTPUTS
+default | json | json-pretty | xml | xml-pretty
+
+
+.EXAMPLE
+Remove-ManagementCredential -Name 'ArbitraryName'
+
+Removes the ManagementCredential with Name 'ArbitraryName' from the ManagementCredential entity set.
+
+
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Remove-ManagementCredential/
+
+
+.NOTES
+See module manifest for required software versions and dependencies.
+#>
 [CmdletBinding(
     SupportsShouldProcess = $true
 	,
