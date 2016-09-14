@@ -19,12 +19,12 @@ default | json | json-pretty | xml | xml-pretty
 
 
 .EXAMPLE
-Remove-Node $node
+PS > Remove-Node $node
 
 Removes the Node '$node' from the inventory.
 
 .EXAMPLE
-Remove-Node -Id 42
+PS > Remove-Node -Id 42
 
 Removes the Node with Id 42 from the inventory.
 
