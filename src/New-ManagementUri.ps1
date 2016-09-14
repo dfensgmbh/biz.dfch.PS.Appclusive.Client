@@ -149,7 +149,6 @@ Process
 	
 	$ManagementUriContents += $Type;
 	$ManagementUriContents += $Name;
-	$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
 
 	$mgmtUri = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	Contract-Assert (!$mgmtUri) 'Entity does already exist';

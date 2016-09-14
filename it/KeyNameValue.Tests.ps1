@@ -3,14 +3,20 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
+Describe "KeyNameValue.Tests" -Tags "KeyNameValue.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 
@@ -130,12 +136,12 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			
 			#update with new value
 			Push-ApcChangeTracker -Svc $svc;
-			$resultSetValue = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -NewValue $Value2;
+			$null = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -NewValue $Value2;
 			Pop-ApcChangeTracker -Svc $svc;
 			
 			#update with new name
 			Push-ApcChangeTracker -Svc $svc;
-			$resultSetName = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value2 -NewName $Name2;
+			$null = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value2 -NewName $Name2;
 			Pop-ApcChangeTracker -Svc $Svc;
 			
 			

@@ -3,14 +3,20 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Assoc.Tests" "Assoc.Tests" {
+Describe "Assoc.Tests" -Tags "Assoc.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"
@@ -156,7 +162,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			
 			#ACT Update assoc using node3 & node4 as source & destination
 			$svc.Core.UpdateObject($assoc);
-			{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 500};
+			{ $null = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 500};
 			
 			#CLEANUP delete assoc
 			$svc = Enter-Appclusive;

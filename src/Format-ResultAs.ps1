@@ -1,3 +1,5 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+PARAM()
 function Format-ResultAs([object] $Result, [string] $As)
 {
 	switch($As) 

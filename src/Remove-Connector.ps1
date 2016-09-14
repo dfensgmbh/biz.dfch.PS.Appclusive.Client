@@ -14,12 +14,11 @@ Remove-Connector -Id connectorId -Confirm
 Removes the Connector with explicit confirmation.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
-	,
     ConfirmImpact = 'High'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Remove-Connector/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# The key name portion of the KNV to remove

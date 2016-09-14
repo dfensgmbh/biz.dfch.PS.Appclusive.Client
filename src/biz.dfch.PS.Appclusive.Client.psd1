@@ -189,6 +189,12 @@ NestedModules = @(
 	'New-EntityBag.ps1'
 	,
 	'Get-EntityBag.ps1'
+	,
+	'Set-Folder.ps1'
+	,
+	'New-Folder.ps1'
+	,
+	'Get-Folder.ps1'
 )
 
 # Functions to export from this module
