@@ -83,12 +83,11 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'ListAvailable'
 )]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Lists all available CIMI-Machines
 	[Parameter(Mandatory = $false, ParameterSetName = 'ListAvailable')]
-	[Switch] $ListAvailable = $true
+	[Switch] $ListAvailable = $false
 	,
 	# CimiId or part of it to check if the machine is available
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'CimiId')]

@@ -148,12 +148,11 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'list'
 )]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Lists all tenants
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[switch] $ListAvailable = $true
+	[switch] $ListAvailable = $false
 	,
 	# Tenant id to search for
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Id')]

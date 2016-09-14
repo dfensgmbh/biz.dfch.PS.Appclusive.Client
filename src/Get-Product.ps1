@@ -176,7 +176,6 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'list'
 )]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Id of the product
@@ -201,7 +200,7 @@ PARAM
 	,
 	# Lists all available products
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[Switch] $ListAvailable = $true
+	[Switch] $ListAvailable = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]

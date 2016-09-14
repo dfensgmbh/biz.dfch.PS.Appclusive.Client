@@ -82,7 +82,6 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'list'
 )]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Display version of Appclusive Server
@@ -103,7 +102,7 @@ PARAM
 	,
 	# Lists all available versions
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[Switch] $All = $true
+	[Switch] $All = $false
 	,
 	# Lists all available versions
 	[Parameter(Mandatory = $false, ParameterSetName = 'ApiServerComp')]
