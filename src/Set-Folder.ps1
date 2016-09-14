@@ -192,8 +192,6 @@ $AddedEntity = $null;
 
 try 
 {
-	$Exp = @();
-	$FolderContents = @();
 	#handles creation of folder
 	if($PSCmdlet.ParameterSetName -eq 'name')
 	{
