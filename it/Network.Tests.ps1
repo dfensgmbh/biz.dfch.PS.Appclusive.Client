@@ -70,20 +70,14 @@ Describe "Network.Tests" -Tags "Network.Tests" {
 			$tenant = $svc.core.Tenants.AddQueryOption('$filter', $query) | Select;
 			$tenantInformation = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [biz.dfch.CS.Appclusive.Core.Managers.TenantManagerInformation], $null);
 			
+			# Act
 			$testNetwork = New-Object biz.dfch.CS.Appclusive.Api.Infrastructure.Network;
 			$testNetwork.EntityKindId = 999;
 			$testNetwork.ParentId = $tenantInformation.NodeId;
 			$svc.Infrastructure.AddToNetworks($testNetwork);
 			
-			try 
-			{
-				$result = $svc.Infrastructure.SaveChanges();
-				$null | Should Be 'SaveChanges() has to fail!!!';
-			}
-			catch
-			{
-				
-			}
+			# Assert
+			$svc.Infrastructure.SaveChanges() | Should Throw;
 		}
 		
 		It "DeleteNetwork-Succeeds" -Test {
