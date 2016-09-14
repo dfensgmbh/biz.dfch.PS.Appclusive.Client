@@ -19,7 +19,7 @@ default | json | json-pretty | xml | xml-pretty
 
 
 .EXAMPLE
-Remove-ManagementCredential -Name 'ArbitraryName'
+PS > Remove-ManagementCredential -Name 'ArbitraryName'
 
 Removes the ManagementCredential with Name 'ArbitraryName' from the ManagementCredential entity set.
 

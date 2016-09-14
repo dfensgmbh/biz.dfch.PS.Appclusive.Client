@@ -29,7 +29,7 @@ Remove-Node -Id 42
 Removes the Node with Id 42 from the inventory.
 
 .EXAMPLE
-Remove-Node -Name 'ArbitraryName'
+PS > Remove-Node -Name 'ArbitraryName'
 
 Removes the Node with Name 'ArbitraryName' from the inventory.
 
