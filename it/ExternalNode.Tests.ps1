@@ -10,7 +10,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "ExternalNode.Tests" "ExternalNode.Tests" {
+Describe "ExternalNode.Tests" -Tags "ExternalNode.Tests" {
 	. "$here\$sut"
 	
 	$entityPrefix = "TestItem-";

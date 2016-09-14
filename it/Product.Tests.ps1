@@ -10,7 +10,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Product.Tests" "Product.Tests" {
+Describe "Product.Tests" -Tags "Product.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"

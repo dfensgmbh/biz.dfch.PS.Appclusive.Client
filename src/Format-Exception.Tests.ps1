@@ -12,8 +12,7 @@ function Stop-Pester()
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-
-Describe -Tags "Format-Exception" "Format-Exception" {
+Describe "Format-Exception" -Tags "Format-Exception" {
 
 	BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';

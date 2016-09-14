@@ -5,7 +5,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "CRUDoperationsViaApigee.Tests" "CRUDoperationsViaApigee.Tests" {
+Describe "CRUDoperationsViaApigee.Tests" -Tags "CRUDoperationsViaApigee.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 
