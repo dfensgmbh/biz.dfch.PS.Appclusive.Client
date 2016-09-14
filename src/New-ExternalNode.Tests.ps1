@@ -41,12 +41,10 @@ Describe "New-ExternalNode" -Tags "New-ExternalNode" {
 		AfterAll {
 			$svc = Enter-ApcServer;
 			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
-			write-host $entityFilter;
 
 			foreach ($entitySet in $usedEntitySets)
 			{
 				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
-				write-host $entitySet;
 		 
 				foreach ($entity in $entities)
 				{
