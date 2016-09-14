@@ -221,7 +221,7 @@ PARAM
 	,
 	# Lists all available products
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[Switch] $ListAvailable = $false
+	[Switch] $ListAvailable
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]

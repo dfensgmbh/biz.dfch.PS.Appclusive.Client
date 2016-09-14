@@ -152,7 +152,7 @@ PARAM
 (
 	# Lists all tenants
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[switch] $ListAvailable = $false
+	[switch] $ListAvailable
 	,
 	# Tenant id to search for
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Id')]
