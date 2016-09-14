@@ -21,7 +21,6 @@ See module manifest for dependencies and further requirements.
 	,
 	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Connector/'
 )]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "")]
 PARAM 
 (
 	# Specifies the new name name
@@ -30,11 +29,11 @@ PARAM
     ,
 	# Specifies the description
 	[Parameter(Mandatory = $true)]
-	[long] $InterfaceId = 1
+	[long] $InterfaceId
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $true)]
-	[long] $EntityKindId = 1
+	[long] $EntityKindId
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]

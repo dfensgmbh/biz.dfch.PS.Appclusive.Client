@@ -109,7 +109,6 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'single'
 )]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Specifies the ErrorRecord to analyse
@@ -133,7 +132,7 @@ PARAM
 	# Lists the names of all exceptions within the ErrorRecord
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[Alias('list')]
-	[Switch] $ListAvailable = $true
+	[Switch] $ListAvailable = $false
 	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
