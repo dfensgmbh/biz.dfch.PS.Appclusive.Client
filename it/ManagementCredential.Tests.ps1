@@ -71,18 +71,10 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$Password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNew1 = New-ApcManagementCredential -Name $Name -Username $Username -Password $Password;
+			$resultNew1 = New-ApcManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password;
 			
-			try {
-				$resultNew2 = New-ApcManagementCredential -Name $Name -Username $Username -Password $Password;				
-				$exception = $false;
-			} catch {
-				$exception = $true;
-			}
+			{ $resultNew2 = New-ApcManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password; } | Should ThrowErrorId Contract-Assert;
 			
-			$resultRemove = Remove-ApcManagementCredential -Name $Name -Confirm:$false;
-			$resultGetRemove = Get-ApcKeyNameValue -Name $Name;
-						
 			# Assert
 			$resultNew1 | Should Not Be $null;
 			$resultNew1.Name | Should Be $Name;
@@ -90,29 +82,19 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$resultNew1.Password | Should Not Be $Null; 
 			
 			$resultNew2 | Should Be $null;
-			$exception | Should Be $true;
-			
-			$resultGetRemove | Should Be $null;
 		}
-		<#
-		It "ManagementCredential-RemoveNonExtistingItemThrowException" -Test {
-			# Arrange
-			$Name = "Name1-{0}" -f [guid]::NewGuid().ToString();
 		
+		It "ManagementCredential-RemoveNonExistingItemThrowException" -Test {
+			# Arrange
+			$Name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			
 			# Act
-				
-			try {
-				$resultNew = Remove-ApcManagementCredential -Name $Name -Confirm:$false;				
-				$exception = $false;
-			} catch {
-				$exception = $true;
-			}
+			{ $resultNew = Remove-ApcManagementCredential -svc $svc -Name $Name -Confirm:$false; } | Should ThrowErrorId Contract-Assert;
 			
 			# Assert
-			$resultNew1 | Should Be $null;
-			$exception | Should Be $true;
+			$resultNew | Should Be $null;
 		}
-		
+		<#
 		It "ManagementCredential-SetAndRemoveNewItemSucceed" -Test {
 			# Arrange
 			$Name = "Name1-{0}" -f [guid]::NewGuid().ToString();
