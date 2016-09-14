@@ -48,9 +48,9 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 		$name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 		$name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
 		$name3 = $entityPrefix + "Name3-{0}" -f [guid]::NewGuid().ToString();
-		$folder1 = New-Folder -svc $svc -Name $name1;
-		$folder2 = New-Folder -svc $svc -Name $name2;
-		$folder3 = New-Folder -svc $svc -Name $name3;
+		$null = New-Folder -svc $svc -Name $name1;
+		$null = New-Folder -svc $svc -Name $name2;
+		$null = New-Folder -svc $svc -Name $name3;
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
