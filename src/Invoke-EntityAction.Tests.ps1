@@ -5,7 +5,10 @@ $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 function Stop-Pester()
 {
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
-	param($message = "Unrepresentative, because no entities exists.")
+	PARAM
+	(
+		$message = "Unrepresentative, because no entities exists."
+	)
 	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;

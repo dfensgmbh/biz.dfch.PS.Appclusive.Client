@@ -102,7 +102,7 @@ PARAM
 	,
 	# Lists all available versions
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[Switch] $All = $false
+	[Switch] $All
 	,
 	# Lists all available versions
 	[Parameter(Mandatory = $false, ParameterSetName = 'ApiServerComp')]
