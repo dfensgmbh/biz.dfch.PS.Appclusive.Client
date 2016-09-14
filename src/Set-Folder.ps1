@@ -118,12 +118,13 @@ See module manifest for dependencies and further requirements.
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-KeyNameValue/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'id')]
 	[ValidateRange(1,[long]::MaxValue)]
-	[long] $Id = $null
+	[long] $Id
 	,
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
@@ -191,8 +192,6 @@ $AddedEntity = $null;
 
 try 
 {
-	$Exp = @();
-	$FolderContents = @();
 	#handles creation of folder
 	if($PSCmdlet.ParameterSetName -eq 'name')
 	{
