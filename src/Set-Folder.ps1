@@ -124,7 +124,7 @@ Param
 	# Specifies the id of the entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'id')]
 	[ValidateRange(1,[long]::MaxValue)]
-	[long] $Id = $null
+	[long] $Id
 	,
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
