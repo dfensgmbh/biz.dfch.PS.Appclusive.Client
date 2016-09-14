@@ -3,14 +3,18 @@ function Get-Time {
 .SYNOPSIS
 Get the actual time of the Appclusive server.
 
+
 .DESCRIPTION
 Get the actual time of the Appclusive server.
+
 
 .INPUTS
 See PARAMETERS section for possible inputs.
 
+
 .OUTPUTS
 default | json | json-pretty | xml | xml-pretty | DateTimeOffset
+
 
 .EXAMPLE
 # In this example we query the current time of the Appclusive server
@@ -21,6 +25,7 @@ PS > Get-Time
 
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Time/
+
 
 .NOTES
 See module manifest for required software versions and dependencies.
