@@ -26,11 +26,11 @@ Describe "New-Folder" -Tags "New-Folder" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-Appclusive;
+			$svc = Enter-ApcServer;
         }
 		
 		AfterEach {
-            $svc = Enter-Appclusive;
+            $svc = Enter-ApcServer;
             $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
             foreach ($entitySet in $usedEntitySets)
