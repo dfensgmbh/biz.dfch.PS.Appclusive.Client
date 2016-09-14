@@ -20,14 +20,13 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Push-ChangeTracker
 See module manifest for required software versions and dependencies.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+    SupportsShouldProcess = $false
 	,
     ConfirmImpact = 'Medium'
 	,
 	HelpURI = 'http://dfch.biz/PS/Appclusive/Client/Pop-ChangeTracker/'
 )]
 [OutputType([Boolean])]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
 Param 
 (
 	[ValidateScript({$_.ContainsKey('Entities') -And $_.ContainsKey('Links')})]

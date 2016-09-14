@@ -20,14 +20,13 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Push-ChangeTracker
 See module manifest for required software versions and dependencies.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+    SupportsShouldProcess = $false
 	,
     ConfirmImpact = 'Low'
 	,
 	HelpURI = 'http://dfch.biz/PS/Appclusive/Client/Push-ChangeTracker/'
 )]
 [OutputType([hashtable])]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
 PARAM
 (
 	# Specifies a references to the Appclusive endpoints
