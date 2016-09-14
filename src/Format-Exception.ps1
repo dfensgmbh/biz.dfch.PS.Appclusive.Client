@@ -127,7 +127,7 @@ PARAM
 	,
 	# Displays all exceptions within ErrorRecord
 	[Parameter(Mandatory = $false, ParameterSetName = 'all')]
-	[Switch] $All = $true
+	[Switch] $All = $false
 	,
 	# Lists the names of all exceptions within the ErrorRecord
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
