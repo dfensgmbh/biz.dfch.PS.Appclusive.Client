@@ -8,9 +8,11 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "ContractMapping.Tests" "ContractMapping.Tests" {
+Describe "ContractMapping.Tests" -Tags "ContractMapping.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
+	
+	. "$here\$sut"
 	
 	Context "#CLOUDTCL-1882-ContractMappingTests" {
 		

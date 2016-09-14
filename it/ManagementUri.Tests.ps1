@@ -8,9 +8,11 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "ManagementUri.Tests" "ManagementUri.Tests" {
+Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
+	
+	. "$here\$sut"
 	
 	Context "#CLOUDTCL-1882-ManagementUriTests" {
 		

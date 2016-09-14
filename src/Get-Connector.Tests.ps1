@@ -14,7 +14,6 @@ Describe "Get-Connector" -Tags "Get-Connector" {
 	. "$here\Remove-Entity.ps1"
 	. "$here\Format-ResultAs.ps1"
 
-    $REQUIRE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__;
     $PROVIDE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__;
 	
 	Context "Get-Connector" {

@@ -145,7 +145,7 @@ Describe "New-ManagementUri" -Tags "New-ManagementUri" {
 			$notExistingManagementCredentialId = [long]::MaxValue;
 			
 			# Act/Assert
-			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $invalidManagementCredentialId } | Should ThrowErrorId 'Contract';
+			{ New-ManagementUri -svc $svc -Type $type -Name $name -Value $value -ManagementCredentialId $notExistingManagementCredentialId } | Should ThrowErrorId 'Contract';
 		}
 	}
 }

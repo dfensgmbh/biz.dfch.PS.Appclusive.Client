@@ -142,8 +142,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Tenant/
 See module manifest for required software versions and dependencies.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
-	,
     ConfirmImpact = 'Low'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-Tenant/'
@@ -154,7 +152,7 @@ PARAM
 (
 	# Lists all tenants
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[switch] $ListAvailable = $true
+	[switch] $ListAvailable
 	,
 	# Tenant id to search for
 	[Parameter(Mandatory = $false, Position = 0, ParameterSetName = 'Id')]

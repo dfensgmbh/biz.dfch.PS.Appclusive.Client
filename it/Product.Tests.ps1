@@ -10,7 +10,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Product.Tests" "Product.Tests" {
+Describe "Product.Tests" -Tags "Product.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"
@@ -107,7 +107,7 @@ Describe -Tags "Product.Tests" "Product.Tests" {
 			$productParameterUpdate = 'New Parameter';
 			
 			#ACT update product
-			$updatedProduct = Update-Product -Svc $svc -ProductId $productId -UpdatedName $productNameUpdate -UpdatedDescription $productDescriptionUpdate -UpdatedType $productTypeUpdate -UpdatedValidFrom $productValidFromUpdate -UpdatedValidUntil $productValidUntilUpdate -UpdatedEndOfLife $productEndOfLifeUpdate -UpdatedParameters $productParameterUpdate;
+			$null = Update-Product -Svc $svc -ProductId $productId -UpdatedName $productNameUpdate -UpdatedDescription $productDescriptionUpdate -UpdatedType $productTypeUpdate -UpdatedValidFrom $productValidFromUpdate -UpdatedValidUntil $productValidUntilUpdate -UpdatedEndOfLife $productEndOfLifeUpdate -UpdatedParameters $productParameterUpdate;
 			
 			#CLEANUP delete product
 			Delete-Product -Svc $svc -ProductId $productId;

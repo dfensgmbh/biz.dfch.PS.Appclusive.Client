@@ -178,8 +178,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-User/
 
 .NOTES
 See module manifest for required software versions and dependencies.
-
-
 #>
 [CmdletBinding(
     SupportsShouldProcess = $true
@@ -245,7 +243,7 @@ PARAM
 	,
 	# Indicates to return all file information
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[switch] $ListAvailable = $false
+	[switch] $ListAvailable
 	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]

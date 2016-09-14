@@ -10,7 +10,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Folder.Tests" "Folder.Tests" {
+Describe "Folder.Tests" -Tags "Folder.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"
@@ -104,7 +104,7 @@ Describe -Tags "Folder.Tests" "Folder.Tests" {
 			#ACT update parent Id of folder
 			$folder.ParentId = $newParentId;
 			$svc.Core.UpdateObject($folder);
-			{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
+			{ $null = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 400};
 			
 			#get the folder
 			$svc = Enter-Appclusive;

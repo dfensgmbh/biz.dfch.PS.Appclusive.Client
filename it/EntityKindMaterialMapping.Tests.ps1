@@ -8,9 +8,11 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "EntityKindMaterialMapping.Tests" "EntityKindMaterialMapping.Tests" {
+Describe "EntityKindMaterialMapping.Tests" -Tags "EntityKindMaterialMapping.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
+	
+	. "$here\$sut"
 	
 	Context "#CLOUDTCL-1882-EntityKindMaterialMappingTests" {
 		

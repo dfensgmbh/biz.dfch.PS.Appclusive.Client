@@ -21,7 +21,7 @@ See module manifest for dependencies and further requirements.
 	,
 	HelpURI='http://dfch.biz/biz/dfch/PS/Appclusive/Client/New-Connector/'
 )]
-Param 
+PARAM 
 (
 	# Specifies the new name name
 	[Parameter(Mandatory = $true)]
@@ -29,11 +29,11 @@ Param
     ,
 	# Specifies the description
 	[Parameter(Mandatory = $true)]
-	[long] $InterfaceId = 1
+	[long] $InterfaceId
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $true)]
-	[long] $EntityKindId = 1
+	[long] $EntityKindId
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
@@ -87,7 +87,7 @@ Process
 	{
 		$msg = "{0}: Parameter validation FAILED. Entity with Name '{1}' already exists." -f $entitySetName,$Name;
 		Log-Error $fn $msg;
-		$e = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
+		$null = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
 		throw($gotoError);
 	}
 	

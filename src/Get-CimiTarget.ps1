@@ -77,8 +77,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-CimiTarget/
 See module manifest for required software versions and dependencies.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
-	,
     ConfirmImpact = 'Low'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-CimiTarget/'
@@ -89,7 +87,7 @@ PARAM
 (
 	# Lists all available CIMI-Machines
 	[Parameter(Mandatory = $false, ParameterSetName = 'ListAvailable')]
-	[Switch] $ListAvailable = $true
+	[Switch] $ListAvailable
 	,
 	# CimiId or part of it to check if the machine is available
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'CimiId')]

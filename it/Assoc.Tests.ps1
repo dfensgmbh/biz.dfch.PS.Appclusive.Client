@@ -10,7 +10,7 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Assoc.Tests" "Assoc.Tests" {
+Describe "Assoc.Tests" -Tags "Assoc.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	. "$here\$sut"
@@ -156,7 +156,7 @@ Describe -Tags "Assoc.Tests" "Assoc.Tests" {
 			
 			#ACT Update assoc using node3 & node4 as source & destination
 			$svc.Core.UpdateObject($assoc);
-			{ $result = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 500};
+			{ $null = $svc.Core.SaveChanges(); } | Should ThrowDataServiceClientException @{StatusCode = 500};
 			
 			#CLEANUP delete assoc
 			$svc = Enter-Appclusive;

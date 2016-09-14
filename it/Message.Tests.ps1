@@ -7,8 +7,6 @@ Describe "Message.Tests" -Tags "Message.Tests" {
 	
 	. "$here\$sut"
 	
-	$messagesUri = 'http://appclusive/api/Diagnostics/Messages';
-
 	Context "Negotiate-Authentication" {
 	
 		# Context wide constants
