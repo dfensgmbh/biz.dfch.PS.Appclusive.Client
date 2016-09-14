@@ -64,7 +64,28 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$resultGetRemove | Should Be $null;
 		}
 		
-		It "ManagementCredential-AddingDoubleItemSameNameThrowException" -Test {
+		It "ManagementCredential-SetAndRemoveNewItemSucceeds" -Test {
+			# Arrange
+			$Name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$Password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
+		
+			# Act
+			$resultSetNew = Set-ApcManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password -CreateIfNotExist;
+			$resultRemove = Remove-ApcManagementCredential -svc $svc -Name $Name -Confirm:$false;
+			$resultGetRemove = Get-ApcKeyNameValue -svc $svc -Name $Name;
+			
+			# Assert
+			$resultSetNew | Should Not Be $null;
+			$resultSetNew.Name | Should Be $Name;
+			$resultSetNew.Username | Should Be $Username;
+			$resultSetNew.Password | Should Not Be $Null;
+			$resultSetNew.Id | Should Not Be 0;
+			
+			$resultGetRemove | Should Be $null;
+		}
+		
+		It "ManagementCredential-AddingDoubleItemSameNameThrowsException" -Test {
 			# Arrange
 			$Name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
@@ -84,7 +105,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$resultNew2 | Should Be $null;
 		}
 		
-		It "ManagementCredential-RemoveNonExistingItemThrowException" -Test {
+		It "ManagementCredential-RemoveNonExistingItemThrowsException" -Test {
 			# Arrange
 			$Name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -94,54 +115,65 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			# Assert
 			$resultNew | Should Be $null;
 		}
-		<#
-		It "ManagementCredential-SetAndRemoveNewItemSucceed" -Test {
-			# Arrange
-			$Name = "Name1-{0}" -f [guid]::NewGuid().ToString();
-			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$Password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
 		
-			# Act
-			$resultSetNew = Set-ApcManagementCredential -Name $Name -Username $Username -Password $Password -CreateIfNotExist
-			$resultRemove = Remove-ApcManagementCredential -Name $Name -Confirm:$false;
-			$resultGetRemove = Get-ApcKeyNameValue -Name $Name;
-			
-			# Assert
-			$resultSetNew | Should Not Be $null;
-			$resultSetNew.Name | Should Be $Name;
-			$resultSetNew.Username | Should Be $Username;
-			$resultSetNew.Password | Should Not Be $Null;
-			
-			$resultGetRemove | Should Be $null;
-		}
-		
-		It "ManagementCredential-SetNewPasswordAndUsernameSucceed" -Test {
+		It "ManagementCredential-SetNewPasswordAndUsernameSucceeds" -Test {
 			# Arrange
-			$Name = "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$Username1 = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$Username2 = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$Password1 = "Passwort-{0}" -f [guid]::NewGuid().ToString();
 			$Password2 = "Passwort-{0}" -f [guid]::NewGuid().ToString();
-		
-			# Act
-			$resultSetNew = Set-ApcManagementCredential -Name $Name -Username $Username1 -Password $Password1 -CreateIfNotExist -As json | ConvertFrom-Json;
-			$resultSetUserNamePW = Set-ApcManagementCredential -Name $Name -Username $Username2 -Password $Password2 -As json | ConvertFrom-Json;
-			$resultRemove = Remove-ApcManagementCredential -Name $Name -Confirm:$false;
-			$resultGetRemove = Get-ApcKeyNameValue -Name $Name;
 			
+			# Act
+			Push-ApcChangeTracker -svc $svc;
+			$resultSetNew = Set-ApcManagementCredential -svc $svc -Name $Name -Username $Username1 -Password $Password1 -CreateIfNotExist -As json | ConvertFrom-Json;
+			Pop-ApcChangeTracker -svc $svc;
+			Push-ApcChangeTracker -svc $svc;
+			$resultSetUserNamePW = Set-ApcManagementCredential -svc $svc -Name $Name -Username $Username2 -Password $Password2 -As json | ConvertFrom-Json;
+			Pop-ApcChangeTracker -svc $svc;
+			Write-Host ($resultSetNew | out-string);
+			Write-Host ($resultSetUserNamePW | out-string);
 			# Assert
 			$resultSetNew | Should Not Be $null;
 			$resultSetNew.Name | Should Be $Name;
 			$resultSetNew.Username | Should Be $Username1;
 			$resultSetNew.Password | Should Not Be $Null;
+			$resultSetNew.Id | Should Not Be 0;
 			
 			$resultSetUserNamePW | Should Not Be $null;
 			$resultSetUserNamePW.Name | Should Be $Name;
 			$resultSetUserNamePW.Username | Should Not Be $resultSetNew.Username;
 			$resultSetUserNamePW.Password | Should Not Be $resultSetNew.Password;
+			$resultSetUserNamePW.Id | Should be $resultSetNew.Id;
+		}
+		
+		It "ManagementCredential-SetNewNameSucceeds" -Test {
+			# Arrange
+			$name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$newName = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
+			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
 			
-			$resultGetRemove | Should Be $null;
-		}#>
+			# Act
+			Push-ApcChangeTracker -svc $svc;
+			$resultSetNew = Set-ApcManagementCredential -svc $svc -Name $name -Username $username -Password $password -CreateIfNotExist;
+			Pop-ApcChangeTracker -svc $svc;
+			Push-ApcChangeTracker -svc $svc;
+			$resultSetName = Set-ApcManagementCredential -svc $svc -Name $name -NewName $newName;
+			Pop-ApcChangeTracker -svc $svc;
+			
+			# Assert
+			$resultSetNew | Should Not Be $null;
+			$resultSetNew.Name | Should Be $name;
+			$resultSetNew.Username | Should Be $username;
+			$resultSetNew.Password | Should Not Be $null;
+			$resultSetNew.Id | Should Not Be 0;
+			
+			$resultSetName | Should Not Be $null;
+			$resultSetName.Name | Should Be $newName;
+			$resultSetName.Name | Should Not Be $resultSetNew.Name;
+			$resultSetName.Id | Should be $resultSetNew.Id;
+		}
 	}
 }
 
