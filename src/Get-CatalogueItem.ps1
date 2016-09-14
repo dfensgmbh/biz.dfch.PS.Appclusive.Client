@@ -191,8 +191,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-CatalogueItem/
 See module manifest for required software versions and dependencies.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
-	,
     ConfirmImpact = 'Low'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-CatalogueItem/'

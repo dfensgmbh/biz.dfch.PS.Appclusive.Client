@@ -14,8 +14,6 @@ Remove-Connector -Id connectorId -Confirm
 Removes the Connector with explicit confirmation.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
-	,
     ConfirmImpact = 'High'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Remove-Connector/'
