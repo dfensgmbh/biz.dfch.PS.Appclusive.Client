@@ -178,8 +178,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-User/
 
 .NOTES
 See module manifest for required software versions and dependencies.
-
-
 #>
 [CmdletBinding(
     SupportsShouldProcess = $true
