@@ -1,3 +1,4 @@
+# includes tests for CLOUDTCL-1885
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -15,42 +16,60 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 
 	. "$here\$sut"
 	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("ManagementCredentials");
+	
 	Context "#CLOUDTCL-1885-ManagementCredentialTests" {
 		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
+		}
+		
+		AfterEach {
+			$svc = Enter-Appclusive;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
 		}
 		
 		It "ManagementCredential-AddingAndRemovingItemSucceeds" -Test {
 			# Arrange
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$Password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNew = New-ApcManagementCredential -Name $Name -Username $Username -Password $Password;
-			$resultRemove = Remove-ApcManagementCredential -Name $Name -Confirm:$false;
-			$resultGetRemove = Get-ApcKeyNameValue -Name $Name;
+			$resultNew = New-ApcManagementCredential -svc $svc -Name $Name -Username $Username -Password $Password;
+			$resultRemove = Remove-ApcManagementCredential -svc $svc -Name $Name -Confirm:$false;
+			$resultGetRemove = Get-ApcKeyNameValue -svc $svc -Name $Name;
 			
 			# Assert
 			$resultNew | Should Not Be $null;
 			$resultNew.Name | Should Be $Name;
 			$resultNew.Username | Should Be $Username;
 			$resultNew.Password | Should Not Be $Null;
+			$resultNew.Id | Should Not Be 0;
 			
 			$resultGetRemove | Should Be $null;
 		}
-
+		
 		It "ManagementCredential-AddingDoubleItemSameNameThrowException" -Test {
 			# Arrange
-			$Name = "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$Username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$Password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
-		
-		
+			
 			# Act
 			$resultNew1 = New-ApcManagementCredential -Name $Name -Username $Username -Password $Password;
 			
@@ -75,7 +94,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			
 			$resultGetRemove | Should Be $null;
 		}
-		
+		<#
 		It "ManagementCredential-RemoveNonExtistingItemThrowException" -Test {
 			# Arrange
 			$Name = "Name1-{0}" -f [guid]::NewGuid().ToString();
@@ -140,7 +159,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$resultSetUserNamePW.Password | Should Not Be $resultSetNew.Password;
 			
 			$resultGetRemove | Should Be $null;
-		}
+		}#>
 	}
 }
 
