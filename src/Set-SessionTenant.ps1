@@ -61,7 +61,6 @@ See module manifest for required software versions and dependencies.
 	DefaultParameterSetName = 'id'
 )]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "")]
 PARAM 
 (
 	# Specifies the tenant guid to set for this session
@@ -72,7 +71,7 @@ PARAM
 	,
 	# Specifies the tenant guid to set for this session
 	[Parameter(Mandatory = $true, ParameterSetName = 'clear')]
-	[switch] $Clear = $false
+	[switch] $Clear
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
