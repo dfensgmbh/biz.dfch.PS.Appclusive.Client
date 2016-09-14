@@ -75,7 +75,6 @@ Param
 	$m = $svc.$Service;
 
 	$fReturn = $false;
-	$OutputParameter = $null;
 	$fLinks = $false;
 	$fEntities = $false;
 	if($Clear) 

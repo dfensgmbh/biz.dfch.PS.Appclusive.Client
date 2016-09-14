@@ -30,7 +30,6 @@ Describe "Test-Connect" -Tags "Test-Connect" {
 	. "$here\Format-ResultAs.ps1"
 	
     $entityPrefix = "TestConnect";
-    $entitySetName = "Nodes";
     $usedEntitySets = @("Connectors", "Interfaces", "Nodes", "EntityKinds");
     $REQUIRE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Require.value__;
     $PROVIDE = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.ConnectorType]::Provide.value__;

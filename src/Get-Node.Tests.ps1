@@ -227,7 +227,6 @@ Describe "Get-Node" -Tags "Get-Node" {
 	}
 
     $entityPrefix = "GetNodeConnector";
-    $entitySetName = "Nodes";
     $usedEntitySets = @("Connectors", "Interfaces", "Nodes", "EntityKinds");
     $REQUIRE = 2L;
     $PROVIDE = 1L;

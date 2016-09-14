@@ -1,5 +1,3 @@
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-
 function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 {
 	$msg = $message;
