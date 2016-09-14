@@ -1,7 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
