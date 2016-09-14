@@ -22,12 +22,28 @@ Describe "Get-Folder" -Tags "Get-Folder" {
 	$usedEntitySets = @("Folders");
 	
 	Context "Get-Folder" {
+		BeforeAll {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+			$svc = Enter-ApcServer;			
+		
+			#create three folders so there is at least three in the list
+			$name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
+			$name3 = $entityPrefix + "Name3-{0}" -f [guid]::NewGuid().ToString();
+			$null = New-Folder -svc $svc -Name $name1;
+			$null = New-Folder -svc $svc -Name $name2;
+			$null = New-Folder -svc $svc -Name $name3;
+		}
+	
         BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
 			$svc = Enter-ApcServer;
         }
+		
 		AfterAll {
             $svc = Enter-ApcServer;
             $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
@@ -44,13 +60,6 @@ Describe "Get-Folder" -Tags "Get-Folder" {
         }
 	
 		# Context wide constants
-		#create three folders so there is at least three in the list
-		$name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
-		$name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
-		$name3 = $entityPrefix + "Name3-{0}" -f [guid]::NewGuid().ToString();
-		$null = New-Folder -svc $svc -Name $name1;
-		$null = New-Folder -svc $svc -Name $name2;
-		$null = New-Folder -svc $svc -Name $name3;
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
