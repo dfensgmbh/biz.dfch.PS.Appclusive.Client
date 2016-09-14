@@ -20,6 +20,7 @@ Removes the Interface with explicit confirmation.
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Remove-Interface/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# The key name portion of the KNV to remove

@@ -27,6 +27,7 @@ See module manifest for required software versions and dependencies.
 	HelpURI = 'http://dfch.biz/PS/Appclusive/Client/Pop-ChangeTracker/'
 )]
 [OutputType([Boolean])]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
 Param 
 (
 	[ValidateScript({$_.ContainsKey('Entities') -And $_.ContainsKey('Links')})]

@@ -109,6 +109,7 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'single'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Specifies the ErrorRecord to analyse

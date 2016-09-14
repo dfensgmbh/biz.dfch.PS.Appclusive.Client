@@ -60,6 +60,8 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'id'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueForMandatoryParameter", "")]
 PARAM 
 (
 	# Specifies the tenant guid to set for this session

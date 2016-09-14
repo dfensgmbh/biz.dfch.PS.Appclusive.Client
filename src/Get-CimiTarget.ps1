@@ -85,6 +85,7 @@ See module manifest for required software versions and dependencies.
 	,
 	DefaultParameterSetName = 'ListAvailable'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidDefaultValueSwitchParameter", "")]
 PARAM 
 (
 	# Lists all available CIMI-Machines

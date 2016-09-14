@@ -27,6 +27,7 @@ See module manifest for required software versions and dependencies.
 	HelpURI = 'http://dfch.biz/PS/Appclusive/Client/Push-ChangeTracker/'
 )]
 [OutputType([hashtable])]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSShouldProcess", "")]
 PARAM
 (
 	# Specifies a references to the Appclusive endpoints
