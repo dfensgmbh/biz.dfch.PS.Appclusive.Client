@@ -1,3 +1,5 @@
+# includes tests for CLOUDTCL-2204
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -15,31 +17,108 @@ function Stop-Pester()
 }
 
 Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
-
+	
 	Mock Export-ModuleMember { return $null; }
 	
 	. "$here\$sut"
 	
-	Context "#CLOUDTCL-1882-ManagementUriTests" {
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("ManagementCredentials", "ManagementUris");
+	
+	Context "#CLOUDTCL-2204-ManagementUriTests" {
 		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "TestName" -Test {
+		AfterEach {
+			$svc = Enter-Appclusive;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
+		
+		It "ManagementUri-CreateGetAndDelete-Succeeds" -Test {
 			# Arrange
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$type = "json";
 			
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			#Act - get management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedManagementUri = Get-ApcManagementUri -svc $svc -Id $managementUri.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			#Act - delete management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$null = Remove-ApcEntity -svc $svc -Id $managementUri.Id -EntitySetName "ManagementUris" -Confirm:$false;;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get deleted management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$deletedManagementUri = Get-ApcManagementUri -svc $svc -Id $managementUri.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Assert
+			$managementUri | Should Not Be $null;
+			$managementUri.Id | Should Not Be 0;
+			$managementUri.Name | Should Be $uriName;
+			$managementUri.Description | Should Be $uriDescription;
+			$managementUri.Value | Should Be $value;
+			$managementUri.Type | Should Be $type;
+			
+			$loadedManagementUri | Should Not Be $null;
+			$loadedManagementUri.Id | Should  Be $managementUri.Id;
+			
+			$deletedManagementUri | Should Be $null;
+		}
+		<#
+		
+		
+		$credentialName = $entityPrefix + "ManagementCredential-{0}" -f [guid]::NewGuid().ToString();
+		$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+		$password = "Password-{0}" -f [guid]::NewGuid().ToString();
+			
+		# Act - create management credential object
+		$managementCredential = New-ApcManagementCredential -svc $svc -Name $credentialName -Username $username -Password $password;
+			
+		
+		It "ManagementUri-ExpandManagementCredential-ReturnsManagementCredential" -Test {
+			# Arrange
+			$credentialName = $entityPrefix + "ManagementCredential-{0}" -f [guid]::NewGuid().ToString();
+			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			
+			# Act - create management credential object
+			$managementCredential = New-ApcManagementCredential -svc $svc -Name $credentialName -Username $username -Password $password;
 			
 			# Act
-			
-			
-			# Assert	
-			
-			
-		}
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName;
+			$result = New-ApcManagementUri -svc $svc -Id $resultFirst.Id -ExpandManagementCredential;
+
+			# Assert
+		   	Get-ManagementCredential;
+		   	$result | Should Not Be $null;
+		   	$result.GetType().Name | Should Be 'ManagementCredential';
+		}#>
 	}
 }
 
