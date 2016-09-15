@@ -11,9 +11,9 @@ function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
 }
 
 Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
-
+	
 	Mock Export-ModuleMember { return $null; }
-
+	
 	. "$here\$sut"
 	
 	$entityPrefix = "TestItem-";
@@ -69,7 +69,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
-		
+			
 			# Act
 			$resultSetNew = Set-ApcManagementCredential -svc $svc -Name $name -Username $username -Password $password -CreateIfNotExist;
 			$resultRemove = Remove-ApcManagementCredential -svc $svc -Name $name -Confirm:$false;
