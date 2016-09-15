@@ -49,7 +49,7 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			}
 		}
 		
-		It "ManagementUri-CreateGetAndDelete-Succeeds" -Test {
+		It "ManagementUri-CreateGetAndDelete-ShouldSucceed" -Test {
 			# Arrange
 			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
 			$uriDescription = "test description";
@@ -90,7 +90,7 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			$deletedManagementUri | Should Be $null;
 		}
 		
-		It "ManagementUri-ReferenceManagementCredentials" -Test {
+		It "ManagementUri-CreateWithManagementCredentialId-ShouldSucceed" -Test {
 			# Arrange
 			$credentialName = $entityPrefix + "ManagementCredential-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
@@ -120,7 +120,7 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			$managementUri.ManagementCredentialId | Should Be $managementCredential.Id;
 		}
 		
-		It "ManagementUri-ExpandManagementCredential-ReturnsManagementCredential" -Test {
+		It "ManagementUri-ExpandManagementCredential-ShouldReturnManagementCredential" -Test {
 			# Arrange
 			$credentialName = $entityPrefix + "ManagementCredential-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
@@ -151,7 +151,7 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			$loadedManagementCredential.Id | Should Be $managementCredential.Id;
 		}
 		
-		It "ManagementUri-Update-Succeeds" -Test {
+		It "ManagementUri-Update-ShouldSucceed" -Test {
 			# Arrange
 			$credentialName1 = $entityPrefix + "ManagementCredential1-{0}" -f [guid]::NewGuid().ToString();
 			$credentialName2 = $entityPrefix + "ManagementCredential2-{0}" -f [guid]::NewGuid().ToString();
