@@ -119,8 +119,6 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			$managementUri.Type | Should Be $type;
 			$managementUri.ManagementCredentialId | Should Be $managementCredential.Id;
 		}
-		<#
-		
 		
 		It "ManagementUri-ExpandManagementCredential-ReturnsManagementCredential" -Test {
 			# Arrange
@@ -128,19 +126,30 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$type = "json";
 			
-			# Act - create management credential object
+			#Act - create management credentials
+			Push-ApcChangeTracker -Svc $svc;
 			$managementCredential = New-ApcManagementCredential -svc $svc -Name $credentialName -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			# Act
-			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName;
-			$result = New-ApcManagementUri -svc $svc -Id $resultFirst.Id -ExpandManagementCredential;
-
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type -ManagementCredentialId $managementCredential.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get management credentials of management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedManagementCredential = Get-ApcManagementUri -svc $svc -Id $managementUri.Id -ExpandManagementCredential;
+			Pop-ApcChangeTracker -Svc $svc;
+			
 			# Assert
-		   	Get-ManagementCredential;
-		   	$result | Should Not Be $null;
-		   	$result.GetType().Name | Should Be 'ManagementCredential';
-		}#>
+			$managementUri | Should Not Be $null;
+			$managementUri.ManagementCredentialId | Should Be $managementCredential.Id;
+			$loadedManagementCredential.Id | Should Be $managementCredential.Id;
+		}
 	}
 }
 
