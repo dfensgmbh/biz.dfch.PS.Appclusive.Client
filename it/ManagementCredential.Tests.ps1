@@ -131,8 +131,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			Push-ApcChangeTracker -svc $svc;
 			$resultSetUserNamePW = Set-ApcManagementCredential -svc $svc -Name $name -Username $username2 -Password $password2 -As json | ConvertFrom-Json;
 			Pop-ApcChangeTracker -svc $svc;
-			Write-Host ($resultSetNew | out-string);
-			Write-Host ($resultSetUserNamePW | out-string);
+			
 			# Assert
 			$resultSetNew | Should Not Be $null;
 			$resultSetNew.Name | Should Be $name;
