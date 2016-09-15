@@ -183,8 +183,6 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			Push-ApcChangeTracker -Svc $svc;
 			$updatedManagementUri = Set-ApcManagementUri -svc $svc -Name $uriName -NewName $newName -Description $newDescription -Type $type -NewType $newType -Value $newValue -ManagementCredentialId $managementCredential2.Id;
 			Pop-ApcChangeTracker -Svc $svc;
-			Write-Host ($managementUri | Out-String);
-			Write-Host ($updatedManagementUri | Out-String);
 			
 			# Assert
 			$updatedManagementUri.Id | Should Be $managementUri.Id;
