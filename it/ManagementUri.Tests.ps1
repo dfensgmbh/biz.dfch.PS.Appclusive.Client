@@ -150,6 +150,50 @@ Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
 			$managementUri.ManagementCredentialId | Should Be $managementCredential.Id;
 			$loadedManagementCredential.Id | Should Be $managementCredential.Id;
 		}
+		
+		It "ManagementUri-Update-Succeeds" -Test {
+			# Arrange
+			$credentialName1 = $entityPrefix + "ManagementCredential1-{0}" -f [guid]::NewGuid().ToString();
+			$credentialName2 = $entityPrefix + "ManagementCredential2-{0}" -f [guid]::NewGuid().ToString();
+			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$newName = $entityPrefix + "ManagementUriUPDATED-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$newDescription = "description updated"
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$newValue = '{ "protocol": "http", "hostname": "100.100.101.101", "port": "8080"}';
+			$type = "json";
+			$newType = "arbitrary type";
+			
+			#Act - create management credentials
+			Push-ApcChangeTracker -Svc $svc;
+			$managementCredential1 = New-ApcManagementCredential -svc $svc -Name $credentialName1 -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
+			Push-ApcChangeTracker -Svc $svc;
+			$managementCredential2 = New-ApcManagementCredential -svc $svc -Name $credentialName2 -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type -ManagementCredentialId $managementCredential1.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - update management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$updatedManagementUri = Set-ApcManagementUri -svc $svc -Name $uriName -NewName $newName -Description $newDescription -Type $type -NewType $newType -Value $newValue -ManagementCredentialId $managementCredential2.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			Write-Host ($managementUri | Out-String);
+			Write-Host ($updatedManagementUri | Out-String);
+			
+			# Assert
+			$updatedManagementUri.Id | Should Be $managementUri.Id;
+			$updatedManagementUri.Name | Should Be $newName;
+			$updatedManagementUri.Description | Should Be $newDescription;
+			$updatedManagementUri.Value | Should Be $newValue;
+			$updatedManagementUri.Type | Should Be $newType;
+			$updatedManagementUri.managementCredentialId | Should Be $managementCredential2.Id;
+		}
 	}
 }
 
