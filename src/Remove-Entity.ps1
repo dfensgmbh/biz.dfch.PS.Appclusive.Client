@@ -6,9 +6,6 @@ Removes one or more entities from an Appclusive entity set.
 .DESCRIPTION
 Removes one or more entities from an Appclusive entity set.
 
-You can retrieve one ore more entities from the entity set by specifying 
-Id, Name or other properties.
-
 .INPUTS
 The Cmdlet can either remove entities by id or by object reference.
 See PARAMETERS section on possible inputs.

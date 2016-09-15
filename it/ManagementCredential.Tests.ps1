@@ -8,8 +8,9 @@ function Stop-Pester()
 	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 	PARAM
 	(
-	 $message = "EMERGENCY: Script cannot continue."
+		$message = "EMERGENCY: Script cannot continue."
 	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);

@@ -3,23 +3,28 @@ function Set-SessionTenant {
 .SYNOPSIS
 Sets the tenant id for the current session, so all CRUD operations are performed under this tenant.
 
+
 .DESCRIPTION
 Sets the tenant id for the current session, so all CRUD operations are performed under this tenant.
 
 By default all operations are performed under the home tenant of the caller. To change this, you can set the tenant id for the current session. From there on all CRUD operations are performed under this tenant.
 In addition to setting a tenant id, the caller must have actual permissions to operate under that tenant. This means that setting of the tenant id may succeed. But subsequent operations may fail due to insufficient permissions of the caller.
 
+
 .INPUTS
 The tenant id as a GUID
+
 
 .OUTPUTS
 Retuns the tenant entity of the id specified. Throws an error if the tenant id could not be found or the caller did not have permission to view the tenant.
 
 default | json | json-pretty | xml | xml-pretty
 
+
 .EXAMPLE
-# In this example we set the tenant id to an id where the caller has permissions to read the tenant. The result is the entity represented by the tenant id.
+#In this example we set the tenant id to an id where the caller has permissions to read the tenant. The result is the entity represented by the tenant id.
 PS > Set-SessionTenant cb62d4c5-a354-408f-8658-1eb944762dec
+
 Id           : cb62d4c5-a354-408f-8658-1eb944762dec
 Name         : Fantabulous
 Description  : A supercalifragilisticexpialidocius tenant, but shorter and easier to spell.
@@ -41,12 +46,10 @@ Children     : {}
 PS > Set-SessionTenant deaddead-dead-dead-dead-deaddeaddead
 WARNING: : Assertion failed: (!!$tenant) "Tenant not found"
 
+
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-SessionTenant/
 
-.RELATED
-Get-SessionTenant
-Get-Tenant
 
 .NOTES
 See module manifest for required software versions and dependencies.
