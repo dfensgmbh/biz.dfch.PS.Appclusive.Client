@@ -52,11 +52,11 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			# Arrange
 			$name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
 			$resultNew = New-ApcManagementCredential -svc $svc -Name $name -Username $username -Password $password;
-			$resultRemove = Remove-ApcManagementCredential -svc $svc -Name $name -Confirm:$false;
+			$null = Remove-ApcManagementCredential -svc $svc -Name $name -Confirm:$false;
 			$resultGetRemove = Get-ApcKeyNameValue -svc $svc -Name $name;
 			
 			# Assert
@@ -73,11 +73,11 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			# Arrange
 			$name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
 			$resultSetNew = Set-ApcManagementCredential -svc $svc -Name $name -Username $username -Password $password -CreateIfNotExist;
-			$resultRemove = Remove-ApcManagementCredential -svc $svc -Name $name -Confirm:$false;
+			$null = Remove-ApcManagementCredential -svc $svc -Name $name -Confirm:$false;
 			$resultGetRemove = Get-ApcKeyNameValue -svc $svc -Name $name;
 			
 			# Assert
@@ -94,7 +94,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			# Arrange
 			$name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
 			$resultNew1 = New-ApcManagementCredential -svc $svc -Name $name -Username $username -Password $password;
@@ -126,8 +126,8 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$username1 = "Username-{0}" -f [guid]::NewGuid().ToString();
 			$username2 = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$password1 = "Passwort-{0}" -f [guid]::NewGuid().ToString();
-			$password2 = "Passwort-{0}" -f [guid]::NewGuid().ToString();
+			$password1 = "Password-{0}" -f [guid]::NewGuid().ToString();
+			$password2 = "Password-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
 			Push-ApcChangeTracker -svc $svc;
@@ -156,7 +156,7 @@ Describe "ManagementCredential.Tests" -Tags "ManagementCredential.Tests" {
 			$name = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
 			$newName = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
 			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
-			$password = "Passwort-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
 			Push-ApcChangeTracker -svc $svc;
