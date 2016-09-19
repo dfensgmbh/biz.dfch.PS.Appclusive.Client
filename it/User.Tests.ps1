@@ -1,3 +1,5 @@
+# includes tests for CLOUDTCL-
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -19,25 +21,70 @@ Describe "User.Tests" -Tags "User.Tests" {
 	
 	. "$here\$sut"
 	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Users");
+	
 	Context "#CLOUDTCL-1882-UserTests" {
 		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "TestName" -Test {
+		AfterEach {
+			$svc = Enter-Appclusive;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
+		
+		It "User-CreateGetDelete-ShouldSucceed" -Test {
 			# Arrange
+			$name = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$mail = "test@example.com";
 			
+			# Act - create user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -Mail $mail -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			# Act
+			# Act - get user
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
 			
+			# Act - remove user
+			Push-ApcChangeTracker -Svc $svc;
+			$null = Remove-ApcEntity -svc $svc -Id $user.Id -EntitySetName "Users" -Confirm:$false;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get user
+			Push-ApcChangeTracker -Svc $svc;
+			$deletedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
 			
 			# Assert	
+			$user | Should Not Be $null;
+			$user.Id | Should Not Be 0;
+			$user.Name | Should Be $name;
+			$user.Mail | Should Be $mail;
 			
+			$loadedUser | Should Not Be $null;
+			$loadedUser.Id | Should Be $user.Id;
+			$loadedUser.Name | Should Be $name;
+			$loadedUser.Mail | Should Be $mail;
 			
+			$deletedUser | Should Be $null;
 		}
 	}
 }
