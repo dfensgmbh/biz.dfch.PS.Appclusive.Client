@@ -86,6 +86,49 @@ Describe "User.Tests" -Tags "User.Tests" {
 			
 			$deletedUser | Should Be $null;
 		}
+		
+		It "User-Update-ShouldSucceed" -Test {
+			# Arrange
+			$name = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$description = "User description";
+			$mail = "test@example.com";
+			$newName = $name + "Updated";
+			$newDescription = $description + "Updated";
+			$newMail = "test@updated.com";
+			
+			# Act - create user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -Description $description -Mail $mail -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get user
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - update user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -NewName $newName -Description $newDescription -Mail $newMail;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get updated user
+			Push-ApcChangeTracker -Svc $svc;
+			$updatedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Assert	
+			$loadedUser | Should Not Be $null;
+			$loadedUser.Id | Should Not Be 0;
+			$loadedUser.Name | Should Be $name;
+			$loadedUser.Description | Should Be $description;
+			$loadedUser.Mail | Should Be $mail;
+			
+			$updatedUser | Should Not Be $null;
+			$updatedUser.Id | Should Be $loadedUser.Id;
+			$updatedUser.Name | Should Be $newName;
+			$updatedUser.Description | Should Be $newDescription;
+			$updatedUser.Mail | Should Be $newMail;
+		}
 	}
 }
 
