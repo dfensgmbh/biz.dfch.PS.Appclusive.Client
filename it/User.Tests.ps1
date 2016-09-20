@@ -150,32 +150,58 @@ Describe "User.Tests" -Tags "User.Tests" {
 			$user2 | Should Be $null;
 		}
 		
-		It "User-UpdateWithSameExternalTypeAndId-ShouldFail" -Test {
+		It "User-CreateWithSameExternalTypeAndId-ShouldFail" -Test {
 			# Arrange
-			$name1 = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$name1 = $entityPrefix + "User1-{0}" -f [guid]::NewGuid().ToString();
 			$mail1 = "test@example.com";
 			$externalId = [guid]::NewGuid();
 			$externalType = "Internal";
-			$name2 = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$name2 = $entityPrefix + "User2-{0}" -f [guid]::NewGuid().ToString();
 			$mail2 = "test@example.com";
 			
 			# Act - create user1
 			Push-ApcChangeTracker -Svc $svc;
-			$user = New-ApcUser -Svc $svc -Name $name1 -Mail $mail1 -ExternalId $externalId -ExternalType $externalType;
+			$user1 = New-ApcUser -Svc $svc -Name $name1 -Mail $mail1 -ExternalId $externalId -ExternalType $externalType;
 			Pop-ApcChangeTracker -Svc $svc;
 			
 			# Act - create user2
 			Push-ApcChangeTracker -Svc $svc;
-			$user = New-ApcUser -Svc $svc -Name $name2 -Mail $mail2 -ExternalId $externalId -ExternalType $externalType;
+			$user2 = New-ApcUser -Svc $svc -Name $name2 -Mail $mail2 -ExternalId $externalId -ExternalType $externalType;
 			Pop-ApcChangeTracker -Svc $svc;
 			
-			# Act - create second user with same parameters
+			$user1 | Should Not Be $null;
+			$user1.Id | Should Not Be 0;
+			$user2 | Should Be $null;
+		}
+		
+		It "User-UpdateWithSameExternalTypeAndId-ShouldFail" -Test {
+			# Arrange
+			$name1 = $entityPrefix + "User1-{0}" -f [guid]::NewGuid().ToString();
+			$mail1 = "test@example.com";
+			$externalId1 = [guid]::NewGuid();
+			$externalType1 = "Internal";
+			$name2 = $entityPrefix + "User2-{0}" -f [guid]::NewGuid().ToString();
+			$mail2 = "test@example.com";
+			$externalId2 = [guid]::NewGuid();
+			$externalType2 = "API Broker";
+			
+			# Act - create user1
 			Push-ApcChangeTracker -Svc $svc;
-			{ $user2 = New-ApcUser -Svc $svc -Name $name -Mail $mail; } | Should ThrowErrorId Contract-Requires;
+			$user1 = New-ApcUser -Svc $svc -Name $name1 -Mail $mail1 -ExternalId $externalId1 -ExternalType $externalType1;
 			Pop-ApcChangeTracker -Svc $svc;
 			
-			$user | Should Not Be $null;
-			$user.Id | Should Not Be 0;
+			# Act - create user2
+			Push-ApcChangeTracker -Svc $svc;
+			$user2 = New-ApcUser -Svc $svc -Name $name2 -Mail $mail2 -ExternalId $externalId2 -ExternalType $externalType2;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - update user2
+			Push-ApcChangeTracker -Svc $svc;
+			$user2 = Set-ApcUser -Svc $svc -Name $name2 -ExternalId $externalId1 -ExternalType $externalType1;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			$user1 | Should Not Be $null;
+			$user1.Id | Should Not Be 0;
 			$user2 | Should Be $null;
 		}
 		
