@@ -129,6 +129,57 @@ Describe "User.Tests" -Tags "User.Tests" {
 			$updatedUser.Description | Should Be $newDescription;
 			$updatedUser.Mail | Should Be $newMail;
 		}
+		
+		It "User-CreateDuplicate-ShouldFail" -Test {
+			# Arrange
+			$name = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$mail = "test@example.com";
+			
+			# Act - create user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -Mail $mail -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create second user with same parameters
+			Push-ApcChangeTracker -Svc $svc;
+			{ $user2 = New-ApcUser -Svc $svc -Name $name -Mail $mail; } | Should ThrowErrorId Contract-Requires;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			$user | Should Not Be $null;
+			$user.Id | Should Not Be 0;
+			$user2 | Should Be $null;
+		}
+		
+		It "User-UpdateWithSameExternalTypeAndId-ShouldFail" -Test {
+			# Arrange
+			$name1 = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$mail1 = "test@example.com";
+			$externalId = [guid]::NewGuid();
+			$externalType = "Internal";
+			$name2 = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$mail2 = "test@example.com";
+			
+			# Act - create user1
+			Push-ApcChangeTracker -Svc $svc;
+			$user = New-ApcUser -Svc $svc -Name $name1 -Mail $mail1 -ExternalId $externalId -ExternalType $externalType;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create user2
+			Push-ApcChangeTracker -Svc $svc;
+			$user = New-ApcUser -Svc $svc -Name $name2 -Mail $mail2 -ExternalId $externalId -ExternalType $externalType;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create second user with same parameters
+			Push-ApcChangeTracker -Svc $svc;
+			{ $user2 = New-ApcUser -Svc $svc -Name $name -Mail $mail; } | Should ThrowErrorId Contract-Requires;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			$user | Should Not Be $null;
+			$user.Id | Should Not Be 0;
+			$user2 | Should Be $null;
+		}
+		
+		
 	}
 }
 
