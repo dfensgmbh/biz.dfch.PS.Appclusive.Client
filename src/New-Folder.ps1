@@ -97,7 +97,6 @@ Begin
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 	
-	$EntitySetName = 'Folders';
 }
 # Begin
 
