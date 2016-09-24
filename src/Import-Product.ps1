@@ -95,7 +95,6 @@ function Import-Product {
         
             $null = RecursivelyImportProducts $entityType;
 
-            write-host ("OUT: {0}" -f ($ImportProduct_r | out-string));
 	        $OutputParameter = Format-ResultAs $ImportProduct_r $As;
             $fReturn = $true;
         }
@@ -156,8 +155,9 @@ function Import-EntityKind([Type] $entityType)
     Contract-Assert (!!$instance)
 
     $entityKind = CreateOrGetEntityKind $entityType.FullName;
-
+    
     $entityKind.Parameters = $instance.GetStateMachine().ToString();
+    $svc.Core.UpdateObject($entityKind);
     $null = $svc.Core.SaveChanges();
 
     $null = Import-DataType -FQCN $entityType.FullName -svc $svc -RecreateIfExist -Confirm:$false;
@@ -165,7 +165,7 @@ function Import-EntityKind([Type] $entityType)
     $connectors = CreateOrUpdateConnectors $entityKind $entityType;
     $null = HandleAppclusiveProductAttribute $entityKind $entityType;
     $null = HandleIconAttribute $entityKind $entityType;
-    $null = ImportEntityKindTransitionAction $instance $entityType;
+    $null = CreatePermissionsForEntityKindStateTransisitons $instance $entityType;
 }
 
 function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
@@ -192,6 +192,7 @@ function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $
         }
 
         $existingConnector.Multiplicity = $shouldConnector.Multiplicity;
+        $svc.Core.UpdateObject($existingConnector);
         $null = $finalConnectors.Add($existingConnector);
     }
 
@@ -210,28 +211,29 @@ function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $
     return $finalConnectors;
 }
 
-function ImportEntityKindTransitionAction([biz.dfch.CS.Appclusive.Public.Configuration.IEntityKindBaseDto] $instance, [type] $entityKindType)
+function CreatePermission([string] $PermissionName, $Svc)
 {
+    $permission = $Svc.Core.Permissions.AddQueryOption('$filter', ("Name eq '{0}'" -f $PermissionName)) | Select -First 1;
+
+    if (-not $permission)
+    {
+        $permission = New-Object biz.dfch.CS.Appclusive.Api.Core.Permission;
+		$Svc.Core.AddToPermissions($permission);
+		$permission.Name = $PermissionName;
+		$permission.Description = $PermissionName;
+
+		$Svc.Core.UpdateObject($permission);        
+        $result = $Svc.Core.SaveChanges();
+    }
+}
+
+function CreatePermissionsForEntityKindStateTransisitons([biz.dfch.CS.Appclusive.Public.Configuration.IEntityKindBaseDto] $instance, [type] $entityKindType)
+{
+    CreatePermission -PermissionName ("{0}:*" -f $instance.GetType().FullName) -Svc $svc;
+
     foreach ($transition in $instance.GetStateMachine())
     {
-        $transitionName = $transition.Transition;
-
-        $transitionType = $null;
-        [Type] $currentType = $entityKindType;
-        $transitionType = $currentType.GetNestedType($transitionName);
-
-        while ($transitionType -eq $null -and $currentType.BaseType -ne $null)
-        {
-            $currentType = $currentType.BaseType;
-            $transitionType = $currentType.GetNestedType($transitionName);
-        }
-
-        Contract-Assert ($transitionType -ne $null);
-
-        Log-Info ("Adding Transition {0}" -f $transitionType.FullName);
-        $entityKind = CreateOrGetEntityKind $transitionType;
-
-        $null = Import-DataType $transitionType.FullName -svc $svc -RecreateIfExist -Confirm:$false;
+        CreatePermission -PermissionName ("{0}:{1}" -f $instance.GetType().FullName,$transition.Transition) -Svc $svc;
     }
 }
 
@@ -249,8 +251,6 @@ function CreateOrGetEntityKind([Type] $entityType)
         $null = $svc.Core.SaveChanges();
     }
 
-    $ImportProduct_r += $entityKind;
-    write-host ("Added {0}" -f $entityKind);
 
     return $entityKind;
 }
