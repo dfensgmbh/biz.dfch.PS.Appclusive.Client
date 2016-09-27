@@ -99,6 +99,7 @@ Param
 	# Specifies the ManagementCredential to modify
 	[Parameter(Mandatory = $false)]
 	[Alias('m')]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $ManagementCredentialId
 	,
 	# Specifies the value to modify
@@ -148,7 +149,6 @@ Process
 	
 	$ManagementUriContents += $Type;
 	$ManagementUriContents += $Name;
-	$ManagementUriContentsString = [String]::Join(',', $ManagementUriContents);
 
 	$mgmtUri = $svc.Core.ManagementUris.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	Contract-Assert (!$mgmtUri) 'Entity does already exist';
@@ -320,15 +320,15 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-ManagementUri; 
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMTE5MTY1NVowIwYJKoZIhvcNAQkEMRYEFFxe6srIBXZvkzOJGb1p6MwGGhw2
+# MDgyNDE1NTQyMVowIwYJKoZIhvcNAQkEMRYEFFxe6srIBXZvkzOJGb1p6MwGGhw2
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCYIgC70gYYqzT14VK4
-# ubIOP6ZeZa/2kULD+aeDkMpuIBjfs1otRzvx8eIwDOdDx6G6v5pVWtVGiYobXHpf
-# hQNSscPuXPY+nHmdhse1BevIszTZPIRzvAcha/xt6+WrnJjrh/UuLDwqhCiBdV+j
-# DQOCOw9j6CCreW0PURBKCAqvEgAjJG4vX6rpSnt2yXipgl3zhvgRopWmHIviygsk
-# w32gA2OxCe1cjE9sJ/7cbrNlnFn3UXQA78MhpEaf5xO27fc0NhxV7VmSBlAWPZl/
-# Zt0BxDPjnMz4xDxqKeJIK+qXQ7ygCAdrJsvNxF4A6NwU7KVcB59qr5t64jTJgNFN
-# aZ3u
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCQkew5dlFohTzAFOLN
+# ICsq4VeHEzy5u4P+bp42U3R4w/1j/ON7K/ERam77cjDBEEJNh9VTFNlybRX9M+0F
+# ofD1LR+VLCaW3Ggid5uiRjsUgY2gMhmPagYX5iwuXtp8fZDq7TgdbsjpzSPlgNkF
+# TPem94gvFdWpEhB8KJnJ2O7m06giFpV+jKq4foTV9AlaBfjlWm3R6XwGpfXOb7oJ
+# 3XGT3eTrctN36FCkBVU+zugTUL6iFi+O6NW33AczrdA23rlm+J141VRjGzuhWgYc
+# 27a2QUqzOjXw1YT6FZeV13xB8XQL0OsqK+JHjKzCMICBqFJZm+iIG5xTFjExZ580
+# S4Fr
 # SIG # End signature block

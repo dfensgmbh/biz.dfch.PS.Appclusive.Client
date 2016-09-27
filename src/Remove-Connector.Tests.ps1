@@ -121,7 +121,7 @@ Describe "Remove-Connector" -Tags "Remove-Connector" {
             # Act
             $entity = Get-Connector -svc $svc -Id $connector.Id;
 
-            $deletedEntity = Remove-Connector -svc $svc -Id $entity.Id;
+            $null = Remove-Connector -svc $svc -Id $entity.Id;
             
             # Assert
             

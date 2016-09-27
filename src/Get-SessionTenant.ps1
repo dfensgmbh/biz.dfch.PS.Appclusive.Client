@@ -3,22 +3,27 @@ function Get-SessionTenant {
 .SYNOPSIS
 Gets the tenant id for the current session.
 
+
 .DESCRIPTION
 Gets the tenant id for the current session.
 
 By default the tenant id is not set in the caller session, meaning that all operations are performed under the HOME_TENANT of the caller.
 
+
 .INPUTS
 See parameters.
+
 
 .OUTPUTS
 Retuns the tenant entity of current tenant id if specified.
 
 default | json | json-pretty | xml | xml-pretty
 
+
 .EXAMPLE
 # In this example we query the current setting of the TenantID. TenantID has been set to 'cb62d4c5-a354-408f-8658-1eb944762dec' so the result is the tenant entity for this id.
 PS > Get-SessionTenant
+
 Id           : cb62d4c5-a354-408f-8658-1eb944762dec
 Name         : Fantabulous
 Description  : A supercalifragilisticexpialidocius tenant, but shorter and easier to spell.
@@ -36,15 +41,13 @@ Customer     :
 Children     : {}
 
 .EXAMPLE
-# In this example we query the current setting of the TenantID. As no id has been set, nothing is returned.
+#In this example we query the current setting of the TenantID. As no id has been set, nothing is returned.
 PS > Get-SessionTenant
+
 
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Get-SessionTenant/
 
-.RELATED
-Set-SessionTenant
-Get-Tenant
 
 .NOTES
 See module manifest for required software versions and dependencies.

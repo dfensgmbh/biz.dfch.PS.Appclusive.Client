@@ -77,6 +77,7 @@ See module manifest for dependencies and further requirements.
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ManagementUri/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# Specifies the name to modify
@@ -112,6 +113,7 @@ Param
 	,
 	# Specifies the ManagementCredentialId
 	[Parameter(Mandatory = $false)]
+	[ValidateRange(1,[long]::MaxValue)]
 	[long] $ManagementCredentialId
 	,
 	# Specifies to create a entity if it does not exist
@@ -141,6 +143,12 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+
+	if ($ManagementCredentialId) 
+	{
+		$mgmtCred = Get-ManagementCredential -Id $ManagementCredentialId -svc $svc;
+		Contract-Assert (!!$mgmtCred) "MgmtCredential with Id = $ManagementCredentialId does not exist";
+	}
 }
 # Begin
 
@@ -409,15 +417,15 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-ManagementUri; 
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDgzMTE5MTcwNlowIwYJKoZIhvcNAQkEMRYEFCnAgS5Ht4y/NioelUOItAunpRfE
+# MDgyNDE1NTQzNVowIwYJKoZIhvcNAQkEMRYEFCnAgS5Ht4y/NioelUOItAunpRfE
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQB+SDr2SHAK+8JjLznb
-# ijxZ+QWhkA0Ur8jGfYKAtvLwOduEsu4qg0VQVebiyrKdwVdKOfZ3NeNnto7zx4DB
-# Z7x1ozDzCw56gVLSF6l3Bc9tT/bgIGtNRQwBmnLpVpWCzuLnfgq86K3spQDjh2ah
-# rfcZHicJFzOo4jbi8bhH1fhSttV16mt/1peThaHkFW0V6OxK8f8cPDdcvc/T9p9q
-# XYGsHMMJsxW2HuTRdar3llWY5Cn3iFEK7/Z27zdGvnwrgR6KWL6o9O5YtfyLOyiq
-# 6ud2Ty408YaquQ7+5Du6G4KMAnjhH2iTkgHuQapmX3pnzgniaUBCxgKqd3FlTCFr
-# 2hBI
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCUyuAugOgNeVNWRTsp
+# Cve/oZPgiRkFDwyddVvRJIhndeTJDo9/nY51h8/q2RB6vznIJoeX9BahRw0f+PzN
+# KmXzpsL7fgtiS+Lf9Ekags110KXJi0Dh/BQBq7UwAHpRNdy+XuLlkJHiHfHoMwIY
+# BKfJdVTWkS/FxDBl0c5LPCnk6trUpMd+b8ERZMQ2qkJ5lG9Xrc9WmUIEJ2K4IXdh
+# JoahVAfc8TbJT29Q6nk4SmYU75kb/RF5kgWLjCY7+1RlB8uuLbmfTuUQL9++Z1g+
+# kUEz7UZc6UixKCTQIpJ4kazLkrs5PBhXARCnIEDffloRvV/APDkoS6qr4H9cA+3/
+# pDTJ
 # SIG # End signature block

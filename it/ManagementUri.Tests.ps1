@@ -1,36 +1,196 @@
+# includes tests for CLOUDTCL-2204
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "ManagementUri.Tests" "ManagementUri.Tests" {
-
+Describe "ManagementUri.Tests" -Tags "ManagementUri.Tests" {
+	
 	Mock Export-ModuleMember { return $null; }
 	
-	Context "#CLOUDTCL-1882-ManagementUriTests" {
+	. "$here\$sut"
+	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("ManagementUris", "ManagementCredentials");
+	
+	Context "#CLOUDTCL-2204-ManagementUriTests" {
 		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "TestName" -Test {
+		AfterEach {
+			$svc = Enter-Appclusive;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
+		
+		It "ManagementUri-CreateGetAndDelete-ShouldSucceed" -Test {
 			# Arrange
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$type = "json";
 			
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			# Act
+			#Act - get management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedManagementUri = Get-ApcManagementUri -svc $svc -Id $managementUri.Id;
+			Pop-ApcChangeTracker -Svc $svc;
 			
+			#Act - delete management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$null = Remove-ApcEntity -svc $svc -Id $managementUri.Id -EntitySetName "ManagementUris" -Confirm:$false;;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			# Assert	
+			# Act - get deleted management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$deletedManagementUri = Get-ApcManagementUri -svc $svc -Id $managementUri.Id;
+			Pop-ApcChangeTracker -Svc $svc;
 			
+			# Assert
+			$managementUri | Should Not Be $null;
+			$managementUri.Id | Should Not Be 0;
+			$managementUri.Name | Should Be $uriName;
+			$managementUri.Description | Should Be $uriDescription;
+			$managementUri.Value | Should Be $value;
+			$managementUri.Type | Should Be $type;
 			
+			$loadedManagementUri | Should Not Be $null;
+			$loadedManagementUri.Id | Should  Be $managementUri.Id;
+			
+			$deletedManagementUri | Should Be $null;
+		}
+		
+		It "ManagementUri-CreateWithManagementCredentialId-ShouldSucceed" -Test {
+			# Arrange
+			$credentialName = $entityPrefix + "ManagementCredential-{0}" -f [guid]::NewGuid().ToString();
+			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$type = "json";
+			
+			#Act - create management credentials
+			Push-ApcChangeTracker -Svc $svc;
+			$managementCredential = New-ApcManagementCredential -svc $svc -Name $credentialName -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type -ManagementCredentialId $managementCredential.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Assert
+			$managementUri | Should Not Be $null;
+			$managementUri.Id | Should Not Be 0;
+			$managementUri.Name | Should Be $uriName;
+			$managementUri.Description | Should Be $uriDescription;
+			$managementUri.Value | Should Be $value;
+			$managementUri.Type | Should Be $type;
+			$managementUri.ManagementCredentialId | Should Be $managementCredential.Id;
+		}
+		
+		It "ManagementUri-ExpandManagementCredential-ShouldReturnManagementCredential" -Test {
+			# Arrange
+			$credentialName = $entityPrefix + "ManagementCredential-{0}" -f [guid]::NewGuid().ToString();
+			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$type = "json";
+			
+			#Act - create management credentials
+			Push-ApcChangeTracker -Svc $svc;
+			$managementCredential = New-ApcManagementCredential -svc $svc -Name $credentialName -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type -ManagementCredentialId $managementCredential.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get management credentials of management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedManagementCredential = Get-ApcManagementUri -svc $svc -Id $managementUri.Id -ExpandManagementCredential;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Assert
+			$managementUri | Should Not Be $null;
+			$managementUri.ManagementCredentialId | Should Be $managementCredential.Id;
+			$loadedManagementCredential.Id | Should Be $managementCredential.Id;
+		}
+		
+		It "ManagementUri-Update-ShouldSucceed" -Test {
+			# Arrange
+			$credentialName1 = $entityPrefix + "ManagementCredential1-{0}" -f [guid]::NewGuid().ToString();
+			$credentialName2 = $entityPrefix + "ManagementCredential2-{0}" -f [guid]::NewGuid().ToString();
+			$username = "Username-{0}" -f [guid]::NewGuid().ToString();
+			$password = "Password-{0}" -f [guid]::NewGuid().ToString();
+			$uriName = $entityPrefix + "ManagementUri-{0}" -f [guid]::NewGuid().ToString();
+			$newName = $entityPrefix + "ManagementUriUPDATED-{0}" -f [guid]::NewGuid().ToString();
+			$uriDescription = "test description";
+			$newDescription = "description updated"
+			$value = '{ "protocol": "http", "hostname": "100.100.100.100", "port": "8080"}';
+			$newValue = '{ "protocol": "http", "hostname": "100.100.101.101", "port": "8080"}';
+			$type = "json";
+			$newType = "arbitrary type";
+			
+			#Act - create management credentials
+			Push-ApcChangeTracker -Svc $svc;
+			$managementCredential1 = New-ApcManagementCredential -svc $svc -Name $credentialName1 -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
+			Push-ApcChangeTracker -Svc $svc;
+			$managementCredential2 = New-ApcManagementCredential -svc $svc -Name $credentialName2 -Username $username -Password $password;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$managementUri = New-ApcManagementUri -svc $svc -Name $uriName -Description $uriDescription -Value $value -Type $type -ManagementCredentialId $managementCredential1.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - update management uri
+			Push-ApcChangeTracker -Svc $svc;
+			$updatedManagementUri = Set-ApcManagementUri -svc $svc -Name $uriName -NewName $newName -Description $newDescription -Type $type -NewType $newType -Value $newValue -ManagementCredentialId $managementCredential2.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Assert
+			$updatedManagementUri.Id | Should Be $managementUri.Id;
+			$updatedManagementUri.Name | Should Be $newName;
+			$updatedManagementUri.Description | Should Be $newDescription;
+			$updatedManagementUri.Value | Should Be $newValue;
+			$updatedManagementUri.Type | Should Be $newType;
+			$updatedManagementUri.managementCredentialId | Should Be $managementCredential2.Id;
 		}
 	}
 }

@@ -20,7 +20,7 @@ Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Push-ChangeTracker
 See module manifest for required software versions and dependencies.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+    SupportsShouldProcess = $false
 	,
     ConfirmImpact = 'Medium'
 	,
@@ -74,7 +74,6 @@ Param
 	$m = $svc.$Service;
 
 	$fReturn = $false;
-	$OutputParameter = $null;
 	$fLinks = $false;
 	$fEntities = $false;
 	if($Clear) 

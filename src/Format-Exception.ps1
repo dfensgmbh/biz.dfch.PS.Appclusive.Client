@@ -127,12 +127,12 @@ PARAM
 	,
 	# Displays all exceptions within ErrorRecord
 	[Parameter(Mandatory = $false, ParameterSetName = 'all')]
-	[Switch] $All = $true
+	[Switch] $All
 	,
 	# Lists the names of all exceptions within the ErrorRecord
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[Alias('list')]
-	[Switch] $ListAvailable = $true
+	[Switch] $ListAvailable
 	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]

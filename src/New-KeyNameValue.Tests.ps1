@@ -72,7 +72,7 @@ Describe "New-KeyNameValue" -Tags "New-KeyNameValue" {
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$result1 = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			$null = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
 			$result = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
 
 			# Assert

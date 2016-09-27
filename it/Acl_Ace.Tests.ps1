@@ -3,14 +3,20 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
+Describe "Acl_Ace.Tests" -Tags "Acl_Ace.Tests" {
 
 	Mock Export-ModuleMember { return $null; }	
 	. "$here\$sut"
@@ -91,7 +97,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aclId = $acl.Id;
 								
 			#ACT update acl
-			$updatedAcl = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
+			$null = Update-Acl -svc $svc -aclId $aclId -newAclName $newAclName -newAclDescription $newAclDescription;
 			}
 		
 		It "Acl-DeleteAclThatIsReferencedOnAce" -Test {
@@ -128,7 +134,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 				
 				#ACT Delete acl
 				$svc.Core.DeleteObject($acl);
-				$result = $svc.Core.SaveChanges();
+				$null = $svc.Core.SaveChanges();
 			}
 			
 			catch 
@@ -255,7 +261,7 @@ Describe -Tags "Acl_Ace.Tests" "Acl_Ace.Tests" {
 			$aceId = $ace.Id;
 			
 			#ACT Update Name & Description of Ace
-			$updatedAce = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
+			$null = Update-Ace -svc $svc -aceId $aceId -newAceName $newAceName -newAceDescription $newAceDescription;
 		}
 		
 		It "Ace-CreateAceWithoutAclReferenceShouldThrowException" -Test {

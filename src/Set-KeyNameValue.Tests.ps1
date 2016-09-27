@@ -202,8 +202,8 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			
-			$resultCreated1 = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
-			$resultCreated2 = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue;
+			$null = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			$null = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue;
 			
 			# Act
 			$result = Set-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue -NewValue $Value;

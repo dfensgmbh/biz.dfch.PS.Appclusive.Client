@@ -1,14 +1,20 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Network.Tests" "Network.Tests" {
+Describe "Network.Tests" -Tags "Network.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 
@@ -64,20 +70,14 @@ Describe -Tags "Network.Tests" "Network.Tests" {
 			$tenant = $svc.core.Tenants.AddQueryOption('$filter', $query) | Select;
 			$tenantInformation = $svc.Core.InvokeEntityActionWithSingleResult($tenant, "Information", [biz.dfch.CS.Appclusive.Core.Managers.TenantManagerInformation], $null);
 			
+			# Act
 			$testNetwork = New-Object biz.dfch.CS.Appclusive.Api.Infrastructure.Network;
 			$testNetwork.EntityKindId = 999;
 			$testNetwork.ParentId = $tenantInformation.NodeId;
 			$svc.Infrastructure.AddToNetworks($testNetwork);
 			
-			try 
-			{
-				$result = $svc.Infrastructure.SaveChanges();
-				$null | Should Be 'SaveChanges() has to fail!!!';
-			}
-			catch
-			{
-				
-			}
+			# Assert
+			$svc.Infrastructure.SaveChanges() | Should Throw;
 		}
 		
 		It "DeleteNetwork-Succeeds" -Test {

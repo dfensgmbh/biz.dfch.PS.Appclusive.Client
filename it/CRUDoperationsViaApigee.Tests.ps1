@@ -1,13 +1,17 @@
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
-
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "CRUDoperationsViaApigee.Tests" "CRUDoperationsViaApigee.Tests" {
+Describe "CRUDoperationsViaApigee.Tests" -Tags "CRUDoperationsViaApigee.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 

@@ -1,19 +1,29 @@
+# includes tests for CLOUDTCL-1884
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
+Describe "KeyNameValue.Tests" -Tags "KeyNameValue.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 
 	. "$here\$sut"
+	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("KeyNameValues");
 	
 	Context "#CLOUDTCL-1884-KeyNameValueTests" {
 		
@@ -21,21 +31,36 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
+		
+		AfterEach {
+            $svc = Enter-Appclusive;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
 		
 		It "KeyNameValue-AddingAndRemovingItemSucceeds" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNew = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-			$resultGet = Get-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-			$resultRemove = Remove-ApcKeyNameValue -Key $Key -Name $Name -Value $Value -Confirm:$false;
-			$resultReGet = Get-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-
+			$resultNew = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			$resultGet = Get-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			$resultRemove = Remove-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
+			$resultReGet = Get-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			
 			# Assert
 			$resultNew | Should Not Be $null;
 			$resultNew.Key | Should Be $Key;
@@ -54,46 +79,36 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 
 			$resultReGet | Should Be $null;
 		}
-
+		
 		It "KeyNameValue-AddingDuplicateItemThrowsException" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNew1 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-			try
-			{
-				$resultNew2 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value;
-				$ExceptionThrown = $false;
-			}
-			catch
-			{
-				$ExceptionThrown = $true;
-			}
-
+			$resultNew1 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
+			{ $resultNew2 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value; } | Should Throw;
+			
 			# Assert
 			$resultNew2 | Should Be $null;
-			$ExceptionThrown | Should Be $true;
-
-			$null = Remove-ApcKeyNameValue -Key $Key -Name $Name -Value $Value -Confirm:$false;
+			$error[0].Exception.ToString().contains('Entity does already exist') | Should Be $true;
 		}
 		
 		It "KeyNameValue-RemovingMultipleItemsSucceeds" -Test {
 			# Arrange
 			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();
-							
+			
 			# Act
-			$resultNew1 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value1;
-			$resultNew2 = New-ApcKeyNameValue -Key $Key -Name $Name -Value $Value2;
-			$resultGetNew = Get-ApcKeyNameValue -Key $Key;
+			$resultNew1 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value1;
+			$resultNew2 = New-ApcKeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value2;
+			$resultGetNew = Get-ApcKeyNameValue -svc $svc -Key $Key;
 
-			$null = Remove-ApcKeyNameValue -Key $Key -Confirm:$false;
-			$resultGetRemove = Get-ApcKeyNameValue -Key $Key;
+			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key -Confirm:$false;
+			$resultGetRemove = Get-ApcKeyNameValue -svc $svc -Key $Key;
 			
 			# Assert
 			$resultGetNew.Count | Should Be 2;
@@ -102,25 +117,44 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 		
 		It "KeyNameValue-CreateItemWithSetAndUpdateItemSucceeds" -Test {
 			# Arrange
-			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Key2 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name1 = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Name2 = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();		
-			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();
+			$Key1 = "Key1-{0}" -f [guid]::NewGuid().ToString();
+			$Key2 = "Key2-{0}" -f [guid]::NewGuid().ToString();
+			$Name1 = $entityPrefix + "Name1-{0}" -f [guid]::NewGuid().ToString();
+			$Name2 = $entityPrefix + "Name2-{0}" -f [guid]::NewGuid().ToString();
+			$Value1 = "Value1-{0}" -f [guid]::NewGuid().ToString();		
+			$Value2 = "Value2-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
-			$resultNewSet = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
-			$resultGetNewSet = Get-ApcKeyNameValue -Key $Key1;
+			#create a new KNV
+			Push-ApcChangeTracker -Svc $svc;
+			$resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			$resultSetValue = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2;
-			$resultSetName = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 -NewName $Name2 -Value $Value2;
-			$resultSetKey = Set-ApcKeyNameValue $Key1 -NewKey $Key2 -Name $Name2 -Value $Value2;
+			Push-ApcChangeTracker -Svc $svc;
+			$resultGetNewSet = Get-ApcKeyNameValue -svc $svc -Key $Key1;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			$resultGetSetAll = Get-ApcKeyNameValue -Key $Key2;
+			#update with new value
+			Push-ApcChangeTracker -Svc $svc;
+			$null = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value1 -NewValue $Value2;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			#update with new name
+			Push-ApcChangeTracker -Svc $svc;
+			$null = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 -Value $Value2 -NewName $Name2;
+			Pop-ApcChangeTracker -Svc $Svc;
+			
+			
+			#update with new key
+			Push-ApcChangeTracker -Svc $Svc;
+			$resultSetKey = Set-ApcKeyNameValue $Key1 -NewKey $Key2 -Name $Name2 -Value $Value2 -svc $svc;
+			Pop-ApcChangeTracker -Svc $Svc;
+			
+			
+			$resultGetSetAll = Get-ApcKeyNameValue -svc $svc -Key $Key2;
 
-			$null = Remove-ApcKeyNameValue -Key $Key2 -Confirm:$false;
-						
+			$null = Remove-ApcKeyNameValue -svc $svc -Key $Key2 -Confirm:$false;
+			
 			# Assert
 			$resultGetNewSet | Should Not Be $null;
 			$resultGetSetAll | Should Not Be $null;
@@ -128,33 +162,25 @@ Describe -Tags "KeyNameValue.Tests" "KeyNameValue.Tests" {
 			$resultGetNewSet.Value | Should Not Be $resultGetSetAll.Value;
 			$resultGetNewSet.Name | Should Not Be $resultGetSetAll.Name;
 			$resultGetNewSet.Key | Should Not Be $resultGetSetAll.Key;
+			
+			$resultNewSet.Id | Should Be $resultSetKey.Id;
 		}
 		
-		
-		It "KeyNameValue-SetNonExcsitingItemThrowsException" -Test {
+		It "KeyNameValue-SetNonExistingItemThrowsException" -Test {
 			# Arrange
 			$Key1 = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name1 = "Name-{0}" -f [guid]::NewGuid().ToString();
+			$Name1 = $entityPrefix + "Name-{0}" -f [guid]::NewGuid().ToString();
 			$Value1 = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Value2 = "Value-{0}" -f [guid]::NewGuid().ToString();			
 			$resultNewSet = $null; 
-				
+			
 			# Act
-			try
-			{
-				$resultNewSet = Set-ApcKeyNameValue -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2;
-				$ExceptionThrown = $false;
-			}
-			catch
-			{
-				$ExceptionThrown = $true;
-			}
-
+			{ $resultNewSet = Set-ApcKeyNameValue -svc $svc -Key $Key1 -Name $Name1 $Value1 -NewValue $Value2; } | Should Throw;
+			
 			# Assert
+			$error[0].Exception.ToString().contains('Entity does not exist') | Should Be $true;
 			$resultNewSet | Should Be $null;
-			$ExceptionThrown | Should Be $true;
 		}
-		
 	}
 }
 

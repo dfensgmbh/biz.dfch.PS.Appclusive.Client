@@ -86,6 +86,7 @@ See module manifest for dependencies and further requirements.
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-ExternalNode/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# Specifies the name to modify
@@ -147,9 +148,12 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-	Contract-Requires ($NodeId -ne $null)
-	Contract-Requires ($NodeId -gt 0)
-	Contract-Requires (![string]::IsNullOrWhiteSpace($ExternalId))
+	Contract-Requires ($NodeId -ne $null);
+	Contract-Requires ($NodeId -gt 0);
+	Contract-Requires (![string]::IsNullOrWhiteSpace($ExternalId));
+	
+	$node = Get-Node -Id $NodeId -svc $svc;
+	Contract-Assert (!!$node) "Node with Id = $NodeId does not exist";
 	
 	$EntitySetName = 'ExternalNodes';
 }

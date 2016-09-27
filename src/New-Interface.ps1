@@ -81,7 +81,7 @@ Process
 	{
 		$msg = "Parameter validation FAILED. Interface with Name '{0}' already exists." -f $Name;
 		Log-Error $fn $msg;
-		$e = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
+		$null = New-CustomErrorRecord -m $msg -cat ResourceExists -o $Name;
 		throw($gotoError);
 	}
 	

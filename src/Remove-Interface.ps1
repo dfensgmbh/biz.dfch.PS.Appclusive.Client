@@ -14,12 +14,11 @@ Remove-Interface -Id interfaceId -Confirm
 Removes the Interface with explicit confirmation.
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
-	,
     ConfirmImpact = 'High'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Remove-Interface/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# The key name portion of the KNV to remove

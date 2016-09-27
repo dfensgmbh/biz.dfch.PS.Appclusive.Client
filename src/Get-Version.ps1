@@ -102,7 +102,7 @@ PARAM
 	,
 	# Lists all available versions
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
-	[Switch] $All = $true
+	[Switch] $All
 	,
 	# Lists all available versions
 	[Parameter(Mandatory = $false, ParameterSetName = 'ApiServerComp')]
@@ -129,8 +129,6 @@ Begin
 	Log-Debug -fn $fn -msg ("CALL.") -fac 1;
 	
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
-	
-	$EntitySetName = 'Endpoints';
 }
 # Begin
 

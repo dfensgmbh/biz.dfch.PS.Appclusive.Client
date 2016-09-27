@@ -20,6 +20,7 @@ See module manifest for dependencies and further requirements.
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Interface/'
 )]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# Specifies the name to modify
@@ -102,7 +103,7 @@ Process
 	if(!$CreateIfNotExist -And !$interface) 
 	{
 		$msg = "Interface: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource.";
-		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		$null = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
 		throw($gotoError);
 	}
 

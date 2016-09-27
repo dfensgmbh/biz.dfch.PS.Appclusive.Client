@@ -295,11 +295,11 @@ Process
 	{
 		if($PSBoundParameters.ContainsKey('First'))
 		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name').AddQueryOption('$top', $First) | Select;
+			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select;
 		}
 		else
 		{
-			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby','Name') | Select;
+			$Response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name') | Select;
 		}
 		
 		if($Select) 
@@ -330,7 +330,7 @@ Process
 		$Exp = @();
 		if($PSCmdlet.ParameterSetName -eq 'id')
 		{
-			$Exp += ("Id eq {0}" -f $Id);
+			$Exp += ("Id eq {0}L" -f $Id);
 		}
 		if($Name) 
 		{ 
@@ -338,19 +338,19 @@ Process
 		}
 		if($ParentId)
 		{
-			$Exp += ("ParentId eq {0}" -f $ParentId);
+			$Exp += ("ParentId eq {0}L" -f $ParentId);
 		}
 		if($CreatedBy) 
 		{ 
 			$CreatedById = Get-User -svc $svc $CreatedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$CreatedById ) 'User not found';
-			$Exp += ("(CreatedById eq {0})" -f $CreatedById);
+			$Exp += ("(CreatedById eq {0}L)" -f $CreatedById);
 		}
 		if($ModifiedBy)
 		{ 
 			$ModifiedById = Get-User -svc $svc $ModifiedBy -Select Id -ValueOnly;
 			Contract-Assert ( !!$ModifiedById ) 'User not found';
-			$Exp += ("(ModifiedById eq {0})" -f $ModifiedById);
+			$Exp += ("(ModifiedById eq {0}L)" -f $ModifiedById);
 		}
 		if($CreatedBy)
 		{ 
@@ -365,7 +365,7 @@ Process
 		}
 		if($EntityKindId)
 		{
-			$Exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+			$Exp += ("(EntityKindId eq {0}L)" -f $EntityKindId);
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 	

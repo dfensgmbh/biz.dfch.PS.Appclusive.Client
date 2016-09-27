@@ -1,13 +1,19 @@
 #Includes tests for test case CLOUDTCL-1873
 
-function Stop-Pester($message = "EMERGENCY: Script cannot continue.")
+function Stop-Pester()
 {
+	[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
+	PARAM
+	(
+		$message = "EMERGENCY: Script cannot continue."
+	)
+	
 	$msg = $message;
 	$e = New-CustomErrorRecord -msg $msg -cat OperationStopped -o $msg;
 	$PSCmdlet.ThrowTerminatingError($e);
 }
 
-Describe -Tags "Node.Tests" "Node.Tests" {
+Describe "Node.Tests" -Tags "Node.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	
