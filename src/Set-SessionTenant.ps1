@@ -141,6 +141,7 @@ Process
 				continue;
 			}
 
+			$endpoint.TenantHeaderName = 'Tenant-Id';
 			$endpoint.TenantID = $null;
 		}
 		$OutputParameter = $null;
