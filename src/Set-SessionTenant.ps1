@@ -72,6 +72,9 @@ PARAM
 	[Alias("TenantId")]
 	[guid] $Id
 	,
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[string] $TenantHeaderName = 'Tenant-Id'
+	,
 	# Specifies the tenant guid to set for this session
 	[Parameter(Mandatory = $true, ParameterSetName = 'clear')]
 	[switch] $Clear
@@ -122,6 +125,7 @@ Process
 				continue;
 			}
 
+			$endpoint.TenantHeaderName = $TenantHeaderName;
 			$endpoint.TenantID = $Id;
 		}
 		
@@ -141,6 +145,7 @@ Process
 				continue;
 			}
 
+			$endpoint.TenantHeaderName = $null;
 			$endpoint.TenantID = $null;
 		}
 		$OutputParameter = $null;
