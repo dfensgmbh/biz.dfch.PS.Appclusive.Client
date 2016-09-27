@@ -62,6 +62,12 @@ Param
 	[Parameter(Mandatory = $false, Position = 2)]
 	[alias("cred")]
 	$Credential = (Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Credential
+	,
+	[Parameter(Mandatory = $false)]
+	[string] $TenantId
+	,
+	[Parameter(Mandatory = $false)]
+	[string] $TenantHeaderName = 'Tenant-Id'
 )
 
 Begin 
@@ -110,6 +116,16 @@ Process
 		# create DataServiceContext w/ credentials
 		$dataServiceContext = New-Object -TypeName $endpoint -ArgumentList $UriService;
 		$dataServiceContext.Credentials = $Credential;
+
+		# set tenant information if logging in via different tenant
+		if($TenantHeaderName)
+		{
+			$dataServiceContext.TenantHeaderName = $TenantHeaderName;
+		}
+		if($TenantID)
+		{
+			$dataServiceContext.TenantID = $TenantID;
+		}
 		
 		# set JSON as MIME type if specified
 		if((Get-Variable -Name $MyInvocation.MyCommand.Module.PrivateData.MODULEVAR -ValueOnly).Format -ieq 'JSON') 
