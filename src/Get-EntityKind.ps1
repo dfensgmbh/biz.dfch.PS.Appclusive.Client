@@ -364,11 +364,11 @@ Process
 		}
 		if($Name) 
 		{ 
-			$Exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
+			$Exp += ("tolower(Name) eq '{0}'" -f [uri]::EscapeDataString($Name.ToLower()));
 		}
 		if($Version) 
 		{ 
-			$Exp += ("tolower(Version) eq '{0}'" -f $Version.ToLower());
+			$Exp += ("tolower(Version) eq '{0}'" -f [uri]::EscapeDataString($Version.ToLower()));
 		}
 		if($CreatedBy) 
 		{ 

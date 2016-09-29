@@ -464,6 +464,81 @@ Describe "Get-EntityKind" -Tags "Get-EntityKind" {
             $list[0].Id | Should Be $entityKind.Id;
         }
     }
+    
+    $entityPrefix = "GetEntityKindEscaped";
+    $entitySetName = "EntityKinds";
+    $usedEntitySets = @("EntityKinds");
+    Context "Get-EntityKind-Escaped" {
+
+        BeforeEach {
+            $moduleName = 'biz.dfch.PS.Appclusive.Client';
+            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+            Import-Module $moduleName;
+
+            $svc = Enter-ApcServer;
+        }
+    
+        AfterAll {
+            $moduleName = 'biz.dfch.PS.Appclusive.Client';
+            Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+            Import-Module $moduleName;
+
+            $svc = Enter-ApcServer;
+            $entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+            foreach ($entitySet in $usedEntitySets)
+            {
+                $entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+         
+                foreach ($entity in $entities)
+                {
+                    Remove-Entity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+                }
+            }
+        }
+
+        It "Get-EntityKind-WithEntityKindWith+InName_ReturnsCorrectEntityKind" -Test {
+
+            # Arrange
+            $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
+            $name = "{0}-Name+%-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+            $version = "{0}-Version+%-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+            $entityKind.Name = $name;
+            $entityKind.Version = $version;
+            
+            $svc.Core.AddToEntityKinds($entityKind);
+            $svc.Core.SaveChanges();
+
+            
+			# Act
+            $result = Get-EntityKind -svc $svc -Name $name;
+
+			# Assert
+            $result | Should Not Be $null;
+            $result.Id | Should Be $entityKind.Id;
+        }
+
+        It "Get-EntityKind-WithEntityKindWith+InVersion_ReturnsCorrectEntityKind" -Test {
+
+            # Arrange
+            $entityKind = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityKind;
+            $name = "{0}-Name+%-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+            $version = "{0}-Version+%-{1}" -f $entityPrefix,[guid]::NewGuid().ToString();
+            $entityKind.Name = $name;
+            $entityKind.Version = $version;
+            
+            $svc.Core.AddToEntityKinds($entityKind);
+            $svc.Core.SaveChanges();
+
+            
+			# Act
+            $result = Get-EntityKind -svc $svc -Version $version;
+
+			# Assert
+            $result | Should Not Be $null;
+            $result.Id | Should Be $entityKind.Id;
+        }
+    }
 }
 
 #

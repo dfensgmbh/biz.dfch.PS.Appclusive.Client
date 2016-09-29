@@ -184,6 +184,8 @@ NestedModules = @(
 	,
 	'Set-EntityBag.ps1'
 	,
+	'Import-DataType.ps1'
+	,
 	'New-EntityBag.ps1'
 	,
 	'Get-EntityBag.ps1'
