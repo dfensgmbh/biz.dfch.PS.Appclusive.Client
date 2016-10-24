@@ -122,9 +122,9 @@ Process
 		{
 			$dataServiceContext.TenantHeaderName = $TenantHeaderName;
 		}
-		if($TenantID)
+		if($TenantId)
 		{
-			$dataServiceContext.TenantID = $TenantID;
+			$dataServiceContext.TenantID = $TenantId;
 		}
 		
 		# set JSON as MIME type if specified
