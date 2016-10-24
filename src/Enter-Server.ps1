@@ -66,8 +66,9 @@ Param
 	[Parameter(Mandatory = $false)]
 	[string] $TenantId
 	,
+	[ValidateSet('Biz-Dfch-Tenant-Id', 'Tenant-Id')]
 	[Parameter(Mandatory = $false)]
-	[string] $TenantHeaderName = 'Tenant-Id'
+	[string] $TenantHeaderName = 'Biz-Dfch-Tenant-Id'
 )
 
 Begin 
