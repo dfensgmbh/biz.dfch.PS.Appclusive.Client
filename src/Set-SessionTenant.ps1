@@ -72,8 +72,9 @@ PARAM
 	[Alias("TenantId")]
 	[guid] $Id
 	,
+	[ValidateSet('Biz-Dfch-Tenant-Id', 'Tenant-Id')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[string] $TenantHeaderName = 'Tenant-Id'
+	[string] $TenantHeaderName = 'Biz-Dfch-Tenant-Id'
 	,
 	# Specifies the tenant guid to set for this session
 	[Parameter(Mandatory = $true, ParameterSetName = 'clear')]
