@@ -88,11 +88,13 @@ Param
 	[string] $Mail
 	,
 	# Specifies the externalId for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
 	[string] $ExternalId
 	,
 	# Specifies the externalType for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 3)]
+	[ValidateNotNullOrEmpty()]
 	[string] $ExternalType
 	,
 	# Specifies the description for this entity
@@ -127,16 +129,13 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$UserContents = @($Name);
 	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
 	$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	Contract-Requires (!$entity) 'Entity does already exist'
 
-	if($PSCmdlet.ShouldProcess($UserContents))
-	{
-		$r = Set-User -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType $ExternalType -Description $Description -CreateIfNotExist:$true -svc $svc;
-		$OutputParameter = $r;
-	}
+	$r = Set-User -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType $ExternalType -Description $Description -CreateIfNotExist -svc $svc;
+	$OutputParameter = $r;
+
 	$fReturn = $true;
 }
 # Process
