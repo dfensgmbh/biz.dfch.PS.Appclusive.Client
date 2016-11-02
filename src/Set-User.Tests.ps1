@@ -21,6 +21,11 @@ Describe "Set-User" -Tags "Set-User" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
+			
+			$name = "{0}Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$mail = "Mail-{0}@appclusive.net" -f [guid]::NewGuid().ToString();
+			$externalId = "ExternalId-{0}" -f [guid]::NewGuid();
+			$externalType = "Internal";
 		}
 		
 		AfterEach {
@@ -43,42 +48,53 @@ Describe "Set-User" -Tags "Set-User" {
 
 		It "Set-User-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$Name = "{0}Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$Mail = "Mail-{0}@appclusive.net" -f [guid]::NewGuid().ToString();
-			$ExternalId = "{0}" -f [guid]::NewGuid();
-			
+			# N/A
 			# Act
-			$result = Set-User -svc $svc -Name $Name -Mail $Mail -ExternalId $ExternalId -CreateIfNotExist;
+			$result = Set-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType $externalType -CreateIfNotExist;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Id | Should Not Be 0;
 			$result.CreatedById | Should Not Be 0;
 			$result.ModifiedById | Should Not Be 0;
-			$result.Name | Should Be $Name;
-			$result.Mail | Should Be $Mail;
-			$result.ExternalId | Should Be $ExternalId;
+			$result.Name | Should Be $name;
+			$result.Mail | Should Be $mail;
+			$result.ExternalId | Should Be $externalId;
+			$result.ExternalType | Should Be $externalType;
 		}
 
 		It "Set-UserWithNewMailAndDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Name = "{0}Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$NewDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
-			$Mail = "Mail-{0}@appclusive.net" -f [guid]::NewGuid().ToString();
 			$NewMail = "NewMail-{0}@appclusive.net" -f [guid]::NewGuid().ToString();
-			$ExternalId = "{0}" -f [guid]::NewGuid();
-			$result1 = Set-User -svc $svc -Name $Name -Description $Description -Mail $Mail -ExternalId $ExternalId -CreateIfNotExist;
+
+			$result1 = Set-User -svc $svc -Name $name -Description $Description -Mail $mail -ExternalId $externalId -ExternalType $externalType -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			$result = Set-User -svc $svc -Name $Name -Description $NewDescription -Mail $NewMail;
+			$result = Set-User -svc $svc -Name $name -ExternalId $externalId -ExternalType $externalType -Description $NewDescription -Mail $NewMail;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Description | Should Be $NewDescription;
 			$result.Mail | Should Be $NewMail;
 			$result.ExternalId | Should Be $result1.ExternalId;
+		}
+		
+		It "Set-UserWithNewExternalId-ShouldReturnUpdatedEntity" -Test {
+			# Arrange
+			$newExternalId = "NewExternalId-{0}" -f [guid]::NewGuid().ToString();
+
+			$result1 = Set-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType $externalType -CreateIfNotExist;
+			$result1 | Should Not Be $null;
+			
+			# Act
+			$result = Set-User -svc $svc -Name $name -Mail $mail -ExternalId $newExternalId -ExternalType $newExternalType;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.ExternalId | Should Be $newExternalId;
 		}
 	}
 }
