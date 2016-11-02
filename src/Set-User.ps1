@@ -81,7 +81,23 @@ Param
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
 	[Alias('n')]
+	[ValidateNotNullOrEmpty()]
 	[string] $Name
+	,
+	# Specifies the key to modify
+	[Parameter(Mandatory = $true, Position = 1)]
+	[ValidateNotNullOrEmpty()]
+	[string] $Mail
+	,
+	# Specifies the new name name
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
+	[string] $ExternalId
+	,
+	# Specifies the externalType for this entity
+	[Parameter(Mandatory = $true, Position = 3)]
+	[ValidateNotNullOrEmpty()]
+	[string] $ExternalType
 	,
 	# Specifies the new name name
 	[Parameter(Mandatory = $false)]
@@ -91,18 +107,6 @@ Param
 	[Parameter(Mandatory = $false)]
 	[Alias("d")]
 	[string] $Description
-	,
-	# Specifies the key to modify
-	[Parameter(Mandatory = $false, Position = 1)]
-	[string] $Mail
-	,
-	# Specifies the new name name
-	[Parameter(Mandatory = $false, Position = 2)]
-	[guid] $ExternalId = [guid]::NewGuid()
-	,
-	# Specifies the externalType for this entity
-	[Parameter(Mandatory = $false)]
-	[string] $ExternalType = 'Internal'
 	,
 	# Specifies the tenant id for this entity
 	[Parameter(Mandatory = $false)]
@@ -163,9 +167,6 @@ Process
 		$svc.Core.AddToUsers($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
-		$entity.Mail = $Mail;
-		$entity.ExternalId = $ExternalId;
-		$entity.ExternalType = $ExternalType;
 		$entity.Tid = $Tid;
 		
 		$entity.Created = [System.DateTimeOffset]::Now;
@@ -177,19 +178,18 @@ Process
 		return;
 	}
 	
+	$entity.Mail = $Mail;
+	$entity.ExternalId = $ExternalId;
+	$entity.ExternalType = $ExternalType;
+	
 	if($PSBoundParameters.ContainsKey('Description'))
 	{
 		$entity.Description = $Description;
 	}
-	if($PSBoundParameters.ContainsKey('Mail'))
+	if($NewName) 
 	{
-		$entity.Mail = $Mail;
+		$entity.Name = $NewName; 
 	}
-	if($PSBoundParameters.ContainsKey('ExternalId'))
-	{
-		$entity.ExternalId = $ExternalId;
-	}
-	if($NewName) { $entity.Name = $NewName; }
 	$svc.Core.UpdateObject($entity);
 	$r = $svc.Core.SaveChanges();
 
