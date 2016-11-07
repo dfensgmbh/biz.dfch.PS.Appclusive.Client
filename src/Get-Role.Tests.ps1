@@ -120,7 +120,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnNull" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
-			$tid = Get-Tenant -svc $svc -Current;
+			$tid = (Get-Tenant -svc $svc -Current).Id;
 			
 			# Act
 			$result = Get-Role -svc $svc -Name $roleName -Tid $tid;
@@ -132,7 +132,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnDefaultValue" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
-			$tid = Get-Tenant -svc $svc -Current;
+			$tid = (Get-Tenant -svc $svc -Current).Id;
 			$defaultValue = 'MyDefaultValue';
 			
 			# Act
