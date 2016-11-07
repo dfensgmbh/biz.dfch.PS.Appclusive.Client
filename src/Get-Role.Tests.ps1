@@ -7,7 +7,6 @@ Describe "Get-Role" -Tags "Get-Role" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
-	. "$here\Set-Role.ps1"
 	
 	$entityPrefix = "Get-Role";
 	$usedEntitySets = @("Roles");
@@ -120,9 +119,10 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnNull" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
+			$roleTid = [guid]::NewGuid();
 			
 			# Act
-			$result = Get-Role -svc $svc -Name $roleName;
+			$result = Get-Role -svc $svc -Name $roleName -Tid $roleTid;
 
 			# Assert
 			$result | Should Be $null;
@@ -131,10 +131,11 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnDefaultValue" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
+			$roleTid = [guid]::NewGuid();
 			$defaultValue = 'MyDefaultValue';
 			
 			# Act
-			$result = Get-Role -svc $svc -Name $roleName -DefaultValue $defaultValue;
+			$result = Get-Role -svc $svc -Name $roleName -Tid $roleTid -DefaultValue $defaultValue;
 
 			# Assert
 			$result | Should Be $defaultValue;
@@ -193,8 +194,6 @@ Describe "Get-Role" -Tags "Get-Role" {
 			# Assert
 			$result | Should Not Be $null;
 			$result.Id | Should Be $resultFirst.Id;
-			$result.EntityKindId | Should Be $entityKindId;
-			$result.EntityId | Should Be $entityId;
 		}
 	}
 }
