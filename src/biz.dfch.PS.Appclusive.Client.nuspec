@@ -114,6 +114,7 @@ Tenant header name handling
     <file src="Set-Folder.ps1" target="tools\Set-Folder.ps1" />
     <file src="New-Folder.ps1" target="tools\New-Folder.ps1" />
     <file src="Get-Folder.ps1" target="tools\Get-Folder.ps1" />
+    <file src="Get-Role.ps1" target="tools\Get-Role.ps1" />
     <file src="..\packages\Microsoft.Data.Edm.5.6.4\lib\net40\Microsoft.Data.Edm.dll" target="tools\Microsoft.Data.Edm.dll" />
     <file src="..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll" target="tools\Microsoft.Data.OData.dll" />
     <file src="..\packages\Microsoft.Data.Services.Client.5.6.4\lib\net40\Microsoft.Data.Services.Client.dll" target="tools\Microsoft.Data.Services.Client.dll" />
