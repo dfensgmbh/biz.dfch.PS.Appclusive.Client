@@ -39,10 +39,6 @@ Retrieves the name of all Roles.
 Get-Role -id 159
 
 Name            : ArbitraryName
-Value           : ArbitraryValue
-EntityId        : 2
-EntityKindId    : 1
-ProtectionLevel : 0
 Id              : 159
 Tid             : 11111111-1111-1111-1111-111111111111
 Description     :
@@ -51,6 +47,8 @@ ModifiedById    : 1
 Created         : 23.08.2016 11:08:14 +02:00
 Modified        : 23.08.2016 11:08:14 +02:00
 RowVersion      : {0, 0, 0, 0...}
+RoleType		: 3
+MailAddress		:
 Tenant          :
 CreatedBy       :
 ModifiedBy      :
@@ -73,12 +71,12 @@ Retrieves the name and id of the first 3 Roles.
 
 
 .EXAMPLE
-Get-Role Arbitrary.Name -Select Value -ValueOnly -DefaultValue 'http://proxy:8080'
+Get-Role Arbitrary.Name -Select Name -ValueOnly -DefaultValue 'Arbitrary'
 
 http://proxy:8080
 
-Retrieves the 'Value' property of a Role with Name 'Arbitrary.Name' 
-and returns arbitrary.value, if the no results were found.
+Retrieves the 'Name' property of a Role with Name 'Arbitrary.Name' 
+and returns arbitrary.Name, if the no results were found.
 
 
 .LINK
