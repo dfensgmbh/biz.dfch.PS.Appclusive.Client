@@ -161,7 +161,7 @@ Begin
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 	
-	$EntitySetName = 'Roles';
+	$entitySetName = 'Roles';
 	
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
@@ -197,22 +197,22 @@ Process
 		{
 			if($PSBoundParameters.ContainsKey('First'))
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select -Property $Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select -Property $Select;
 			}
 			else
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name') | Select -Property $Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$orderby', 'Name') | Select -Property $Select;
 			}
 		}
 		else 
 		{
 			if($PSBoundParameters.ContainsKey('First'))
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$orderby', 'Name').AddQueryOption('$top', $First) | Select;
 			}
 			else
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$orderby', 'Name') | Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$orderby', 'Name') | Select;
 			}
 		}
 	}
@@ -233,22 +233,22 @@ Process
 		{
 			if($PSBoundParameters.ContainsKey('First'))
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select -Property $Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select -Property $Select;
 			}
 			else
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $filterExpression) | Select -Property $Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression) | Select -Property $Select;
 			}
 		}
 		else
 		{
 			if($PSBoundParameters.ContainsKey('First'))
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select;
 			}
 			else
 			{
-				$response = $svc.Core.$EntitySetName.AddQueryOption('$filter', $filterExpression) | Select;
+				$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression) | Select;
 			}
 		}
 	}
