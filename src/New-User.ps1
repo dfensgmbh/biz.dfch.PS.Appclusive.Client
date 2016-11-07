@@ -77,27 +77,22 @@ See module manifest for dependencies and further requirements.
 )]
 Param 
 (
-	# Specifies the name for this entity
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
-	# Specifies the key for this entity
 	[Parameter(Mandatory = $true, Position = 1)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Mail
 	,
-	# Specifies the externalId for this entity
 	[Parameter(Mandatory = $true, Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[string] $ExternalId
 	,
-	# Specifies the externalType for this entity
 	[Parameter(Mandatory = $true, Position = 3)]
 	[ValidateNotNullOrEmpty()]
 	[string] $ExternalType
 	,
-	# Specifies the description for this entity
 	[Parameter(Mandatory = $false)]
 	[string] $Description
 	,
