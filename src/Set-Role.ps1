@@ -82,18 +82,20 @@ Param
 (
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 0)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'name', Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
 	# Specifies the TenantId to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
-	[Parameter(Mandatory = $true, Position = 1)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'name', Position = 1)]
 	[ValidateNotNullOrEmpty()]
 	[guid] $Tid
 	,
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 2)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 2)]
 	[long] $Roletype
 	,
 	# Specifies the name to modify
@@ -107,13 +109,12 @@ Param
 	[string] $Description
 	,
 	# Specifies the new name
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 3)]
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
 	# Specifies to create a entity if it does not exist
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
-	[Parameter(Mandatory = $false)]
 	[Alias("c")]
 	[switch] $CreateIfNotExist = $false
 	,
@@ -162,11 +163,11 @@ $AddedEntity = $null;
 
 try 
 {
+
 	$exp = @();
 	
 	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-	$exp += ("(EntityId eq {0})" -f $EntityId);
-	$exp += ("(EntityKindId eq {0})" -f $EntityKindId);
+	$exp += ("(Tid eq guid'{0}')" -f $Tid);
 
 	$FilterExpression = [String]::Join(' and ', $exp);
 
@@ -178,32 +179,39 @@ try
 		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
 		throw($gotoError);
 	}
-	if(!$entity) 
+	
+	if($PSCmdlet.ParameterSetName -eq 'create') 
 	{
 		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Role;
 		$svc.Core.AddToRoles($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
-		$entity.Value = $Value;
-		$entity.EntityId = $EntityId;
-		$entity.EntityKindId = $EntityKindId;
+		$entity.Tid = $Tid;
+		$entity.RoleType = $RoleType
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.Modified = $entity.Created;
 		$entity.CreatedById = 0;
 		$entity.ModifiedById = 0;
-		$entity.Tid = [guid]::Empty.ToString();
 	}
+	elseif($PSCmdlet.ParameterSetName -eq 'name')
+	{
+		if($PSBoundParameters.ContainsKey('NewName'))
+		{
+			$entity.Name = $NewName;
+		}
+		if($PSBoundParameters.ContainsKey('RoleType'))
+		{
+			$entity.RoleType = $RoleType;
+		}
+	}
+	
 	if($PSBoundParameters.ContainsKey('Description'))
 	{
 		$entity.Description = $Description;
 	}
-	if($PSBoundParameters.ContainsKey('ProtectionLevel'))
+	if($PSBoundParameters.ContainsKey('MailAddress'))
 	{
-		$entity.ProtectionLevel = $ProtectionLevel;
-	}
-	if($PSBoundParameters.ContainsKey('NewValue'))
-	{
-		$entity.Value = $NewValue;
+		$entity.MailAddress = $MailAddress;
 	}
 
 	$svc.Core.UpdateObject($entity);
