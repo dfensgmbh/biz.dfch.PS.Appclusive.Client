@@ -22,13 +22,9 @@ Describe "Set-Role" -Tags "Set-Role" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
-
-			$name = "{0}-Name-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-			$value = "value-{0}" -f [guid]::NewGuid().ToString();
-			$entityKindId = [biz.dfch.CS.Appclusive.Public.Constants+EntityKindId]::Node.value__;
-
-			$currentTenant = Get-Tenant -Current -svc $svc;
-			$testNode = New-Node -Name $name -ParentId $currentTenant.NodeId -EntityKindId $entityKindId -svc $svc;
+			
+			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
+			$Tid = "{0}" -f [guid]::NewGuid().toString();
 		}
 		
 		AfterAll {
@@ -57,102 +53,45 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# N/A (Declared in BeforeEach)
 			
 			# Act
-			$result = Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -Tid $Tid -svc $svc -CreateIfNotExist;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
-			$result.Value | Should Be $value;
-			$result.EntityId | Should Be $testNode.Id;
-			$result.EntityKindId| Should Be $entityKindId;
+			$result.Tid | Should Be $Tid;
 		}
 	
-		It "Set-Role-ShouldReturnNewEntityWithDescriptionAndProtectionLevel" -Test {
+		It "Set-Role-ShouldReturnNewEntityWithDescription" -Test {
 			# Arrange
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.RoleProtectionLevelEnum]::MinValue.value__;	
 				
 			# Act
-			$result = Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -Tid $Tid -Description $description -svc $svc -CreateIfNotExist;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Description | Should Be $description;
-			$result.ProtectionLevel | Should Be $protectionLevel;
 		}
 
-		It "Set-Role-WithNewDescriptionAndProtectionLevel-ShouldReturnUpdatedEntity" -Test {
+		It "Set-Role-WithNewDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			$protectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.RoleProtectionLevelEnum]::MinValue.value__;
-			
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
-			$newProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.RoleProtectionLevelEnum]::MaxValue.value__;
 			
-			$result1 = Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -Description $description -ProtectionLevel $protectionLevel -svc $svc -CreateIfNotExist;
+			$result1 = Set-Role -Name $name -Tid $Tid -Description $description -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			$result1.Description | Should Be $description;
-			$result1.ProtectionLevel | Should Be $protectionLevel;
 			
 			# Act
-			$result = Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -Description $newDescription -ProtectionLevel $newProtectionLevel -svc $svc;
+			$result = Set-Role -Name $name -Tid $Tid -Description $newDescription -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
 			$result.Description | Should Be $newDescription;
-			$result.ProtectionLevel | Should Be $newProtectionLevel;
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-Role-ShouldReturnUpdatedValue" -Test {
-			# Arrange
-			$newValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
-
-			$result1 = Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -CreateIfNotExist;
-			$result1 | Should Not Be $null;
-			
-			# Act
-			$result = Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -NewValue $newValue;
-			
-			# Assert
-			$result | Should Not Be $null;
-			$result.Value | Should Be $newValue;
-			$result.EntityId | Should Be $testNode.Id;
-			$result.EntityKindId| Should Be $entityKindId;
-		}
-
-		It "Set-Role-WithInvalidEntityKindIdShouldThrowArgumentException" -Test {
-			# Arrange
-			# N/A	
-				
-			# Act
-			{ Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId 0 -svc $svc -CreateIfNotExist } | Should Throw 'argument';
-
-			# Assert
-			# N/A
-		}
 		
-		It "Set-Role-WithInvalidEntityIdShouldThrowArgumentException" -Test {
-			# Arrange
-			# N/A	
-				
-			# Act
-			{ Set-Role -Name $name -Value $value -EntityId 0 -EntityKindId $testNode.EntityKindId -svc $svc -CreateIfNotExist } | Should Throw 'argument';
-
-			# Assert
-			# N/A
-		}
-		
-		It "Set-Role-WithInvalidProtectionLevelShouldThrowContractException" -Test {
-			# Arrange
-			$invalidProtectionLevel = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.RoleProtectionLevelEnum]::MaxValue.value__ + 1;
-			
-			# Act
-			{ Set-Role -Name $name -Value $value -EntityId $testNode.Id -EntityKindId $entityKindId -svc $svc -ProtectionLevel $invalidProtectionLevel -CreateIfNotExist } | Should ThrowErrorId 'Contract';
-			
-			# Assert
-			# N/A
-		}
 	}
 }
 
