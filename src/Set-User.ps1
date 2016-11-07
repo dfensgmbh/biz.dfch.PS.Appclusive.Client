@@ -7,7 +7,7 @@ Sets or creates a User entry in Appclusive.
 .DESCRIPTION
 Sets or creates a User entry in Appclusive.
 
-By updating a User entry you can specify, if you want to update the Mail address.
+By updating a User entry you can specify, if you want to update the Mail address, description or both.
 
 
 .OUTPUTS
