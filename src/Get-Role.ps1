@@ -110,7 +110,7 @@ PARAM
 	[string] $Name
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
-	[guid] $TId
+	[guid] $Tid
 	,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
@@ -222,7 +222,8 @@ Process
 	{
 		if ($PSCmdlet.ParameterSetName -eq 'name')
 		{
-			$exp += ("(tolower(Name) eq '{0}')" -f $name.ToLower());
+			$exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
+			$exp += ("Tid eq guid'{0}'" -f $Tid);
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq 'id')
 		{
