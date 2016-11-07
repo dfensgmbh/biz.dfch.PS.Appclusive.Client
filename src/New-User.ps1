@@ -129,17 +129,13 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$UserContents = @($Name, $ExternalId, $ExternalType);
 	
 	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
 	$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	Contract-Requires (!$entity) 'Entity does already exist'
 
-	if($PSCmdlet.ShouldProcess($UserContents))
-	{
-		$r = Set-User -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType $ExternalType -Description $Description -CreateIfNotExist -svc $svc;
-		$OutputParameter = $r;
-	}
+	$r = Set-User -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType $ExternalType -Description $Description -CreateIfNotExist -svc $svc;
+	$OutputParameter = $r;
 
 	$fReturn = $true;
 }
