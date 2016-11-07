@@ -7,7 +7,7 @@ Sets or creates a User entry in Appclusive.
 .DESCRIPTION
 Sets or creates a User entry in Appclusive.
 
-By updating a User entry you can specify if you want to update the Name, Mail, ExternalId or any combination thereof.
+By updating a User entry you can specify, if you want to update the Mail address.
 
 
 .OUTPUTS
@@ -156,7 +156,6 @@ Process
 	$OutputParameter = $null;
 	$AddedEntity = $null;
 	
-
 
 	if(!$Tid)
 	{
