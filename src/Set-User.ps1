@@ -155,6 +155,7 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 	$AddedEntity = $null;
+	
 
 
 	if(!$Tid)
@@ -166,6 +167,8 @@ Process
 	# is true if entity doesn't exist and 'CreateIfNotExist' is set
 	if($PSCmdlet.ParameterSetName -eq 'create') 
 	{
+		$UserContents = @($Name, $Mail, $ExternalId, $ExternalType);
+		
 		$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
 		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 		Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
@@ -186,12 +189,16 @@ Process
 	# is true if entity exists and parameterset equals 'email'
 	if($PSCmdlet.ParameterSetName -eq 'email') 
 	{
+		$UserContents = @($Email);
+		
 		$FilterExpression = "(tolower(Mail) eq '{0}')" -f $Mail.toLower();
 		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	}
 	
 	if($PSCmdlet.ParameterSetName -eq 'external') 
 	{
+		$UserContents = @($ExternalId, $ExternalType);
+		
 		$FilterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
 		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	}
@@ -211,11 +218,11 @@ Process
 	{
 		$entity.Description = $Description;
 	}
-	$svc.Core.UpdateObject($entity);
-	$r = $svc.Core.SaveChanges();
 
 	if($PSCmdlet.ShouldProcess($UserContents))
 	{
+		$svc.Core.UpdateObject($entity);
+		$r = $svc.Core.SaveChanges();
 		$r = $entity;
 		$OutputParameter = Format-ResultAs $r $As;
 	}
