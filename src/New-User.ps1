@@ -7,7 +7,7 @@ Creates a User entry in Appclusive.
 .DESCRIPTION
 Creates a User entry in Appclusive.
 
-You must specify both parameters 'Name' and 'Mail'. If the entry already exists no update of the existing entry is performed.
+You must specify parameters 'Name', 'Mail', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
@@ -15,14 +15,14 @@ You must specify both parameters 'Name' and 'Mail'. If the entry already exists 
 
 
 .EXAMPLE
-New-User myName myName@appclusive.net
+New-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType
 
-ExternalId   : 27af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myName@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : arbitrary@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myName
+Name         : ArbitraryName
 Description  : 
 CreatedById  : 1
 ModifiedById : 1
@@ -30,30 +30,30 @@ Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
 Create a new User entry if it not already exists.
 
 
 .EXAMPLE
-New-User -Name myName -Mail myName@appclusive.net -ExternalId [guid]'27af9d74-388b-46f2-90d6-a1545d89d16f' -Description myDescription
+New-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -Description ArbitraryDescription
 
-ExternalId   : 27af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myName@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : arbitrary@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myName
-Description  : myDescription
+Name         : ArbitraryName
+Description  : ArbitraryDescription
 CreatedById  : 1
 ModifiedById : 1
 Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
 Create a new User entry if it not already exists.
 
