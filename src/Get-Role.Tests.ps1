@@ -181,16 +181,16 @@ Describe "Get-Role" -Tags "Get-Role" {
 			}
 		}
 
-		It "Get-Role-ByNameAndTId" -Test {
+		It "Get-Role-ByNameAndTid" -Test {
 			# Arrange
 			$showFirst = 1;
 			
 			$resultFirst = Get-Role -svc $svc -First $showFirst;
 			$name = $resultFirst.Name;
-			$tId = $resultFirst.TId;
+			$tid = $resultFirst.Tid;
 		
 			# Act
-			$result = Get-Role -svc $svc -Name $name -Tid $tId;
+			$result = Get-Role -svc $svc -Name $name -Tid $tid;
 			
 			# Assert
 			$result | Should Not Be $null;
