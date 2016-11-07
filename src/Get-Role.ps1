@@ -28,18 +28,18 @@ Get-Role -ListAvailable -Select Name
 
 Name
 ----
-arbitrary.name
-some.name
-another.name
+ArbitraryRole
+AnotherRole
+SomeRole
 
 Retrieves the name of all Roles.
 
 
 .EXAMPLE
-Get-Role -Id 159
+Get-Role -Id 42
 
-Name            : ArbitraryName
-Id              : 159
+Name            : ArbitraryRole
+Id              : 42
 Tid             : 11111111-1111-1111-1111-111111111111
 Description     :
 CreatedById     : 1
@@ -53,7 +53,7 @@ Tenant          :
 CreatedBy       :
 ModifiedBy      :
 
-Retrieves the Role object with Id 159 and returns all properties of it.
+Retrieves the Role object with Id 42 and returns all properties of it.
 
 
 
@@ -62,21 +62,21 @@ Get-Role -ListAvailable -Select Name, Id -First 3
 
 Name                    Id
 ----                    --
-arbitrary.name			4
-some.name				5
-another.name		    8
+ArbitraryRole			4
+AnotherRole				5
+SomeRole				8
 
 Retrieves the name and id of the first 3 Roles.
 
 
 
 .EXAMPLE
-Get-Role Arbitrary.Name -Select Name -ValueOnly -DefaultValue 'Arbitrary'
+Get-Role ArbitraryName -Select Name -ValueOnly -DefaultValue 'ArbitraryDefault'
 
-http://proxy:8080
+ArbitraryName
 
-Retrieves the 'Name' property of a Role with Name 'Arbitrary.Name' 
-and returns arbitrary.Name, if the no results were found.
+Retrieves the 'Name' property of a Role with Name 'ArbitraryName' 
+and returns ArbitraryDefault, if the no results were found.
 
 
 .LINK
@@ -107,7 +107,7 @@ PARAM
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
-	[Parameter(Mandatory = $true, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[guid] $Tid
 	,
 	# Specify the attributes of the entity to return
