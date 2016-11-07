@@ -15,7 +15,7 @@ default
 
 
 .EXAMPLE
-Set-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType
+Set-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -CreateIfNotExist
 
 ExternalId   : ArbitraryExternalId
 ExternalType : ArbitraryExternalType
@@ -37,7 +37,29 @@ Create a new User entry if it does not exists.
 
 
 .EXAMPLE
-Set-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -NewMail newmail@example.com
+Set-User -Name ArbitraryName -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -NewMail newmail@example.com
+
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : newmail@example.com
+Id           : 2
+Tid          : 22222222-2222-2222-2222-222222222222
+Name         : ArbitraryName
+Description  : 
+CreatedById  : 1
+ModifiedById : 1
+Created      : 15.12.2015 00:00:00 +01:00
+Modified     : 17.12.2015 00:00:00 +01:00
+RowVersion   : {0, 0, 0, 0...}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+Update an existing User with new Mail.
+
+
+.EXAMPLE
+Set-User -Name ArbitraryName -Mail arbitrary@example.com -NewMail newmail@example.com
 
 ExternalId   : ArbitraryExternalId
 ExternalType : ArbitraryExternalType
@@ -149,7 +171,6 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 	$AddedEntity = $null;
-	
 
 	if(!$Tid)
 	{
@@ -162,8 +183,8 @@ Process
 	{
 		$UserContents = @($Name, $Mail, $ExternalId, $ExternalType);
 		
-		$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
-		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+		$filterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
 		Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
 		
 		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.User;
@@ -182,18 +203,18 @@ Process
 	# is true if entity exists and parameterset equals 'email'
 	if($PSCmdlet.ParameterSetName -eq 'email') 
 	{
-		$UserContents = @($Email);
+		$UserContents = @($Mail);
 		
-		$FilterExpression = "(tolower(Mail) eq '{0}')" -f $Mail.toLower();
-		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+		$filterExpression = "(tolower(Mail) eq '{0}')" -f $Mail.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
 	}
 	
 	if($PSCmdlet.ParameterSetName -eq 'external') 
 	{
 		$UserContents = @($ExternalId, $ExternalType);
 		
-		$FilterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
-		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+		$filterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
 	}
 	
 	if($PSCmdlet.ParameterSetName -eq 'email' -or $PSCmdlet.ParameterSetName -eq 'external') 
