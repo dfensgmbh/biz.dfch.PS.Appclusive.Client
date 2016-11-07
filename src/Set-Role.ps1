@@ -1,13 +1,13 @@
-function Set-EntityBag {
+function Set-Role {
 <#
 .SYNOPSIS
-Sets or creates a EntityBag entry in Appclusive.
+Sets or creates a Role entry in Appclusive.
 
 
 .DESCRIPTION
-Sets or creates a EntityBag entry in Appclusive.
+Sets or creates a Role entry in Appclusive.
 
-By updating an EntityBag entry you can specify if you want to update the description, protectionLevel or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
+By updating an Role entry you can specify if you want to update the description, protectionLevel or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
 
 
 .OUTPUTS
@@ -15,7 +15,7 @@ default
 
 
 .EXAMPLE
-Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId 1 -EntityId 2 -svc $svc -CreateIfNotExist;
+Set-Role -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId 1 -EntityId 2 -svc $svc -CreateIfNotExist;
 
 Name            : ArbitraryName
 Value           : ArbitraryValue
@@ -34,11 +34,11 @@ Tenant          :
 CreatedBy       :
 ModifiedBy      :
 
-Create a new EntityBag entry if it does not exists.
+Create a new Role entry if it does not exists.
 
 
 .EXAMPLE
-Set-EntityBag -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId  1 -EntityId 2 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
+Set-Role -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId  1 -EntityId 2 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
 
 Name            : ArbitraryName
 Value           : Arbitrary updated value
@@ -57,12 +57,12 @@ Tenant          :
 CreatedBy       :
 ModifiedBy      :
 
-Update an existing EntityBag with new value and description.
+Update an existing Role with new value and description.
 
 
 .LINK
-Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
-Set-EntityBag: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/
+Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Role/
+Set-Role: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Role/
 
 
 .NOTES
@@ -75,44 +75,44 @@ See module manifest for dependencies and further requirements.
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-EntityBag/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Role/'
 )]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
 	# Specifies the name to modify
-	[Parameter(Mandatory = $true, Position = 0)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the value to modify
+	# Specifies the TenantId to modify
+	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
 	[Parameter(Mandatory = $true, Position = 1)]
-	[string] $Value
+	[ValidateNotNullOrEmpty()]
+	[guid] $Tid
 	,
-	# Specifies the EntityKindId
-	[Parameter(Mandatory = $true, Position = 2)]
-	[ValidateRange(1, [long]::MaxValue)]
-	[long] $EntityKindId
+	# Specifies the name to modify
+	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 2)]
+	[long] $Roletype
 	,
-	# Specifies the EntityId
-	[Parameter(Mandatory = $true, Position = 3)]
-	[ValidateRange(1, [long]::MaxValue)]
-	[long] $EntityId
-	,
-	# Specifies the new value
+	# Specifies the name to modify
 	[Parameter(Mandatory = $false)]
-	[string] $NewValue
+	[ValidateNotNullOrEmpty()]
+	[string] $MailAddress
 	,
+	# Specifies the description
 	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Description
 	,
-	# Specifies the ProtectionLevel
+	# Specifies the new name
 	[Parameter(Mandatory = $false)]
-	[long] $ProtectionLevel
+	[ValidateNotNullOrEmpty()]
+	[string] $NewName
 	,
 	# Specifies to create a entity if it does not exist
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $false)]
 	[Alias("c")]
 	[switch] $CreateIfNotExist = $false
@@ -141,10 +141,10 @@ Begin
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
 	
-	# ProtectionLevel param validation
-	$minProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MinValue.value__;
-	$maxProtectionLevelValue = [biz.dfch.CS.Appclusive.Public.OdataServices.Core.EntityBagProtectionLevelEnum]::MaxValue.value__;
-	if ($ProtectionLevel) 
+	# RoleType param validation
+	$minRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
+	$maxRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.value__;
+	if ($RoleType) 
 	{
 		Contract-Assert($minProtectionLevelValue -le $ProtectionLevel);
 		Contract-Assert($maxProtectionLevelValue -ge $ProtectionLevel);
@@ -170,7 +170,7 @@ try
 
 	$FilterExpression = [String]::Join(' and ', $exp);
 
-	$entity = $svc.Core.EntityBags.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 
 	if(!$CreateIfNotExist -And !$entity) 
 	{
@@ -180,8 +180,8 @@ try
 	}
 	if(!$entity) 
 	{
-		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.EntityBag;
-		$svc.Core.AddToEntityBags($entity);
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Role;
+		$svc.Core.AddToRoles($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
 		$entity.Value = $Value;
@@ -279,7 +279,7 @@ return $OutputParameter;
 # End
 
 }
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-EntityBag; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Role; } 
 
 # 
 # Copyright 2016 d-fens GmbH
