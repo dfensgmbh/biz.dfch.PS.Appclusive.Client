@@ -22,6 +22,12 @@ Describe "New-User" -Tags "New-User" {
 			Import-Module $moduleName;
 
 			$svc = Enter-ApcServer;
+			
+			$name = "{0}Name-{1}" -f $entityNamePrefix, [guid]::NewGuid().ToString();
+			$mail = "Mail-{0}@appclsusive.net" -f [guid]::NewGuid().ToString();
+			$externalId = "ExternalId-{0}" -f [guid]::NewGuid();
+			$externalType = "Internal";
+			
 		}
 	
 		AfterAll {
@@ -45,18 +51,29 @@ Describe "New-User" -Tags "New-User" {
 	
 		# Context wide constants
 		# N/A
+		
+		It "New-UserShouldCreateNewUser" -Test {
+			# Arrange
+			# N/A
+			
+			# Act
+			$result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType $externalType;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.Mail | Should Be $mail;
+			$result.ExternalId | Should Be $externalId;
+		}
 
 		It "New-UserDuplicate-ShouldReturnNull" -Test {
 			# Arrange
-			$name = "{0}Name-{1}" -f $entityNamePrefix, [guid]::NewGuid().ToString();
-			$mail = "Mail-{0}@appclsusive.net" -f [guid]::NewGuid().ToString();
-			$externalId = "{0}" -f [guid]::NewGuid();
-			$result1 = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType Internal;
+			$result1 = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType $externalType;
 			$result1 | Should Not Be $null;
 			
 			# Act
-			{ $result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId; } | Should Throw 'Precondition failed'
-			{ $result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId; } | Should Throw 'Entity does already exist'
+			{ $result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType $externalType; } | Should Throw 'Precondition failed'
+			{ $result = New-User -svc $svc -Name $name -Mail $mail -ExternalId $externalId -ExternalType $externalType; } | Should Throw 'Entity does already exist'
 
 			# Assert
 			$result | Should Be $null;
