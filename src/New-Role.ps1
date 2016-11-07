@@ -4,7 +4,7 @@ PARAM
 (
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
-	[string] $RoleName
+	[string] $Name
 	,
 	[Parameter(Mandatory = $true, Position = 1)]
 	[ValidateNotNullOrEmpty()]
