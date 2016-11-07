@@ -91,6 +91,23 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
+		It "Set-Role-WithNewName-ShouldReturnUpdatedEntity" -Test {
+			# Arrange
+			$newName = "NewName-{0}" -f [guid]::NewGuid().ToString();
+			
+			$result1 = Set-Role -Name $name -Tid $Tid -svc $svc -CreateIfNotExist;
+			$result1 | Should Not Be $null;
+			$result1.Name | Should Be $name;
+			
+			# Act
+			$result = Set-Role -Name $name -Tid $Tid -NewName $newName -svc $svc;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $newName;
+			$result.Id | Should Be $result1.Id;
+		}
+		
 		
 	}
 }
