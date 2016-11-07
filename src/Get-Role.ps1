@@ -8,7 +8,7 @@ Retrieves one or more entities from the Role entity set.
 Retrieves one or more entities from the Role entity set.
 
 You can retrieve one ore more entities from the entity set by specifying 
-Id, Name or other properties.
+Id or Name and the TenantId (Tid).
 
 
 .INPUTS
