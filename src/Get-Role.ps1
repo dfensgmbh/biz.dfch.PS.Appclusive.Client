@@ -7,12 +7,12 @@ Retrieves one or more entities from the Role entity set.
 .DESCRIPTION
 Retrieves one or more entities from the Role entity set.
 
-You can retrieve one ore more entities from the entity set by specifying 
-Id or Name and the TenantId (Tid).
+You can retrieve one ore more entities from the entity set by either specifying 
+Name, Tid (TenantId) or Id.
 
 
 .INPUTS
-The Cmdlet can either return all available entities or filter entities based on specified conditions
+The Cmdlet can either return all available entities or filter entities based on 
 specified conditions.
 See PARAMETERS section for possible inputs.
 
@@ -36,7 +36,7 @@ Retrieves the name of all Roles.
 
 
 .EXAMPLE
-Get-Role -id 159
+Get-Role -Id 159
 
 Name            : ArbitraryName
 Id              : 159
