@@ -220,6 +220,11 @@ Process
 	{
 		if ($PSCmdlet.ParameterSetName -eq 'name')
 		{
+			if (!$Tid)
+			{
+				$Tid = (Get-Tenant -svc $svc -Current).Id;
+			}
+		
 			$exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
 			$exp += ("Tid eq guid'{0}'" -f $Tid);
 		}
