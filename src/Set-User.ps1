@@ -69,7 +69,7 @@ See module manifest for dependencies and further requirements.
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $false
+    SupportsShouldProcess = $true
 	,
     ConfirmImpact = 'Low'
 	,
@@ -79,29 +79,33 @@ See module manifest for dependencies and further requirements.
 Param 
 (
 	# Specifies the name to modify
-	[Parameter(Mandatory = $true, Position = 0)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Alias('n')]
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
 	# Specifies the key to modify
-	[Parameter(Mandatory = $true, Position = 1)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'email')]
 	[ValidateNotNullOrEmpty()]
 	[string] $Mail
 	,
 	# Specifies the new name name
-	[Parameter(Mandatory = $true, Position = 2)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'external')]
 	[ValidateNotNullOrEmpty()]
 	[string] $ExternalId
 	,
 	# Specifies the externalType for this entity
-	[Parameter(Mandatory = $true, Position = 3)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'external')]
 	[ValidateNotNullOrEmpty()]
 	[string] $ExternalType
 	,
-	# Specifies the new name name
-	[Parameter(Mandatory = $false)]
-	[string] $NewName
+	# Specifies the new mail
+	[Parameter(Mandatory = $false, ParameterSetName = 'external')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'email')]
+	[string] $NewMail
 	,
 	# Specifies the description
 	[Parameter(Mandatory = $false)]
@@ -110,17 +114,12 @@ Param
 	,
 	# Specifies the tenant id for this entity
 	[Parameter(Mandatory = $false)]
-	[guid] $Tid = [guid]::Empty.ToString()
+	[guid] $Tid
 	,
 	# Specifies to create a entity if it does not exist
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Alias("c")]
 	[switch] $CreateIfNotExist = $false
-	,
-	# Specifies to create a entity if it does not exist
-	[Parameter(Mandatory = $false)]
-	[Alias("x")]
-	[switch] $NoUpdateIfExist = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -157,44 +156,69 @@ Process
 	$OutputParameter = $null;
 	$AddedEntity = $null;
 
-	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-	Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
 
-	if(!$entity) 
+	if(!$Tid)
 	{
+		$currentTenant = Get-Tenant -svc $svc -Current;
+		$Tid = $currentTenant.Id;
+	}
+	
+	# is true if entity doesn't exist and 'CreateIfNotExist' is set
+	if($PSCmdlet.ParameterSetName -eq 'create') 
+	{
+		$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+		Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
+		
 		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.User;
 		$svc.Core.AddToUsers($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
 		$entity.Tid = $Tid;
-		
+		$entity.Mail = $Mail;
+		$entity.ExternalId = $ExternalId;
+		$entity.ExternalType = $ExternalType;
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.CreatedById = 0;
 		$entity.ModifiedById = 0;
 	}
-	elseif ($NoUpdateIfExist)
+
+	# is true if entity exists and parameterset equals 'email'
+	if($PSCmdlet.ParameterSetName -eq 'email') 
 	{
-		return;
+		$FilterExpression = "(tolower(Mail) eq '{0}')" -f $Mail.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	}
 	
-	$entity.Mail = $Mail;
-	$entity.ExternalId = $ExternalId;
-	$entity.ExternalType = $ExternalType;
+	if($PSCmdlet.ParameterSetName -eq 'external') 
+	{
+		$FilterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	}
 	
+	if($PSCmdlet.ParameterSetName -eq 'email' -or $PSCmdlet.ParameterSetName -eq 'external') 
+	{
+		Contract-Assert ($entity) "Entity does not exist."
+		
+		if($PSBoundParameters.ContainsKey('NewMail'))
+		{
+			$entity.Mail = $NewMail;
+		}
+	} 
+	
+
 	if($PSBoundParameters.ContainsKey('Description'))
 	{
 		$entity.Description = $Description;
 	}
-	if($NewName) 
-	{
-		$entity.Name = $NewName; 
-	}
 	$svc.Core.UpdateObject($entity);
 	$r = $svc.Core.SaveChanges();
 
-	$r = $entity;
-	$OutputParameter = Format-ResultAs $r $As;
+	if($PSCmdlet.ShouldProcess($UserContents))
+	{
+		$r = $entity;
+		$OutputParameter = Format-ResultAs $r $As;
+	}
 	$fReturn = $true;
 }
 # Process
