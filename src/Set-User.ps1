@@ -15,14 +15,14 @@ default
 
 
 .EXAMPLE
-Set-User myName myMail myExternalId -CreateIfNotExist
+Set-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType
 
-ExternalId   : 27af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myMail@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : arbitrary@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myName
+Name         : ArbitraryName
 Description  : 
 CreatedById  : 1
 ModifiedById : 1
@@ -30,32 +30,32 @@ Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
 Create a new User entry if it does not exists.
 
 
 .EXAMPLE
-Set-User -Name myName -NewName myNewName -Mail myNewMail@appclusive.net -ExternalId [guid]'28af9d74-388b-46f2-90d6-a1545d89d16f'
+Set-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -NewMail newmail@example.com
 
-ExternalId   : 28af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myNewMail@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : newmail@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myNewName
-Description  : myDescription
+Name         : ArbitraryName
+Description  : 
 CreatedById  : 1
 ModifiedById : 1
 Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
-Update an existing User with new name, Mail and ExternalId.
+Update an existing User with new Mail.
 
 
 .LINK
@@ -78,36 +78,30 @@ See module manifest for dependencies and further requirements.
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
-	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Alias('n')]
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
-	# Specifies the key to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $true, ParameterSetName = 'email')]
 	[ValidateNotNullOrEmpty()]
 	[string] $Mail
 	,
-	# Specifies the new name name
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $true, ParameterSetName = 'external')]
 	[ValidateNotNullOrEmpty()]
 	[string] $ExternalId
 	,
-	# Specifies the externalType for this entity
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Parameter(Mandatory = $true, ParameterSetName = 'external')]
 	[ValidateNotNullOrEmpty()]
 	[string] $ExternalType
 	,
-	# Specifies the new mail
 	[Parameter(Mandatory = $false, ParameterSetName = 'external')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'email')]
 	[string] $NewMail
 	,
-	# Specifies the description
 	[Parameter(Mandatory = $false)]
 	[Alias("d")]
 	[string] $Description
