@@ -7,7 +7,7 @@ Creates a User entry in Appclusive.
 .DESCRIPTION
 Creates a User entry in Appclusive.
 
-You must specify both parameters 'Name' and 'Mail'. If the entry already exists no update of the existing entry is performed.
+You must specify parameters 'Name', 'Mail', 'ExternalId' and 'ExternalType'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
@@ -15,14 +15,14 @@ You must specify both parameters 'Name' and 'Mail'. If the entry already exists 
 
 
 .EXAMPLE
-New-User myName myName@appclusive.net
+New-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType
 
-ExternalId   : 27af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myName@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : arbitrary@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myName
+Name         : ArbitraryName
 Description  : 
 CreatedById  : 1
 ModifiedById : 1
@@ -30,30 +30,30 @@ Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
 Create a new User entry if it not already exists.
 
 
 .EXAMPLE
-New-User -Name myName -Mail myName@appclusive.net -ExternalId [guid]'27af9d74-388b-46f2-90d6-a1545d89d16f' -Description myDescription
+New-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -Description ArbitraryDescription
 
-ExternalId   : 27af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myName@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : arbitrary@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myName
-Description  : myDescription
+Name         : ArbitraryName
+Description  : ArbitraryDescription
 CreatedById  : 1
 ModifiedById : 1
 Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
 Create a new User entry if it not already exists.
 
@@ -77,25 +77,22 @@ See module manifest for dependencies and further requirements.
 )]
 Param 
 (
-	# Specifies the name for this entity
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
-	# Specifies the key for this entity
 	[Parameter(Mandatory = $true, Position = 1)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Mail
 	,
-	# Specifies the externalId for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 2)]
+	[ValidateNotNullOrEmpty()]
 	[string] $ExternalId
 	,
-	# Specifies the externalType for this entity
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, Position = 3)]
+	[ValidateNotNullOrEmpty()]
 	[string] $ExternalType
 	,
-	# Specifies the description for this entity
 	[Parameter(Mandatory = $false)]
 	[string] $Description
 	,
@@ -127,16 +124,18 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$UserContents = @($Name);
+	$UserContents = @($Mail, $ExternalId, $ExternalType);
+	
 	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
 	$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 	Contract-Requires (!$entity) 'Entity does already exist'
 
 	if($PSCmdlet.ShouldProcess($UserContents))
 	{
-		$r = Set-User -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType $ExternalType -Description $Description -CreateIfNotExist:$true -svc $svc;
+		$r = Set-User -Name $Name -Mail $Mail -ExternalId $ExternalId -ExternalType $ExternalType -Description $Description -CreateIfNotExist -svc $svc;
 		$OutputParameter = $r;
 	}
+
 	$fReturn = $true;
 }
 # Process
