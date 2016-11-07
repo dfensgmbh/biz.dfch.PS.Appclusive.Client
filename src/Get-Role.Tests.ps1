@@ -7,6 +7,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-Tenant.ps1"
 	
 	$entityPrefix = "Get-Role";
 	$usedEntitySets = @("Roles");
@@ -119,10 +120,10 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnNull" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
-			$roleTid = [guid]::NewGuid();
+			$tid = Get-Tenant -svc $svc -Current;
 			
 			# Act
-			$result = Get-Role -svc $svc -Name $roleName -Tid $roleTid;
+			$result = Get-Role -svc $svc -Name $roleName -Tid $tid;
 
 			# Assert
 			$result | Should Be $null;
@@ -131,11 +132,11 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnDefaultValue" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
-			$roleTid = [guid]::NewGuid();
+			$tid = Get-Tenant -svc $svc -Current;
 			$defaultValue = 'MyDefaultValue';
 			
 			# Act
-			$result = Get-Role -svc $svc -Name $roleName -Tid $roleTid -DefaultValue $defaultValue;
+			$result = Get-Role -svc $svc -Name $roleName -Tid $tid -DefaultValue $defaultValue;
 
 			# Assert
 			$result | Should Be $defaultValue;
