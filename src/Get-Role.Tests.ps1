@@ -205,6 +205,19 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result | Should Not Be $null;
 			$result.RoleType | Should Be ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::BuiltIn.ToString());
 		}
+		
+		It "Get-RoleByIdExpandPermissions-ShouldReturnPermissionsOfUberAdminRole" {
+			# Arrange
+			$uberAdminRoleId = 1;
+		
+			# Act
+			$result = Get-Role -svc $svc -Id $uberAdminRoleId -ExpandPermissions;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -is [array] | Should Be $true;
+			$result.Count -gt 0 | Should Be $true;
+		}
 	}
 }
 

@@ -172,6 +172,11 @@ PARAM
 	[Parameter(Mandatory = $false, ParameterSetName = 'list')]
 	[switch] $ListAvailable = $false
 	,
+	# Indicates to return permissions
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[switch] $ExpandPermissions = $false
+	,
 	# Specifies the return format of the Cmdlet
 	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
 	[Parameter(Mandatory = $false)]
@@ -275,17 +280,53 @@ Process
 		}
 		else
 		{
-			if($PSBoundParameters.ContainsKey('First'))
+			if($ExpandPermissions)
 			{
-				$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select;
+				if($PSBoundParameters.ContainsKey('First'))
+				{
+					$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression).AddQueryOption('$expand', "Permissions") | Select;
+				}
+				else
+				{
+					$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression).AddQueryOption('$expand', "Permissions") | Select;
+				}
+				
+				$listOfPermissions = New-Object System.Collections.ArrayList;
+				
+				foreach ($item in $response)
+				{
+					if (!$item.Permissions)
+					{
+						continue;
+					}
+					
+					if ($response.Count -eq 1)
+					{
+						$listOfPermissions.Add($item.Permissions);
+					}
+					
+					$permissions = New-Object System.Collections.ArrayList;
+					foreach ($permission in $item.Permissions)
+					{
+						$null = $permissions.Add($permission);
+					}
+					$listOfPermissions.Add($permissions.ToArray());
+				}
+				$response = $listOfPermissions.ToArray();
 			}
-			else
+			else 
 			{
-				$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression) | Select;
+				if($PSBoundParameters.ContainsKey('First'))
+				{
+					$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select;
+				}
+				else
+				{
+					$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression) | Select;
+				}
 			}
 		}
 	}
-	
 
 	if(1 -eq $Select.Count -And $ValueOnly)
 	{
