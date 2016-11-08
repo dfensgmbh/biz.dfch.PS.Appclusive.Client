@@ -141,8 +141,8 @@ Begin
 	$maxRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.value__;
 	if ($RoleType) 
 	{
-		Contract-Assert($minProtectionLevelValue -le $RoleType);
-		Contract-Assert($maxProtectionLevelValue -ge $RoleType);
+		Contract-Requires($minProtectionLevelValue -le $RoleType);
+		Contract-Requires($maxProtectionLevelValue -ge $RoleType);
 	}
 }
 
