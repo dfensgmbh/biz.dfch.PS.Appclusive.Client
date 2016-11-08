@@ -87,12 +87,6 @@ Param
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the TenantId to modify
-	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
-	[Parameter(Mandatory = $true, ParameterSetName = 'name', Position = 1)]
-	[ValidateNotNullOrEmpty()]
-	[guid] $Tid
-	,
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 2)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 2)]
