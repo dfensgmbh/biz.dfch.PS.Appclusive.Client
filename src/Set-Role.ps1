@@ -163,14 +163,7 @@ $AddedEntity = $null;
 
 try 
 {
-
-	$exp = @();
-	
-	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-	$exp += ("(Tid eq guid'{0}')" -f $Tid);
-
-	$FilterExpression = [String]::Join(' and ', $exp);
-
+	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.ToLower();
 	$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 
 	if(!$CreateIfNotExist -And !$entity) 
