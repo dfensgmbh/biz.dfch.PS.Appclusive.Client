@@ -48,7 +48,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$true | Should Be $true;
 		}
 
-		It "Get-Role-ShouldReturnList" -Test {
+		It "Get-Role-ShouldReturnListOfRoles" -Test {
 			# Arrange
 			# N/A
 			
@@ -59,9 +59,10 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result | Should Not Be $null;
 			$result -is [Array] | Should Be $true;
 			0 -lt $result.Count | Should Be $true;
+			$result[0] -is [biz.dfch.CS.Appclusive.Api.Core.Role] | Should Be $true;
 		}
 
-		It "Get-RoleListAvailableSelectName-ShouldReturnListWithNamesOnly" -Test {
+		It "Get-RoleListAvailableSelectName-ShouldReturnListWithRoleNamesOnly" -Test {
 			# Arrange
 			# N/A
 			
@@ -76,7 +77,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result[0].Id | Should Be $null;
 		}
 
-		It "Get-RoleFirst-ShouldReturnFirstEntity" -Test {
+		It "Get-RoleFirst-ShouldReturnFirstRoleEntity" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -88,7 +89,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Role] | Should Be $true;
 		}
 		
-		It "Get-Role-ShouldReturnEntityById" -Test {
+		It "Get-RoleById-ShouldReturnRoleEntityWithSpecifiedId" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -104,7 +105,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result.id | Should Be $id;
 		}
 		
-		It "Get-Role-ShouldReturnFiveEntities" -Test {
+		It "Get-Role-ShouldReturnFirstFiveEntities" -Test {
 			# Arrange
 			$showFirst = 5;
 			
@@ -120,10 +121,9 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnNull" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
-			$tid = (Get-Tenant -svc $svc -Current).Id;
 			
 			# Act
-			$result = Get-Role -svc $svc -Name $roleName -Tid $tid;
+			$result = Get-Role -svc $svc -Name $roleName;
 
 			# Assert
 			$result | Should Be $null;
@@ -132,17 +132,16 @@ Describe "Get-Role" -Tags "Get-Role" {
 		It "Get-RoleThatDoesNotExist-ShouldReturnDefaultValue" -Test {
 			# Arrange
 			$roleName = 'Role-that-does-not-exist';
-			$tid = (Get-Tenant -svc $svc -Current).Id;
 			$defaultValue = 'MyDefaultValue';
 			
 			# Act
-			$result = Get-Role -svc $svc -Name $roleName -Tid $tid -DefaultValue $defaultValue;
+			$result = Get-Role -svc $svc -Name $roleName -DefaultValue $defaultValue;
 
 			# Assert
 			$result | Should Be $defaultValue;
 		}
 		
-		It "Get-RoleAsXml-ShouldReturnXML" -Test {
+		It "Get-RoleAsXml-ShouldReturnRoleAsXML" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -154,7 +153,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result.Substring(0,5) | Should Be '<?xml';
 		}
 		
-		It "Get-Role-ShouldReturnJSON" -Test {
+		It "Get-Role-ShouldReturnRoleAsJSON" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -181,20 +180,30 @@ Describe "Get-Role" -Tags "Get-Role" {
 			}
 		}
 
-		It "Get-Role-ByNameAndTid" -Test {
+		It "Get-RoleByName-ShouldReturnRole" -Test {
 			# Arrange
 			$showFirst = 1;
 			
 			$resultFirst = Get-Role -svc $svc -First $showFirst;
 			$name = $resultFirst.Name;
-			$tid = $resultFirst.Tid;
 		
 			# Act
-			$result = Get-Role -svc $svc -Name $name -Tid $tid;
+			$result = Get-Role -svc $svc -Name $name;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Id | Should Be $resultFirst.Id;
+		}
+		
+		It "Get-RoleByRoleType-ShouldReturnRolesWithSpecifiedRoleType" {
+			# Arrange
+		
+			# Act
+			$result = Get-Role -svc $svc -RoleType BuiltIn;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.RoleType | Should Be ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::BuiltIn.ToString());
 		}
 	}
 }
