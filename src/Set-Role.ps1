@@ -149,7 +149,6 @@ Begin
     
     if($PSBoundParameters.ContainsKey('MailAddress'))
     {
-		write-host $MailAddress;
         $isValidMail = [System.Net.Mail.MailAddress]::new($MailAddress);
         Contract-Requires(!!$MailAddress);
     }
