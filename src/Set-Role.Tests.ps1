@@ -93,7 +93,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 		
 		It "Set-Role-WithNewName-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$newName = "NewName-{0}" -f [guid]::NewGuid().ToString();
+			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			
 			$result1 = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
