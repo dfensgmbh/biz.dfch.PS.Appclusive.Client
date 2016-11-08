@@ -260,7 +260,7 @@ Process
 		{
 			$exp += ("Id eq {0}" -f $Id);
 		}
-	
+
 		$filterExpression = [String]::Join(' and ', $exp);
 		if($Select -And 'object' -ne $As) 
 		{
@@ -285,6 +285,7 @@ Process
 			}
 		}
 	}
+	
 
 	if(1 -eq $Select.Count -And $ValueOnly)
 	{
@@ -312,7 +313,6 @@ Process
 	}
 	$OutputParameter = Format-ResultAs $response $As
 	$fReturn = $true;
-
 }
 # Process
 
