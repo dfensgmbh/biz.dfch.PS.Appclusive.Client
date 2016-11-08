@@ -197,14 +197,13 @@ Describe "Get-Role" -Tags "Get-Role" {
 		
 		It "Get-RoleByRoleType-ShouldReturnRolesWithSpecifiedRoleType" {
 			# Arrange
-			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::BuiltIn.Value__;
 		
 			# Act
-			$result = Get-Role -svc $svc -RoleType $roleType;
+			$result = Get-Role -svc $svc -RoleType BuiltIn;
 			
 			# Assert
 			$result | Should Not Be $null;
-			$result.RoleType | Should Be $resultFirst.RoleType;
+			$result.RoleType | Should Be ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::BuiltIn.ToString());
 		}
 	}
 }

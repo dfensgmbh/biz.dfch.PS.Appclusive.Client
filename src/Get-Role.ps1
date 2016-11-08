@@ -14,9 +14,6 @@ Id, Name or RoleType.
 .INPUTS
 The Cmdlet can either return all available entities or filter entities based on 
 specified conditions.
-
-RoleTypes: 0 = Default, 1 = Security, 2 = Distribution, 3 = BuiltIn, 4 = External
-
 See PARAMETERS section for possible inputs.
 
 
@@ -136,7 +133,8 @@ PARAM
 	[string] $Name
 	,
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[long] $RoleType
+	[ValidateSet('Default', 'Security', 'Distribution', 'BuiltIn', 'External')]
+	[string] $RoleType
 	,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
@@ -193,12 +191,6 @@ Begin
 	
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
-	
-	if($PSBoundParameters.ContainsKey('RoleType'))
-	{
-		Contract-Requires ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.Value__ -le $RoleType);
-		Contract-Requires ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.Value__ -ge $RoleType);
-	}
 	
 	if($Select) 
 	{
@@ -261,7 +253,7 @@ Process
 			
 			if($PSBoundParameters.ContainsKey('RoleType'))
 			{
-				$exp += ("RoleType eq {0}" -f $RoleType);
+				$exp += ("RoleType eq '{0}'" -f $RoleType);
 			}
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq 'id')
