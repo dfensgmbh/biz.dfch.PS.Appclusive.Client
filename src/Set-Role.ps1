@@ -104,6 +104,7 @@ Param
 	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 3)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
