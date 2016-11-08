@@ -48,7 +48,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$true | Should Be $true;
 		}
 
-		It "Get-Role-ShouldReturnList" -Test {
+		It "Get-Role-ShouldReturnListOfRoles" -Test {
 			# Arrange
 			# N/A
 			
@@ -61,7 +61,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			0 -lt $result.Count | Should Be $true;
 		}
 
-		It "Get-RoleListAvailableSelectName-ShouldReturnListWithNamesOnly" -Test {
+		It "Get-RoleListAvailableSelectName-ShouldReturnListWithRoleNamesOnly" -Test {
 			# Arrange
 			# N/A
 			
@@ -76,7 +76,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result[0].Id | Should Be $null;
 		}
 
-		It "Get-RoleFirst-ShouldReturnFirstEntity" -Test {
+		It "Get-RoleFirst-ShouldReturnFirstRoleEntity" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -88,7 +88,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result -is [biz.dfch.CS.Appclusive.Api.Core.Role] | Should Be $true;
 		}
 		
-		It "Get-Role-ShouldReturnEntityById" -Test {
+		It "Get-RoleById-ShouldReturnRoleEntityWithSpecifiedId" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -104,7 +104,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result.id | Should Be $id;
 		}
 		
-		It "Get-Role-ShouldReturnFiveEntities" -Test {
+		It "Get-Role-ShouldReturnFirstFiveEntities" -Test {
 			# Arrange
 			$showFirst = 5;
 			
@@ -140,7 +140,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result | Should Be $defaultValue;
 		}
 		
-		It "Get-RoleAsXml-ShouldReturnXML" -Test {
+		It "Get-RoleAsXml-ShouldReturnRoleAsXML" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -152,7 +152,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result.Substring(0,5) | Should Be '<?xml';
 		}
 		
-		It "Get-Role-ShouldReturnJSON" -Test {
+		It "Get-Role-ShouldReturnRoleAsJSON" -Test {
 			# Arrange
 			$showFirst = 1;
 			
@@ -179,7 +179,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			}
 		}
 
-		It "Get-Role-ByNameReturnsRole" -Test {
+		It "Get-RoleByName-ShouldReturnRole" -Test {
 			# Arrange
 			$showFirst = 1;
 			
