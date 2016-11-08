@@ -197,7 +197,9 @@ NestedModules = @(
 	'Get-Folder.ps1'
 	,
 	'Get-Role.ps1'
-)
+	,
+	'Set-Role.ps1'
+	)
 
 # Functions to export from this module
 FunctionsToExport = '*'
