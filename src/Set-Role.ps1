@@ -7,7 +7,9 @@ Sets or creates a Role entry in Appclusive.
 .DESCRIPTION
 Sets or creates a Role entry in Appclusive.
 
-By updating an Role entry you can specify if you want to update the description, MailAddress, Name or any combination thereof. For updating the name you need to use the Argument '-NewName'
+By updating an Role entry you can specify, if you want to update the 
+Description, MailAddress, Name, RoleType or any combination thereof. 
+For updating the name you need to use the Argument '-NewName'
 
 
 .OUTPUTS
@@ -57,7 +59,7 @@ Tenant       :
 CreatedBy    :
 ModifiedBy   :
 
-Update an existing Role with new name and description.
+Update an existing Role with new Name and Description.
 
 
 .LINK
@@ -134,7 +136,7 @@ Begin
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 
 	# Parameter validation
-	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
 	
 	# RoleType param validation
 	$minRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
@@ -236,7 +238,7 @@ catch
 		{
 			Log-Error $fn $ErrorText -fac 3;
 			
-			if($msg -eq $_.Exception.Message) 
+			if($gotoError.Exception.Message -eq $_.Exception.Message) 
 			{
 				Log-Error $fn $e.Exception.Message;
 				$PSCmdlet.ThrowTerminatingError($e);
