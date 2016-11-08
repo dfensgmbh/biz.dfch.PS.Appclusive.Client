@@ -231,7 +231,7 @@ catch
 		{
 			Log-Error $fn $ErrorText -fac 3;
 			
-			if($msg -eq $_.Exception.Message) 
+			if($gotoError.Exception.Message -eq $_.Exception.Message) 
 			{
 				Log-Error $fn $e.Exception.Message;
 				$PSCmdlet.ThrowTerminatingError($e);
