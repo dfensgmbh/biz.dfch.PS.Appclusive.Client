@@ -215,7 +215,7 @@ try
 	}
 
 	$svc.Core.UpdateObject($entity);
-	$r = $svc.Core.SaveChanges();
+	$null = $svc.Core.SaveChanges();
 
 	$r = $entity;
 	$OutputParameter = Format-ResultAs $r $As;
