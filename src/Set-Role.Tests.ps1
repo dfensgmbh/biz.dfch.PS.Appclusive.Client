@@ -25,8 +25,6 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$svc = Enter-ApcServer;
 			
 			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
-			$tenant = Get-Tenant -svc $svc -Current;
-			$tId = $tenant.Id;
 			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
 		}
 		
@@ -56,12 +54,11 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# N/A (Declared in BeforeEach)
 			
 			# Act
-			$result = Set-Role -Name $name -Tid $tId -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
 			
 			# Assert
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
-			$result.Tid | Should Be $tId;
 		}
 	
 		It "Set-Role-ShouldReturnNewEntityWithDescription" -Test {
@@ -69,7 +66,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 				
 			# Act
-			$result = Set-Role -Name $name -Tid $tId -RoleType $roleType -Description $description -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -RoleType $roleType -Description $description -svc $svc -CreateIfNotExist;
 			
 			# Assert
 			$result | Should Not Be $null;
@@ -81,12 +78,12 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
 			
-			$result1 = Set-Role -Name $name -Tid $tId -RoleType $roleType -Description $description -svc $svc -CreateIfNotExist;
+			$result1 = Set-Role -Name $name -RoleType $roleType -Description $description -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			$result1.Description | Should Be $description;
 			
 			# Act
-			$result = Set-Role -Name $result1.Name -Tid $result1.Tid -Description $newDescription -svc $svc;
+			$result = Set-Role -Name $result1.Name -Description $newDescription -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -98,12 +95,12 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Arrange
 			$newName = "NewName-{0}" -f [guid]::NewGuid().ToString();
 			
-			$result1 = Set-Role -Name $name -Tid $tId -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result1 = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			$result1.Name | Should Be $name;
 			
 			# Act
-			$result = Set-Role -Name $result1.Name -Tid $result1.Tid -NewName $newName -svc $svc;
+			$result = Set-Role -Name $result1.Name -NewName $newName -svc $svc;
 
 			# Assert
 			$result | Should Not Be $null;
@@ -111,7 +108,17 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		
+		It "Set-RoleDoesNotExist-ShouldThrowException" -Test {
+			# Arrange
+			$nameNotExisting = "not-existing-role-{0}" -f [guid]::NewGuid();
+			# N/A (Declared in BeforeEach)
+			
+			# Act
+			{ Set-Role -Name $nameNotExisting -RoleType $roleType -svc $svc } | Should Throw;
+			
+			# Assert
+		}
+
 	}
 }
 
