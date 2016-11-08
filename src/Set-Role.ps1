@@ -7,7 +7,7 @@ Sets or creates a Role entry in Appclusive.
 .DESCRIPTION
 Sets or creates a Role entry in Appclusive.
 
-By updating an Role entry you can specify if you want to update the description, protectionLevel or value or any combination thereof. For updating the value you need to use the Argument '-NewValue'
+By updating an Role entry you can specify if you want to update the description, MailAddress, Name or any combination thereof. For updating the name you need to use the Argument '-NewName'
 
 
 .OUTPUTS
@@ -15,49 +15,49 @@ default
 
 
 .EXAMPLE
-Set-Role -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId 1 -EntityId 2 -svc $svc -CreateIfNotExist;
+Set-Role -Name "ArbitraryRole" -RoleType 3 -svc $svc -CreateIfNotExist;
 
-Name            : ArbitraryName
-Value           : ArbitraryValue
-EntityId        : 2
-EntityKindId    : 1
-ProtectionLevel : 0
-Id              : 159
-Tid             : 11111111-1111-1111-1111-111111111111
-Description     :
-CreatedById     : 1
-ModifiedById    : 1
-Created         : 23.08.2016 11:08:14 +02:00
-Modified        : 23.08.2016 11:08:14 +02:00
-RowVersion      : {0, 0, 0, 0...}
-Tenant          :
-CreatedBy       :
-ModifiedBy      :
+RoleType     : 3
+MailAddress  :
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryRole
+Description  :
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
 
-Create a new Role entry if it does not exists.
+Create a new Role entry if it does not exist.
 
 
 .EXAMPLE
-Set-Role -Name "ArbitraryName" -Value "ArbitraryValue" -EntityKindId  1 -EntityId 2 -Description "updatedDescription" -NewValue "Arbitrary updated value" -svc $svc;
+Set-Role -Name "ArbitraryName" -Description "updatedDescription" -NewName "UpdatedName"
 
-Name            : ArbitraryName
-Value           : Arbitrary updated value
-EntityId        : 2
-EntityKindId    : 1
-ProtectionLevel : 0
-Id              : 159
-Tid             : 11111111-1111-1111-1111-111111111111
-Description     : updatedDescription
-CreatedById     : 1
-ModifiedById    : 1
-Created         : 23.08.2016 11:08:14 +02:00
-Modified        : 23.08.2016 11:08:14 +02:00
-RowVersion      : {0, 0, 0, 0...}
-Tenant          :
-CreatedBy       :
-ModifiedBy      :
+RoleType     : 3
+MailAddress  :
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : UpdatedName
+Description  : updatedDescription
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
 
-Update an existing Role with new value and description.
+Update an existing Role with new name and description.
 
 
 .LINK
