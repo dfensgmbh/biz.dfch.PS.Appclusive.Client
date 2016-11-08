@@ -103,7 +103,6 @@ Param
 	[string] $Description
 	,
 	# Specifies the new name
-	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 3)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
@@ -174,7 +173,6 @@ try
 		$svc.Core.AddToRoles($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
-		$entity.Tid = $Tid;
 		$entity.RoleType = $RoleType
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.Modified = $entity.Created;
