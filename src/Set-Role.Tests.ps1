@@ -108,6 +108,24 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
+		It "Set-Role-WithNewMailAddress-ShouldReturnUpdatedEntity" -Test {
+			# Arrange
+			$mailaddress = "Mailaddress-{0}" -f [guid]::NewGuid().ToString();
+			$newMailaddress = "NewMailaddress-{0}" -f [guid]::NewGuid().ToString();
+			
+			$result1 = Set-Role -Name $name -RoleType $roleType -Mailaddress $mailaddress -svc $svc -CreateIfNotExist;
+			$result1 | Should Not Be $null;
+			$result1.Mailaddress | Should Be $mailaddress;
+			
+			# Act
+			$result = Set-Role -Name $result1.Name -Mailaddress $newMailaddress -svc $svc;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.Mailaddress | Should Be $newMailaddress;
+			$result.Id | Should Be $result1.Id;
+		}
+		
 		It "Set-RoleDoesNotExist-ShouldThrowException" -Test {
 			# Arrange
 			$nameNotExisting = "not-existing-role-{0}" -f [guid]::NewGuid();
