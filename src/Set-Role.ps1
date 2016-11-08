@@ -109,6 +109,14 @@ Param
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
+	# Specifies the permissions which should be added
+	[Parameter(Mandatory = $false)]
+	[string[]] $Permissions = @()
+	,
+	# Specifies if the permissions should be removed instead
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[switch] $RemovePermissions = $false
+	,
 	# Specifies to create a entity if it does not exist
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Alias("c")]
@@ -208,8 +216,23 @@ try
 		$entity.MailAddress = $MailAddress;
 	}
 
+	
 	$svc.Core.UpdateObject($entity);
 	$null = $svc.Core.SaveChanges();
+
+	foreach($permission in ($Permissions | Select -Unique))
+	{
+		$query = "Name eq '{0}'" -f $permission;
+		$permission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
+		
+		if($null -eq $permission) 
+		{
+			Log-Error $fn "Permission not found";
+			continue;
+		}
+		$svc.Core.AddLink($entity, 'Permissions', $permission);
+		$null = $svc.Core.SaveChanges();
+	}
 
 	$r = $entity;
 	$OutputParameter = Format-ResultAs $r $As;
