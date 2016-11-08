@@ -136,6 +136,21 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			# Assert
 		}
+		
+		It "Set-Role-WithPermissionsShouldReturnNewEntity" -Test {
+			# Arrange
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
+			
+			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions;
+			
+			# Assert
+			$resultPermissions | Should Not be $null;
+			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
+		}
 	}
 }
 
