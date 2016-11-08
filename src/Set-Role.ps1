@@ -163,7 +163,7 @@ try
 	if(!$CreateIfNotExist -And !$entity) 
 	{
 		$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
-		$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+		$gotoError = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
 		throw($gotoError);
 	}
 	
@@ -228,7 +228,8 @@ catch
 		else 
 		{
 			Log-Error $fn $ErrorText -fac 3;
-			if($gotoError -eq $_.Exception.Message) 
+			
+			if($msg -eq $_.Exception.Message) 
 			{
 				Log-Error $fn $e.Exception.Message;
 				$PSCmdlet.ThrowTerminatingError($e);
