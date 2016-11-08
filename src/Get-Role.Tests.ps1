@@ -59,6 +59,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result | Should Not Be $null;
 			$result -is [Array] | Should Be $true;
 			0 -lt $result.Count | Should Be $true;
+			$result[0] -is [biz.dfch.CS.Appclusive.Api.Core.Role] | Should Be $true;
 		}
 
 		It "Get-RoleListAvailableSelectName-ShouldReturnListWithRoleNamesOnly" -Test {
@@ -192,6 +193,18 @@ Describe "Get-Role" -Tags "Get-Role" {
 			# Assert
 			$result | Should Not Be $null;
 			$result.Id | Should Be $resultFirst.Id;
+		}
+		
+		It "Get-RoleByRoleType-ShouldReturnRolesWithSpecifiedRoleType" {
+			# Arrange
+			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::BuiltIn.Value__;
+		
+			# Act
+			$result = Get-Role -svc $svc -RoleType $roleType;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.RoleType | Should Be $resultFirst.RoleType;
 		}
 	}
 }

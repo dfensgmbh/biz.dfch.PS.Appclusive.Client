@@ -7,13 +7,16 @@ Retrieves one or more entities from the Role entity set.
 .DESCRIPTION
 Retrieves one or more entities from the Role entity set.
 
-You can retrieve one ore more entities from the entity set by specifying 
-Name or Id.
+You can retrieve one ore more entities from the entity set by either specifying 
+Id, Name or RoleType.
 
 
 .INPUTS
 The Cmdlet can either return all available entities or filter entities based on 
 specified conditions.
+
+RoleTypes: 0 = Default, 1 = Security, 2 = Distribution, 3 = BuiltIn, 4 = External
+
 See PARAMETERS section for possible inputs.
 
 
@@ -38,23 +41,49 @@ Retrieves the name of all Roles.
 .EXAMPLE
 Get-Role -Id 42
 
-Name            : ArbitraryRole
-Id              : 42
-Tid             : 11111111-1111-1111-1111-111111111111
-Description     :
-CreatedById     : 1
-ModifiedById    : 1
-Created         : 23.08.2016 11:08:14 +02:00
-Modified        : 23.08.2016 11:08:14 +02:00
-RowVersion      : {0, 0, 0, 0...}
-RoleType		: 3
-MailAddress		:
-Tenant          :
-CreatedBy       :
-ModifiedBy      :
+RoleType     : 3
+MailAddress  :
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryRole
+Description  :
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
 
 Retrieves the Role object with Id 42 and returns all properties of it.
 
+
+.EXAMPLE
+Get-Role -RoleType 2
+
+RoleType     : 2
+MailAddress  :
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryRole
+Description  :
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+...
+
+Retrieves a list of Role objects with the corresponding RoleType.
 
 
 .EXAMPLE
@@ -67,7 +96,6 @@ AnotherRole				5
 SomeRole				8
 
 Retrieves the name and id of the first 3 Roles.
-
 
 
 .EXAMPLE
@@ -103,9 +131,12 @@ PARAM
 	[ValidateRange(1,[long]::MaxValue)]
 	[long] $Id
 	,
-	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
+	,
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[long] $RoleType
 	,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
@@ -161,7 +192,13 @@ Begin
 	$entitySetName = 'Roles';
 	
 	# Parameter validation
-	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
+	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
+	
+	if($PSBoundParameters.ContainsKey('RoleType'))
+	{
+		Contract-Requires ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.Value__ -le $RoleType);
+		Contract-Requires ([biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.Value__ -ge $RoleType);
+	}
 	
 	if($Select) 
 	{
@@ -217,7 +254,15 @@ Process
 	{
 		if ($PSCmdlet.ParameterSetName -eq 'name')
 		{
-			$exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
+			if($PSBoundParameters.ContainsKey('Name'))
+			{
+				$exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
+			}
+			
+			if($PSBoundParameters.ContainsKey('RoleType'))
+			{
+				$exp += ("RoleType eq {0}" -f $RoleType);
+			}
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq 'id')
 		{
