@@ -7,8 +7,8 @@ Retrieves one or more entities from the Role entity set.
 .DESCRIPTION
 Retrieves one or more entities from the Role entity set.
 
-You can retrieve one ore more entities from the entity set by either specifying 
-Name, Tid (TenantId) or Id.
+You can retrieve one ore more entities from the entity set by specifying 
+Name or Id.
 
 
 .INPUTS
@@ -106,9 +106,6 @@ PARAM
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'name')]
 	[ValidateNotNullOrEmpty()]
 	[string] $Name
-	,
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[guid] $Tid
 	,
 	# Specify the attributes of the entity to return
 	[Parameter(Mandatory = $false)]
@@ -220,13 +217,7 @@ Process
 	{
 		if ($PSCmdlet.ParameterSetName -eq 'name')
 		{
-			if (!$Tid)
-			{
-				$Tid = (Get-Tenant -svc $svc -Current).Id;
-			}
-		
 			$exp += ("tolower(Name) eq '{0}'" -f $Name.ToLower());
-			$exp += ("Tid eq guid'{0}'" -f $Tid);
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq 'id')
 		{
