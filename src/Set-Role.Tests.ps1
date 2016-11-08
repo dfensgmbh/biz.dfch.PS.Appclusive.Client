@@ -110,8 +110,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 		
 		It "Set-Role-WithNewMailAddress-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$mailaddress = "Mailaddress-{0}" -f [guid]::NewGuid().ToString();
-			$newMailaddress = "NewMailaddress-{0}" -f [guid]::NewGuid().ToString();
+			$mailaddress = "Example@Mailaddress.net";
+			$newMailaddress = "Example@appclusive.com";
 			
 			$result1 = Set-Role -Name $name -RoleType $roleType -Mailaddress $mailaddress -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
@@ -136,7 +136,6 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			# Assert
 		}
-
 	}
 }
 
