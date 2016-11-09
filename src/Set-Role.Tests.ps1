@@ -145,6 +145,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
+			$result.Id -gt 0 | Should Be $true
 			
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
 			
