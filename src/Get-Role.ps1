@@ -296,9 +296,21 @@ Process
 				foreach ($item in $response)
 				{
 					$permissions = New-Object System.Collections.ArrayList;
-					foreach ($permission in $item.Permissions)
+					
+					while($true) 
 					{
-						$null = $permissions.Add($permission);
+						foreach($permission in $item.Permissions)
+						{
+							$null = $permissions.Add($permission);
+						}
+						
+						$continuation = $item.Permissions.Continuation;
+						if ($continuation -eq $null)
+						{
+							break;
+						}
+						
+						$item.Permissions = $svc.core.Execute($continuation);
 					}
 					
 					# If only one role was found, permissions of this role
