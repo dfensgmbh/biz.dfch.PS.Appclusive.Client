@@ -104,14 +104,14 @@ Param
 	[ValidateNotNullOrEmpty()]
 	[string] $Description
 	,
+	# Specifies the permissions which should be added
+	[Parameter(Mandatory = $false)]
+	[string[]] $Permissions = @()
+	,
 	# Specifies the new name
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 2)]
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
-	,
-	# Specifies the permissions which should be added
-	[Parameter(Mandatory = $false)]
-	[string[]] $Permissions = @()
 	,
 	# Specifies if the permissions should be removed instead
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
