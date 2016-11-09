@@ -91,7 +91,6 @@ Param
 	,
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 1)]
 	[long] $RoleType
 	,
 	# Specifies the name to modify
