@@ -9,7 +9,7 @@ Sets or creates a Role entry in Appclusive.
 
 By updating an Role entry you can specify, if you want to update the 
 Description, MailAddress, Name, RoleType or any combination thereof. 
-For updating the name you need to use the Argument '-NewName'
+For updating Name or RoleType you need to use the Argument '-NewName'/'-NewRoleType'
 
 
 .OUTPUTS
