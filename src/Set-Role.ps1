@@ -105,29 +105,25 @@ See module manifest for dependencies and further requirements.
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param
 (
-	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 0)]
 	[Parameter(Mandatory = $true, ParameterSetName = 'name', Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 1)]
 	[long] $RoleType
 	,
-	# Specifies the name to modify
 	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
 	[string] $MailAddress
 	,
-	# Specifies the description
 	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Description
 	,
-	# Specifies the permissions which should be added
+	# Specifies the permissions which should be added/removed
 	[Parameter(Mandatory = $false)]
 	[string[]] $Permissions = @()
 	,
@@ -157,7 +153,6 @@ Param
 	[string] $As = 'default'
 )
 
-# Begin
 Begin 
 {
 	trap { Log-Exception $_; break; }
