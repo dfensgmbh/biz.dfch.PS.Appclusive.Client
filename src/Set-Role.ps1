@@ -230,6 +230,25 @@ try
 			Log-Error $fn "Permission not found";
 			continue;
 		}
+		$oldPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
+		foreach($oldPermission in $oldPermissions)
+		{
+			$hasPermissionMessage = "The role already has permission {0}" -f $permission;
+			$isEqual = $oldPermission.Name -eq $permission;
+			
+			if($PSBoundParameters.ContainsKey("RemovePermissions") -and $isEqual)
+			{
+				$svc.Core.RemoveLink($entity, 'Permissions', $permission);
+				continue;
+			}
+			elseif($PSBoundParameters.ContainsKey("RemovePermissions") -and !$isEqual)
+			{
+				$hasPermissionMessage = "The role doesn't have permission {0}" -f $permission;
+				Contract-Assert(!$isEqual) $hasPermissionMessage;
+			}
+			Contract-Assert(!$isEqual) $hasPermissionMessage;
+		}
+		
 		$svc.Core.AddLink($entity, 'Permissions', $permission);
 		$null = $svc.Core.SaveChanges();
 	}
