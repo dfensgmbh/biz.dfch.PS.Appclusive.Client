@@ -138,7 +138,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Assert
 		}
 		
-		It "Set-Role-WithPermissionsShouldReturnNewEntity" -Test {
+		It "Set-RoleWithPermissions-ShouldCreateEntityWithSpecifiedPermissions" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate");
 			
@@ -155,7 +155,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$resultPermissions.Count -gt 0 | Should Be $true;
 		}
 		
-		It "Set-Role-AddPermissionsShouldReturnNewEntity" -Test {
+		It "Set-RoleWithPermissions-ShouldAddSpecifiedPermissions" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
 			
@@ -174,7 +174,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$resultPermissions.Count -gt 0 | Should Be $true;
 		}
 		
-		It "Set-Role-WithDuplicatePermissionsShouldThrowContractException" -Test {
+		It "Set-RoleWithDuplicatePermissions-ShouldThrowContractException" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
 			
@@ -190,7 +190,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$resultPermissions.Count -gt 0 | Should Be $true;
 		}
 		
-		It "Set-Role-WithPermissionsRemovedShouldReturnEntity" -Test {
+		It "Set-RoleWithPermissionsToRemove-ShouldReturnRemoveSpecifiedPermissions" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate", "Apc:AcesCanUpdate");
 			$permissionsRemove = @("Apc:AcesCanCreate");
@@ -200,7 +200,6 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			$svc = Enter-ApcServer;
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissionsRemove -svc $svc -CreateIfNotExist -RemovePermissions;
-			
 
 			$svc = Enter-ApcServer;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
@@ -211,7 +210,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$resultPermissions.Count -eq 2 | Should Be $true;
 		}
 		
-		It "Set-Role-WithPermissionsRemovedWhichItHasNotShouldThrowContractException" -Test {
+		It "Set-RoleWithPermissionsToRemoveWhichAreNotPresent-ShouldThrowContractException" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
 			$notExistingPermissions = @("Apc:AcesCanUpdate");
