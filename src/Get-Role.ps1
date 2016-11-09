@@ -295,13 +295,13 @@ Process
 				
 				foreach ($item in $response)
 				{
-					$permissions = New-Object System.Collections.ArrayList;
+					$permissionsOfRole = New-Object System.Collections.ArrayList;
 					
 					while($true) 
 					{
 						foreach($permission in $item.Permissions)
 						{
-							$null = $permissions.Add($permission);
+							$null = $permissionsOfRole.Add($permission);
 						}
 						
 						$continuation = $item.Permissions.Continuation;
@@ -316,12 +316,12 @@ Process
 					# If only one role was found, permissions of this role
 					if ($response.Count -eq 1)
 					{
-						$listOfPermissions.AddRange($permissions);
+						$listOfPermissions.AddRange($permissionsOfRole);
 					}
 					# If there is more than one role, a list of lists with permissions gets returned
 					else 
 					{
-						$listOfPermissions.Add($permissions.ToArray());
+						$listOfPermissions.Add($permissionsOfRole.ToArray());
 					}
 				}
 				$response = $listOfPermissions.ToArray();
