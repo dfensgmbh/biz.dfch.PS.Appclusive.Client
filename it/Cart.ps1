@@ -18,6 +18,8 @@ function Create-CartItem
 		$Quantity = 1
 		,
 		$Tid = (Get-ApcTenant -Current -svc $Svc).Id
+		,
+		$Parameters
 	)
 	
 	$cartItem = New-Object biz.dfch.CS.Appclusive.Api.Core.CartItem;
