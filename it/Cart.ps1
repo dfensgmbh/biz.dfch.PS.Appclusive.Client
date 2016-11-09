@@ -17,8 +17,6 @@ function Create-CartItem
 		,
 		$Quantity = 1
 		,
-		$Tid = (Get-ApcTenant -Current -svc $Svc).Id
-		,
 		$Parameters
 	)
 	
@@ -26,28 +24,28 @@ function Create-CartItem
 	$cartItem.Name = $Name;
 	$cartItem.Description = $Description;
 	$cartItem.CatalogueItemId = $CatalogueItemId;
-	$cartItem.CartId = $CartId;
+	if($CartId){
+		$cartItem.CartId = $CartId;
+	}
 	$cartItem.Quantity = $Quantity;
-	$cartItem.Tid = $Tid;
 	$cartItem.Parameters = $Parameters;
-	
+	Write-Host ($cartItem | out-string);
 	#ACT create cart item
 	$svc.Core.AddToCartItems($cartItem);
 	$result = $svc.Core.SaveChanges();
-	
+	Write-Host ($cartItem | out-string);
 	#get cart item
-	$query = "Id eq {0}" -f $cartItem.Id;
+	$query = "Name eq '{0}'" -f $Name;
 	$loadedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | Select;
-	
+	Write-Host ($loadedCartItem | out-string);
 	#ASSERT cart item
 	$bin = $result.StatusCode | Should Be 201;
 	$bin = $loadedCartItem | Should Not Be $null;
 	$bin = $loadedCartItem.Name | Should Be $Name;
 	$bin = $loadedCartItem.Description | Should Be $Description;
 	$bin = $loadedCartItem.Id | Should Not Be $null;
-	$bin = $loadedCartItem.CatalogueItemId |Should Be $CatalogueItemId;
-	$bin = $loadedCartItem.Quantity |Should Be $Quantity;
-	$bin = $loadedCartItem.Tid |Should Be $Tid;
+	$bin = $loadedCartItem.CatalogueItemId | Should Be $CatalogueItemId;
+	$bin = $loadedCartItem.Quantity | Should Be $Quantity;
 
 	return $loadedCartItem;
 }
