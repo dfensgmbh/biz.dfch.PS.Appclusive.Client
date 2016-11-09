@@ -9,8 +9,8 @@ Describe "New-Role" -Tags "New-Role" {
 	
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
-	. "$here\Get-Tenant.ps1"
 	. "$here\Get-Role.ps1"
+	. "$here\Set-Role.ps1"
 
 	$entityPrefix = "New-Role";
 	$usedEntitySets = @("Roles");
@@ -26,7 +26,7 @@ Describe "New-Role" -Tags "New-Role" {
 			$svc = Enter-ApcServer;
 			
 			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
-			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
+			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default;
 		}
 		
 		AfterAll {
