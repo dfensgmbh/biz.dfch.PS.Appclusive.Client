@@ -10,6 +10,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 	. "$here\$sut"
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-Tenant.ps1"
+	. "$here\Get-Role.ps1"
 
 	$entityPrefix = "Set-Role";
 	$usedEntitySets = @("Roles");
@@ -145,11 +146,11 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
-			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions;
+			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
+			$resultPermissions.Count -gt 0 | Should Be $true;
 		}
 	}
 }
