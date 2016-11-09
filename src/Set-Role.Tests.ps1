@@ -147,11 +147,11 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result | Should Not Be $null;
 			$result.Id -gt 0 | Should Be $true
 			
-			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			$resultingPermissions = Get-Role -Id $result.Id -svc $svc -ExpandPermissions;
 			
 			# Assert
-			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -gt 0 | Should Be $true;
+			$resultingPermissions | Should Not Be $null;
+			$resultingPermissions.Count -gt 0 | Should Be $true;
 		}
 	}
 }
