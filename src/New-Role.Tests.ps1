@@ -1,4 +1,96 @@
+#Requires -Modules @{ ModuleName = 'biz.dfch.PS.Pester.Assertions'; ModuleVersion = '1.1.1.20160710' }
 
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
+
+Describe "New-Role" -Tags "New-Role" {
+
+	Mock Export-ModuleMember { return $null; }
+	
+	. "$here\$sut"
+	. "$here\Format-ResultAs.ps1"
+	. "$here\Get-Tenant.ps1"
+	. "$here\Get-Role.ps1"
+
+	$entityPrefix = "New-Role";
+	$usedEntitySets = @("Roles");
+	
+
+	Context "New-Role" {
+	
+		BeforeEach {
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+			
+			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
+			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
+		}
+		
+		AfterAll {
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
+		
+		# Context wide constants
+		# N/A
+		It "Warmup" -Test {
+			$true | Should Be $true;
+		}
+
+		It "New-Role-ShouldReturnNewEntity" -Test {
+			# Arrange
+			# N/A (Declared in BeforeEach)
+			
+			# Act
+			$result = New-Role -Name $name -RoleType $roleType -svc $svc;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
+		}
+	
+		It "New-Role-ShouldReturnNewEntityWithDescription" -Test {
+			# Arrange
+			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
+				
+			# Act
+			$result = New-Role -Name $name -RoleType $roleType -Description $description -svc $svc;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result.Description | Should Be $description;
+		}
+
+		It "New-Role-WithPermissionsShouldReturnNewEntity" -Test {
+			# Arrange
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			
+			# Act
+			$result = New-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc;
+			$result | Should Not Be $null;
+			
+			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			
+			# Assert
+			$resultPermissions | Should Not be $null;
+			$resultPermissions.Count -gt 0 | Should Be $true;
+		}
+	}
+}
 
 #
 # Copyright 2016 d-fens GmbH
