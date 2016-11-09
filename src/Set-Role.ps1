@@ -224,15 +224,11 @@ try
 		$query = "Name eq '{0}'" -f $permission;
 		$permission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
 		
-		{
-			Log-Error $fn "Permission not found";
-			continue;
-		}
-		$oldPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
-		foreach($oldPermission in $oldPermissions)
+		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
+		foreach($originalPermission in $originalPermissions)
 		{
 			$hasPermissionMessage = "The role already has permission {0}" -f $permission;
-			$isEqual = $oldPermission.Name -eq $permission;
+			$isEqual = $originalPermission.Name -eq $permission;
 			
 			if($PSBoundParameters.ContainsKey("RemovePermissions") -and $isEqual)
 			{
