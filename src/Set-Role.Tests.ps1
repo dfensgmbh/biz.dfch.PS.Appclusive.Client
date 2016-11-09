@@ -13,6 +13,10 @@ Describe "Set-Role" -Tags "Set-Role" {
 	. "$here\Get-Role.ps1"
 
 	$entityPrefix = "Set-Role";
+	$mailaddress = "arbitrary@example.com";
+	$newMailaddress = "new@example.com";
+	$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
+	$newRoleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Distribution.value__;
 	$usedEntitySets = @("Roles");
 	
 
@@ -26,7 +30,6 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$svc = Enter-ApcServer;
 			
 			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
-			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
 		}
 		
 		AfterAll {
@@ -73,8 +76,42 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result | Should Not Be $null;
 			$result.Description | Should Be $description;
 		}
+		
+		It "Set-RoleByIdWithNewValues-ShouldReturnUpdatedEntity" -Test {
+			# Arrange
+			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			
+			$result1 = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result1 | Should Not Be $null;
+			$result1.Name | Should Be $name;
+			
+			# Act
+			$result = Set-Role -Id $result1.Id -RoleType $newRoleType -MailAddress $newMailaddress -NewName $newName -svc $svc;
 
-		It "Set-Role-WithNewDescription-ShouldReturnUpdatedEntity" -Test {
+			# Assert
+			$result | Should Not Be $null;
+			$result.MailAddress | Should Be $newMailaddress;
+			$result.Name | Should Be $newName;
+			$result.RoleType | Should Be $newRoleType;
+			$result.Id | Should Be $result1.Id;
+		}
+		
+		It "Set-RoleWithInvalidNewRoleType-ShouldThrowContractException" -Test {
+			# Arrange
+			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$invalidRoleType = 42;
+			
+			$result1 = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result1 | Should Not Be $null;
+			$result1.Name | Should Be $name;
+			
+			# Act
+			{ Set-Role -Id $result1.Id -RoleType invalidRoleType -svc $svc } | Should ThrowErrorId "Contract";
+
+			# Assert
+		}
+		
+		It "Set-RoleWithNewDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$newDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
@@ -109,11 +146,25 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
+		It "Set-RoleWithNewRoleType-ShouldReturnUpdatedEntity" -Test {
+			# Arrange
+			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			
+			$result1 = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result1 | Should Not Be $null;
+			$result1.Name | Should Be $name;
+			
+			# Act
+			$result = Set-Role -Name $result1.Name -RoleType $newRoleType -svc $svc;
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.RoleType | Should Be $newRoleType;
+			$result.Id | Should Be $result1.Id;
+		}
+		
 		It "Set-Role-WithNewMailAddress-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$mailaddress = "arbitrary@example.com";
-			$newMailaddress = "new@example.com" -f [guid]::NewGuid().ToString();
-			
 			$result1 = Set-Role -Name $name -RoleType $roleType -Mailaddress $mailaddress -svc $svc -CreateIfNotExist;
 			$result1 | Should Not Be $null;
 			$result1.Mailaddress | Should Be $mailaddress;
@@ -194,6 +245,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate", "Apc:AcesCanUpdate");
 			$permissionsRemove = @("Apc:AcesCanCreate");
+			
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
