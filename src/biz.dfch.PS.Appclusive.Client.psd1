@@ -241,15 +241,15 @@ FileList = @(
 	,
 	'Import-Module.ps1'
 	,
-        'biz.dfch.CS.Appclusive.Api.dll'
+	'biz.dfch.CS.Appclusive.Api.dll'
 	,
 	'biz.dfch.CS.Appclusive.Public.dll'
 	,
-        'Newtonsoft.Json.dll'
+	'Newtonsoft.Json.dll'
 	,
-        'System.Net.Http.Formatting.dll'
+	'System.Net.Http.Formatting.dll'
 	,
-        'System.Web.Http.dll'
+	'System.Web.Http.dll'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
@@ -258,7 +258,7 @@ PrivateData = @{
 	PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @("dfch", "PowerShell", "Appclusive", "Automation", "OData")
+        Tags = 'dfch', 'PowerShell', 'Appclusive', 'Automation', 'OData'
 		
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/blob/master/LICENSE'

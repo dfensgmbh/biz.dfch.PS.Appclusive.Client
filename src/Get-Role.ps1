@@ -295,22 +295,34 @@ Process
 				
 				foreach ($item in $response)
 				{
-					if (!$item.Permissions)
+					$permissionsOfRole = New-Object System.Collections.ArrayList;
+					
+					while($true) 
 					{
-						continue;
+						foreach($permission in $item.Permissions)
+						{
+							$null = $permissionsOfRole.Add($permission);
+						}
+						
+						$continuation = $item.Permissions.Continuation;
+						if ($continuation -eq $null)
+						{
+							break;
+						}
+						
+						$item.Permissions = $svc.core.Execute($continuation);
 					}
 					
+					# If only one role was found, permissions of this role
 					if ($response.Count -eq 1)
 					{
-						$listOfPermissions.Add($item.Permissions);
+						$listOfPermissions.AddRange($permissionsOfRole);
 					}
-					
-					$permissions = New-Object System.Collections.ArrayList;
-					foreach ($permission in $item.Permissions)
+					# If there is more than one role, a list of lists with permissions gets returned
+					else 
 					{
-						$null = $permissions.Add($permission);
+						$listOfPermissions.Add($permissionsOfRole.ToArray());
 					}
-					$listOfPermissions.Add($permissions.ToArray());
 				}
 				$response = $listOfPermissions.ToArray();
 			}

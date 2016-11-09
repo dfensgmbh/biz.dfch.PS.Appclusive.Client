@@ -140,11 +140,12 @@ Describe "Set-Role" -Tags "Set-Role" {
 		
 		It "Set-Role-WithPermissionsShouldReturnNewEntity" -Test {
 			# Arrange
-			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate");
 			
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
+			$result.Id -gt 0 | Should Be $true
 			
 			$svc = Enter-ApcServer;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
@@ -223,11 +224,11 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			
 			$svc = Enter-ApcServer;
-			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			$resultingPermissions = Get-Role -Id $result.Id -svc $svc -ExpandPermissions;
 			
 			# Assert
-			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -gt 0 | Should Be $true;
+			$resultingPermissions | Should Not Be $null;
+			$resultingPermissions.Count -gt 0 | Should Be $true;
 		}
 	}
 }
