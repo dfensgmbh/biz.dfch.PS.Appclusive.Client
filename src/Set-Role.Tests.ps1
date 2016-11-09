@@ -62,7 +62,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Name | Should Be $name;
 		}
 	
-		It "Set-Role-ShouldReturnNewEntityWithDescription" -Test {
+		It "Set-RoleWithDescription-ShouldReturnNewEntityWithDescription" -Test {
 			# Arrange
 			$description = "Description-{0}" -f [guid]::NewGuid().ToString();
 				
@@ -92,7 +92,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-Role-WithNewName-ShouldReturnUpdatedEntity" -Test {
+		It "Set-RoleWithNewName-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
 			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			
