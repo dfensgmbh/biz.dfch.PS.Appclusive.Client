@@ -295,22 +295,22 @@ Process
 				
 				foreach ($item in $response)
 				{
-					if (!$item.Permissions)
-					{
-						continue;
-					}
-					
-					if ($response.Count -eq 1)
-					{
-						$listOfPermissions.Add($item.Permissions);
-					}
-					
 					$permissions = New-Object System.Collections.ArrayList;
 					foreach ($permission in $item.Permissions)
 					{
 						$null = $permissions.Add($permission);
 					}
-					$listOfPermissions.Add($permissions.ToArray());
+					
+					# If only one role was found, permissions of this role
+					if ($response.Count -eq 1)
+					{
+						$listOfPermissions.AddRange($permissions);
+					}
+					# If there is more than one role, a list of lists with permissions gets returned
+					else 
+					{
+						$listOfPermissions.Add($permissions.ToArray());
+					}
 				}
 				$response = $listOfPermissions.ToArray();
 			}
