@@ -215,7 +215,6 @@ try
 	{
 		$entity.MailAddress = $MailAddress;
 	}
-
 	
 	$svc.Core.UpdateObject($entity);
 	$null = $svc.Core.SaveChanges();
@@ -225,7 +224,6 @@ try
 		$query = "Name eq '{0}'" -f $permission;
 		$permission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
 		
-		if($null -eq $permission) 
 		{
 			Log-Error $fn "Permission not found";
 			continue;
