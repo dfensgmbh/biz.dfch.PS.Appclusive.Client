@@ -108,9 +108,8 @@ See module manifest for dependencies and further requirements.
 Param
 (
 	[Parameter(Mandatory = $true, ParameterSetName = 'id', Position = 0)]
-	[ValidateNotNullOrEmpty()]
-	[Alias('n')]
-	[string] $Id
+	[ValidateRange(1,[long]::MaxValue)]
+	[long] $Id
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 0)]
 	[Parameter(Mandatory = $true, ParameterSetName = 'name', Position = 0)]
