@@ -241,15 +241,15 @@ FileList = @(
 	,
 	'Import-Module.ps1'
 	,
-        'biz.dfch.CS.Appclusive.Api.dll'
+	'biz.dfch.CS.Appclusive.Api.dll'
 	,
 	'biz.dfch.CS.Appclusive.Public.dll'
 	,
-        'Newtonsoft.Json.dll'
+	'Newtonsoft.Json.dll'
 	,
-        'System.Net.Http.Formatting.dll'
+	'System.Net.Http.Formatting.dll'
 	,
-        'System.Web.Http.dll'
+	'System.Web.Http.dll'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
