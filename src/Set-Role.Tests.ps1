@@ -140,7 +140,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 		
 		It "Set-Role-WithPermissionsShouldReturnNewEntity" -Test {
 			# Arrange
-			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate");
 			
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
