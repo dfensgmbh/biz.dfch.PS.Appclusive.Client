@@ -17,9 +17,9 @@ default
 
 
 .EXAMPLE
-Set-Role -Name "ArbitraryRole" -RoleType 3 -svc $svc -CreateIfNotExist;
+Set-Role -Name "ArbitraryRole" -RoleType 4 -svc $svc -CreateIfNotExist;
 
-RoleType     : 3
+RoleType     : 4
 MailAddress  :
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -42,7 +42,7 @@ Create a new Role entry if it does not exist.
 .EXAMPLE
 Set-Role -Name "ArbitraryName" -Description "UpdatedDescription" -NewName "UpdatedName"
 
-RoleType     : 3
+RoleType     : 2
 MailAddress  :
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -70,7 +70,7 @@ MailAddress  : arbitrary@eample.com
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
 Name         : UpdatedName
-Description  : updatedDescription
+Description  : 
 CreatedById  : 1
 ModifiedById : 1
 Created      : 23.08.2016 11:08:14 +02:00
@@ -84,6 +84,8 @@ ModifiedBy   :
 
 Update an existing Role with new Name and MailAddress and RoleType.
 
+
+# DFTODO - Example for updating permissions (remove and set)
 
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Role/
@@ -105,6 +107,11 @@ See module manifest for dependencies and further requirements.
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param
 (
+	[Parameter(Mandatory = $true, ParameterSetName = 'id', Position = 0)]
+	[ValidateNotNullOrEmpty()]
+	[Alias('n')]
+	[string] $Id
+	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 0)]
 	[Parameter(Mandatory = $true, ParameterSetName = 'name', Position = 0)]
 	[ValidateNotNullOrEmpty()]
@@ -113,6 +120,7 @@ Param
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 1)]
+	# DFTODO - enum? -> Adjust Examples and https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Abiquo.Scripts/wiki
 	[long] $RoleType
 	,
 	[Parameter(Mandatory = $false)]
@@ -127,12 +135,13 @@ Param
 	[Parameter(Mandatory = $false)]
 	[string[]] $Permissions = @()
 	,
-	# Specifies the new name
-	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 2)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
 	,
-	# Specifies if the permissions should be removed instead
+	# Specifies to remove the specified permissions
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[switch] $RemovePermissions = $false
 	,
@@ -167,161 +176,173 @@ Begin
 	# RoleType param validation
 	$minRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
 	$maxRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.value__;
-	if ($RoleType) 
+	
+	Contract-Requires($minProtectionLevelValue -le $RoleType);
+	Contract-Requires($maxProtectionLevelValue -ge $RoleType);
+	
+	if ($NewRoleType) 
 	{
-		Contract-Requires($minProtectionLevelValue -le $RoleType);
-		Contract-Requires($maxProtectionLevelValue -ge $RoleType);
+		Contract-Requires($minProtectionLevelValue -le $NewRoleType);
+		Contract-Requires($maxProtectionLevelValue -ge $NewRoleType);
 	}
-    
-    if($PSBoundParameters.ContainsKey('MailAddress'))
-    {
-        $isValidMail = [System.Net.Mail.MailAddress]::new($MailAddress);
-        Contract-Requires(!!$MailAddress);
-    }
 }
 
 Process 
 {
+	# Default test variable for checking function response codes.
+	[Boolean] $fReturn = $false;
+	# Return values are always and only returned via OutputParameter.
+	$OutputParameter = $null;
+	$AddedEntity = $null;
 
-# Default test variable for checking function response codes.
-[Boolean] $fReturn = $false;
-# Return values are always and only returned via OutputParameter.
-$OutputParameter = $null;
-$AddedEntity = $null;
-
-try 
-{
-	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.ToLower();
-	$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-
-	if(!$CreateIfNotExist -And !$entity) 
+	try 
 	{
-		$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
-		$gotoError = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
-		throw($gotoError);
-	}
-	
-	if($PSCmdlet.ParameterSetName -eq 'create') 
-	{
-		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Role;
-		$svc.Core.AddToRoles($entity);
-		$AddedEntity = $entity;
-		$entity.Name = $Name;
-		$entity.RoleType = $RoleType
-		$entity.Created = [System.DateTimeOffset]::Now;
-		$entity.Modified = $entity.Created;
-		$entity.CreatedById = 0;
-		$entity.ModifiedById = 0;
-	}
-	elseif($PSCmdlet.ParameterSetName -eq 'name')
-	{
-		if($PSBoundParameters.ContainsKey('NewName'))
+		if($PSCmdlet.ParameterSetName -eq 'id') 
 		{
-			$entity.Name = $NewName;
-		}
-		if($PSBoundParameters.ContainsKey('RoleType'))
-		{
-			$entity.RoleType = $RoleType;
-		}
-	}
-	
-	if($PSBoundParameters.ContainsKey('Description'))
-	{
-		$entity.Description = $Description;
-	}
-	if($PSBoundParameters.ContainsKey('MailAddress'))
-	{
-		$entity.MailAddress = $MailAddress;
-	}
-	
-	$svc.Core.UpdateObject($entity);
-	$null = $svc.Core.SaveChanges();
-
-	foreach($permission in ($Permissions | Select -Unique))
-	{
-		$query = "Name eq '{0}'" -f $permission;
-		$permission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
-		
-		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
-		foreach($originalPermission in $originalPermissions)
-		{
-			$hasPermissionMessage = "The role already has permission {0}" -f $permission;
-			$isEqual = $originalPermission.Name -eq $permission;
+			$FilterExpression = "Id eq {0}" -f $Id;
+			$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 			
-			if($PSBoundParameters.ContainsKey("RemovePermissions") -and $isEqual)
+			if(!$entity) 
 			{
-				$svc.Core.RemoveLink($entity, 'Permissions', $permission);
-				continue;
+				$msg = "Entity with Id '{0}' not found." -f $Id;
+				$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Id;
+				throw($gotoError);
 			}
-			elseif($PSBoundParameters.ContainsKey("RemovePermissions") -and !$isEqual)
-			{
-				$hasPermissionMessage = "The role doesn't have permission {0}" -f $permission;
-				Contract-Assert(!$isEqual) $hasPermissionMessage;
-			}
-			Contract-Assert(!$isEqual) $hasPermissionMessage;
-		}
-		
-		$svc.Core.AddLink($entity, 'Permissions', $permission);
-		$null = $svc.Core.SaveChanges();
-	}
-
-	$r = $entity;
-	$OutputParameter = Format-ResultAs $r $As;
-	$fReturn = $true;
-}
-catch 
-{
-	if($gotoSuccess -eq $_.Exception.Message) 
-	{
-		$fReturn = $true;
-	} 
-	else 
-	{
-		[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-		$ErrorText += (($_ | fl * -Force) | Out-String);
-		$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-		$ErrorText += (Get-PSCallStack | Out-String);
-		
-		if($_.Exception -is [System.Net.WebException]) 
-		{
-			Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
-			Log-Debug $fn $ErrorText -fac 3;
 		}
 		else 
 		{
-			Log-Error $fn $ErrorText -fac 3;
+			$currentTenant = Get-Tenant -svc $svc -Current;
+			$FilterExpression = "(tolower(Name) eq '{0}' and Tid eq guid'{1}')" -f $Name.ToLower(), $currentTenant.Id;
+			$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 			
-			if($gotoError.Exception.Message -eq $_.Exception.Message) 
+			if(!$CreateIfNotExist -And !$entity) 
 			{
-				Log-Error $fn $e.Exception.Message;
-				$PSCmdlet.ThrowTerminatingError($e);
-			} 
-			elseif($gotoFailure -ne $_.Exception.Message) 
-			{ 
-				Write-Verbose ("$fn`n$ErrorText"); 
-			} 
-			else 
-			{
-				# N/A
+				$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
+				$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
+				throw($gotoError);
 			}
 		}
-		$fReturn = $false;
-		$OutputParameter = $null;
 		
-		if($AddedEntity) 
-		{ 
-			$svc.Core.DeleteObject($AddedEntity); 
+		if($PSCmdlet.ParameterSetName -eq 'create') 
+		{
+			$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Role;
+			$svc.Core.AddToRoles($entity);
+			$AddedEntity = $entity;
+			$entity.Name = $Name;
+			$entity.RoleType = $RoleType
+			$entity.Created = [System.DateTimeOffset]::Now;
+			$entity.Modified = $entity.Created;
+			$entity.CreatedById = 0;
+			$entity.ModifiedById = 0;
+		}
+		elseif($PSCmdlet.ParameterSetName -eq 'name')
+		{
+			if($PSBoundParameters.ContainsKey('NewName'))
+			{
+				$entity.Name = $NewName;
+			}
+			if($PSBoundParameters.ContainsKey('RoleType'))
+			{
+				$entity.RoleType = $RoleType;
+			}
+		}
+		
+		if($PSBoundParameters.ContainsKey('Description'))
+		{
+			$entity.Description = $Description;
+		}
+		if($PSBoundParameters.ContainsKey('MailAddress'))
+		{
+			$entity.MailAddress = $MailAddress;
+		}
+		
+		$svc.Core.UpdateObject($entity);
+		$null = $svc.Core.SaveChanges();
+
+		foreach($permission in ($Permissions | Select -Unique))
+		{
+			# DFTODO - First validate permissions variable, then add them
+			$query = "Name eq '{0}'" -f $permission;
+			$permission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
+			
+			$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
+			foreach($originalPermission in $originalPermissions)
+			{
+				$hasPermissionMessage = "The role already has permission {0}" -f $permission;
+				$isEqual = $originalPermission.Name -eq $permission;
+				
+				if($PSBoundParameters.ContainsKey("RemovePermissions") -and $isEqual)
+				{
+					$svc.Core.RemoveLink($entity, 'Permissions', $permission);
+					continue;
+				}
+				elseif($PSBoundParameters.ContainsKey("RemovePermissions") -and !$isEqual)
+				{
+					$hasPermissionMessage = "The role doesn't have permission {0}" -f $permission;
+					Contract-Assert(!$isEqual) $hasPermissionMessage;
+				}
+				Contract-Assert(!$isEqual) $hasPermissionMessage;
+			}
+			
+			$svc.Core.AddLink($entity, 'Permissions', $permission);
+			$null = $svc.Core.SaveChanges();
+		}
+
+		$r = $entity;
+		$OutputParameter = Format-ResultAs $r $As;
+		$fReturn = $true;
+	}
+	catch 
+	{
+		if($gotoSuccess -eq $_.Exception.Message) 
+		{
+			$fReturn = $true;
+		} 
+		else 
+		{
+			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
+			$ErrorText += (($_ | fl * -Force) | Out-String);
+			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
+			$ErrorText += (Get-PSCallStack | Out-String);
+			
+			if($_.Exception -is [System.Net.WebException]) 
+			{
+				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
+				Log-Debug $fn $ErrorText -fac 3;
+			}
+			else 
+			{
+				Log-Error $fn $ErrorText -fac 3;
+				
+				if($gotoError.Exception.Message -eq $_.Exception.Message) 
+				{
+					Log-Error $fn $e.Exception.Message;
+					$PSCmdlet.ThrowTerminatingError($e);
+				} 
+				elseif($gotoFailure -ne $_.Exception.Message) 
+				{ 
+					Write-Verbose ("$fn`n$ErrorText"); 
+				} 
+				else 
+				{
+					# N/A
+				}
+			}
+			$fReturn = $false;
+			$OutputParameter = $null;
+			
+			if($AddedEntity) 
+			{ 
+				$svc.Core.DeleteObject($AddedEntity); 
+			}
 		}
 	}
+	finally 
+	{
+		# Clean up
+		# N/A
+	}
 }
-finally 
-{
-	# Clean up
-	# N/A
-}
-
-}
-# Process
 
 End 
 {
@@ -331,9 +352,9 @@ End
 	# Return values are always and only returned via OutputParameter.
 	return $OutputParameter;
 }
-# End
 
-}
+} # function
+
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Role; } 
 
 # 
