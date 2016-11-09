@@ -146,6 +146,83 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
+			$svc = Enter-ApcServer;
+			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			
+			# Assert
+			$resultPermissions | Should Not be $null;
+			$resultPermissions.Count -gt 0 | Should Be $true;
+		}
+		
+		It "Set-Role-AddPermissionsShouldReturnNewEntity" -Test {
+			# Arrange
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
+			
+			$svc = Enter-ApcServer;
+			$result = Set-Role -Id $result.Id -Permissions $permissions -svc $svc;
+			
+			$svc = Enter-ApcServer;
+			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			
+			# Assert
+			$resultPermissions | Should Not be $null;
+			$resultPermissions.Count -gt 0 | Should Be $true;
+		}
+		
+		It "Set-Role-WithDuplicatePermissionsShouldThrowContractException" -Test {
+			# Arrange
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
+			
+			$svc = Enter-ApcServer;
+			{ Set-Role -Id $result.Id -Permissions $permissions -svc $svc } | Should ThrowErrorId "Contract";
+			
+			# Assert
+			$resultPermissions | Should Not be $null;
+			$resultPermissions.Count -gt 0 | Should Be $true;
+		}
+		
+		It "Set-Role-WithPermissionsRemovedShouldReturnEntity" -Test {
+			# Arrange
+			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate", "Apc:AcesCanUpdate");
+			$permissionsRemove = @("Apc:AcesCanCreate");
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
+			
+			$svc = Enter-ApcServer;
+			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissionsRemove -svc $svc -CreateIfNotExist -RemovePermissions;
+			
+
+			$svc = Enter-ApcServer;
+			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			
+			# Assert
+			$resultPermissions | Should Not be $null;
+			$resultPermissions.Count -gt 0 | Should Be $true;
+			$resultPermissions.Count -eq 2 | Should Be $true;
+		}
+		
+		It "Set-Role-WithPermissionsRemovedWhichItHasNotShouldThrowContractException" -Test {
+			# Arrange
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$notExistingPermissions = @("Apc:AcesCanUpdate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
+			
+			{ Set-Role -Id $result.Id -Permissions $notExistingPermissions -svc $svc -RemovePermissions; } | Should ThrowErrorId "Contract";
+			
+			
+			$svc = Enter-ApcServer;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
 			
 			# Assert
