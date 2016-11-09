@@ -217,6 +217,7 @@ Describe "Get-Role" -Tags "Get-Role" {
 			$result | Should Not Be $null;
 			$result -is [array] | Should Be $true;
 			$result.Count -gt 0 | Should Be $true;
+			$result[0] -is [biz.dfch.CS.Appclusive.Api.Core.Permission] | Should Be $true;
 		}
 	}
 }
