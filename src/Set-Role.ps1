@@ -40,10 +40,33 @@ Create a new Role entry if it does not exist.
 
 
 .EXAMPLE
-Set-Role -Name "ArbitraryName" -Description "updatedDescription" -NewName "UpdatedName"
+Set-Role -Name "ArbitraryName" -Description "UpdatedDescription" -NewName "UpdatedName"
 
 RoleType     : 3
 MailAddress  :
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : UpdatedName
+Description  : UpdatedDescription
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+Update an existing Role with new Name and new Description.
+
+
+.EXAMPLE
+Set-Role -Id 42 -RoleType 2 -MailAddress "arbitrary@eample.com" -NewName "UpdatedName"
+
+RoleType     : 2
+MailAddress  : arbitrary@eample.com
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
 Name         : UpdatedName
@@ -59,7 +82,7 @@ Tenant       :
 CreatedBy    :
 ModifiedBy   :
 
-Update an existing Role with new Name and Description.
+Update an existing Role with new Name and MailAddress and RoleType.
 
 
 .LINK
@@ -80,7 +103,7 @@ See module manifest for dependencies and further requirements.
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Role/'
 )]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
-Param 
+Param
 (
 	# Specifies the name to modify
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 0)]
