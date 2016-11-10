@@ -280,7 +280,7 @@ Process
 	$svc.Core.UpdateObject($entity);
 	$null = $svc.Core.SaveChanges();
 
-	
+
 	if($PSBoundParameters.ContainsKey('Permissions'))
 	{
 		# assert, that specified permissions do not contain duplicates
