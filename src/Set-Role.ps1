@@ -220,169 +220,108 @@ Begin
 
 Process 
 {
+	trap { Log-Exception $_; break; }
+	
 	# Default test variable for checking function response codes.
 	[Boolean] $fReturn = $false;
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 	$AddedEntity = $null;
 
-	try 
+	if($PSCmdlet.ParameterSetName -eq 'id') 
 	{
-		if($PSCmdlet.ParameterSetName -eq 'id') 
-		{
-			$FilterExpression = "Id eq {0}" -f $Id;
-			$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-			
-			if(!$entity) 
-			{
-				$msg = "Entity with Id '{0}' not found." -f $Id;
-				$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Id;
-				throw($gotoError);
-			}
-		}
-		else 
-		{
-			$currentTenant = Get-Tenant -svc $svc -Current;
-			$FilterExpression = "(tolower(Name) eq '{0}' and Tid eq guid'{1}')" -f $Name.ToLower(), $currentTenant.Id;
-			$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-			
-			if(!$CreateIfNotExist -And !$entity) 
-			{
-				$msg = "Name: Parameter validation FAILED. Entity does not exist. Use '-CreateIfNotExist' to create resource: '{0}'" -f $Name;
-				$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $Name;
-				throw($gotoError);
-			}
-		}
+		$FilterExpression = "Id eq {0}" -f $Id;
+		$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 		
-		if($PSCmdlet.ParameterSetName -eq 'create') 
-		{
-			$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Role;
-			$svc.Core.AddToRoles($entity);
-			$AddedEntity = $entity;
-			$entity.Name = $Name;
-			$entity.RoleType = $RoleType
-			$entity.Created = [System.DateTimeOffset]::Now;
-			$entity.Modified = $entity.Created;
-			$entity.CreatedById = 0;
-			$entity.ModifiedById = 0;
-		}
-		else
-		{
-			if($PSBoundParameters.ContainsKey('NewName'))
-			{
-				$entity.Name = $NewName;
-			}
-			if($PSBoundParameters.ContainsKey('RoleType'))
-			{
-				$entity.RoleType = $RoleType;
-			}
-		}
-		
-		if($PSBoundParameters.ContainsKey('Description'))
-		{
-			$entity.Description = $Description;
-		}
-		if($PSBoundParameters.ContainsKey('MailAddress'))
-		{
-			$entity.MailAddress = $MailAddress;
-		}
-		
-		$svc.Core.UpdateObject($entity);
-		$null = $svc.Core.SaveChanges();
-
-		
-		if($PSBoundParameters.ContainsKey('Permissions'))
-		{
-			# assert, that specified permissions do not contain duplicates
-			Contract-Assert($Permissions.Count -eq ($Permissions | Select -Unique).Count) "Duplicates found in specified Permissions";
-
-			$apcPermissions = New-Object System.Collections.ArrayList;
-			
-			foreach($permissionName in $Permissions)
-			{
-				$query = "Name eq '{0}'" -f $permissionName;
-				$apcPermission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
-				Contract-Assert($apcPermission) ("Permissions with Name '{0}' not found." -f $permissionName);
-				
-				$null = $apcPermissions.Add($apcPermission);
-			}
-			
-			$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
-			
-			# assert, that every specified permission can be added/removed
-			$diff = Compare-Object -ReferenceObject $originalPermissions.Name -DifferenceObject $Permissions -PassThru;
-			Contract-Assert($PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -ne 0) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
-			Contract-Assert(!$PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -eq $Permissions.Count) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
-			
-			foreach($apcPermisison in $apcPermissions)
-			{
-				if($PSBoundParameters.ContainsKey("RemovePermissions"))
-				{
-					$svc.Core.RemoveLink($entity, 'Permissions', $apcPermisison);
-					$svc.Core.SaveChanges();
-				}
-				else
-				{
-					$svc.Core.AddLink($entity, 'Permissions', $apcPermisison);
-					$svc.Core.SaveChanges();
-				}
-			}
-		}
-
-		$r = $entity;
-		$OutputParameter = Format-ResultAs $r $As;
-		$fReturn = $true;
+		Contract-Assert ($entity) ("Entity with Id '{0}' not found." -f $Id;);
 	}
-	catch 
+	else 
 	{
-		if($gotoSuccess -eq $_.Exception.Message) 
+		$currentTenant = Get-Tenant -svc $svc -Current;
+		$FilterExpression = "(tolower(Name) eq '{0}' and Tid eq guid'{1}')" -f $Name.ToLower(), $currentTenant.Id;
+		$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+		
+		Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
+	}
+	
+	if($PSCmdlet.ParameterSetName -eq 'create') 
+	{
+		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.Role;
+		$svc.Core.AddToRoles($entity);
+		$AddedEntity = $entity;
+		$entity.Name = $Name;
+		$entity.RoleType = $RoleType
+		$entity.Created = [System.DateTimeOffset]::Now;
+		$entity.Modified = $entity.Created;
+		$entity.CreatedById = 0;
+		$entity.ModifiedById = 0;
+	}
+	else
+	{
+		if($PSBoundParameters.ContainsKey('NewName'))
 		{
-			$fReturn = $true;
-		} 
-		else 
+			$entity.Name = $NewName;
+		}
+		if($PSBoundParameters.ContainsKey('RoleType'))
 		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
+			$entity.RoleType = $RoleType;
+		}
+	}
+	
+	if($PSBoundParameters.ContainsKey('Description'))
+	{
+		$entity.Description = $Description;
+	}
+	if($PSBoundParameters.ContainsKey('MailAddress'))
+	{
+		$entity.MailAddress = $MailAddress;
+	}
+	
+	$svc.Core.UpdateObject($entity);
+	$null = $svc.Core.SaveChanges();
+
+	
+	if($PSBoundParameters.ContainsKey('Permissions'))
+	{
+		# assert, that specified permissions do not contain duplicates
+		Contract-Assert($Permissions.Count -eq ($Permissions | Select -Unique).Count) "Duplicates found in specified Permissions";
+
+		$apcPermissions = New-Object System.Collections.ArrayList;
+		
+		foreach($permissionName in $Permissions)
+		{
+			$query = "Name eq '{0}'" -f $permissionName;
+			$apcPermission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
+			Contract-Assert($apcPermission) ("Permissions with Name '{0}' not found." -f $permissionName);
 			
-			if($_.Exception -is [System.Net.WebException]) 
+			$null = $apcPermissions.Add($apcPermission);
+		}
+		
+		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
+		
+		# assert, that every specified permission can be added/removed
+		$diff = Compare-Object -ReferenceObject $originalPermissions.Name -DifferenceObject $Permissions -PassThru;
+		Contract-Assert($PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -ne 0) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
+		Contract-Assert(!$PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -eq $Permissions.Count) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
+		
+		foreach($apcPermisison in $apcPermissions)
+		{
+			if($PSBoundParameters.ContainsKey("RemovePermissions"))
 			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
+				$svc.Core.RemoveLink($entity, 'Permissions', $apcPermisison);
+				$svc.Core.SaveChanges();
 			}
-			else 
+			else
 			{
-				Log-Error $fn $ErrorText -fac 3;
-				
-				if($gotoError.Exception.Message -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -ne $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					# N/A
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
-			
-			if($AddedEntity) 
-			{ 
-				$svc.Core.DeleteObject($AddedEntity); 
+				$svc.Core.AddLink($entity, 'Permissions', $apcPermisison);
+				$svc.Core.SaveChanges();
 			}
 		}
 	}
-	finally 
-	{
-		# Clean up
-		# N/A
-	}
+
+	$r = $entity;
+	$OutputParameter = Format-ResultAs $r $As;
+	$fReturn = $true;
 }
 
 End 
