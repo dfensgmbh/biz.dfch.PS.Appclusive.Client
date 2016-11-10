@@ -85,7 +85,51 @@ ModifiedBy   :
 Update an existing Role with new Name and MailAddress and RoleType.
 
 
-# DFTODO - Example for updating permissions (remove and set)
+.EXAMPLE
+Set-Role -Id 42 -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate") -CreateIfNotExist
+
+RoleType     : 2
+MailAddress  : 
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryName
+Description  : 
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+Create/Update Role by adding specified permissions
+
+
+.EXAMPLE
+Set-Role -Id 42 -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate") -RemovePermissions
+
+RoleType     : 2
+MailAddress  : 
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryName
+Description  : 
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+Update an existing Role by removing the specified permissions
+
 
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Role/
