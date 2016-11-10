@@ -98,7 +98,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-RoleWithInvalidNewRoleType-ShouldThrowContractException" -Test {
+		It "Set-RoleWithInvalidNewRoleType-ShouldThrowException" -Test {
 			# Arrange
 			$newName = "{0}-NewName-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
 			$invalidRoleType = 42;
@@ -108,9 +108,9 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result1.Name | Should Be $name;
 			
 			# Act
-			{ Set-Role -Id $result1.Id -RoleType invalidRoleType -svc $svc } | Should ThrowErrorId "Contract";
 
 			# Assert
+			{ Set-Role -Id $result1.Id -RoleType invalidRoleType -svc $svc } | Should Throw;
 		}
 		
 		It "Set-RoleWithNewDescription-ShouldReturnUpdatedEntity" -Test {
@@ -180,24 +180,23 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-RoleWhichDoesNotExist-ShouldThrowException" -Test {
+		It "Set-RoleWhichDoesNotExist-ShouldThrowContractException" -Test {
 			# Arrange
 			$nonExistingRoleName = "not-existing-role-{0}" -f [guid]::NewGuid();
-			# N/A (Declared in BeforeEach)
 			
 			# Act
-			{ Set-Role -Name $nonExistingRoleName -RoleType $roleType -svc $svc } | Should Throw;
+			{ Set-Role -Name $nonExistingRoleName -RoleType $roleType -svc $svc } | Should ThrowErrorId "Contract";
 			
 			# Assert
 		}
 		
-		It "Set-RoleByIdWhichDoesNotExist-ShouldThrowException" -Test {
+		It "Set-RoleByIdWhichDoesNotExist-ShouldThrowContractException" -Test {
 			# Arrange
 			$nonExistingRoleId = [long]::MaxValue;
 			# N/A (Declared in BeforeEach)
 			
 			# Act
-			{ Set-Role -Id $nonExistingRoleId -NewName "Arbitrary" -svc $svc } | Should Throw;
+			{ Set-Role -Id $nonExistingRoleId -NewName "Arbitrary" -svc $svc } | Should ThrowErrorId "Contract"
 			
 			# Assert
 		}
