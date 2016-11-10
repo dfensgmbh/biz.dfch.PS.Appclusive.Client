@@ -266,7 +266,7 @@ Process
 			$entity.CreatedById = 0;
 			$entity.ModifiedById = 0;
 		}
-		elseif($PSCmdlet.ParameterSetName -eq 'name')
+		else
 		{
 			if($PSBoundParameters.ContainsKey('NewName'))
 			{
