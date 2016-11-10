@@ -59,7 +59,7 @@ Retrieves the Role object with Id 42 and returns all properties of it.
 
 
 .EXAMPLE
-Get-Role -RoleType 2
+Get-Role -RoleType Distribution
 
 RoleType     : 2
 MailAddress  :
