@@ -66,7 +66,7 @@ Update an existing Role with new Name and new Description.
 Set-Role -Id 42 -RoleType 2 -MailAddress "arbitrary@eample.com" -NewName "UpdatedName"
 
 RoleType     : 2
-MailAddress  : arbitrary@eample.com
+MailAddress  : arbitrary@example.com
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
 Name         : UpdatedName
