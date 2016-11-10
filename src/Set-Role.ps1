@@ -230,7 +230,7 @@ Process
 
 	if($PSCmdlet.ParameterSetName -eq 'id') 
 	{
-		$FilterExpression = "Id eq {0}" -f $Id;
+		$FilterExpression = "Id eq {0}L" -f $Id;
 		$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 		
 		Contract-Assert ($entity) ("Entity with Id '{0}' not found." -f $Id);
