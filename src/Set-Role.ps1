@@ -290,33 +290,43 @@ Process
 		$svc.Core.UpdateObject($entity);
 		$null = $svc.Core.SaveChanges();
 
-		foreach($permission in ($Permissions | Select -Unique))
+		
+		if($PSBoundParameters.ContainsKey('Permissions'))
 		{
-			# DFTODO - First validate permissions variable, then add them
-			$query = "Name eq '{0}'" -f $permission;
-			$permission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
+			# assert, that specified permissions do not contain duplicates
+			Contract-Assert($Permissions.Count -eq ($Permissions | Select -Unique).Count) "Duplicates found in specified Permissions";
+
+			$apcPermissions = New-Object System.Collections.ArrayList;
 			
-			$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
-			foreach($originalPermission in $originalPermissions)
+			foreach($permissionName in $Permissions)
 			{
-				$hasPermissionMessage = "The role already has permission {0}" -f $permission;
-				$isEqual = $originalPermission.Name -eq $permission;
+				$query = "Name eq '{0}'" -f $permissionName;
+				$apcPermission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
+				Contract-Assert($apcPermission) ("Permissions with Name '{0}' not found." -f $permissionName);
 				
-				if($PSBoundParameters.ContainsKey("RemovePermissions") -and $isEqual)
-				{
-					$svc.Core.RemoveLink($entity, 'Permissions', $permission);
-					continue;
-				}
-				elseif($PSBoundParameters.ContainsKey("RemovePermissions") -and !$isEqual)
-				{
-					$hasPermissionMessage = "The role doesn't have permission {0}" -f $permission;
-					Contract-Assert(!$isEqual) $hasPermissionMessage;
-				}
-				Contract-Assert(!$isEqual) $hasPermissionMessage;
+				$null = $apcPermissions.Add($apcPermission);
 			}
 			
-			$svc.Core.AddLink($entity, 'Permissions', $permission);
-			$null = $svc.Core.SaveChanges();
+			$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
+			
+			# assert, that every specified permission can be added/removed
+			$diff = Compare-Object -ReferenceObject $originalPermissions.Name -DifferenceObject $Permissions -PassThru;
+			Contract-Assert($PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count != 0) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
+			Contract-Assert(!$PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -eq $Permissions.Count) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
+			
+			foreach($apcPermisison in $apcPermissions)
+			{
+				if($PSBoundParameters.ContainsKey("RemovePermissions"))
+				{
+					$svc.Core.RemoveLink($entity, 'Permissions', $apcPermisison);
+					$svc.Core.SaveChanges();
+				}
+				else
+				{
+					$svc.Core.AddLink($entity, 'Permissions', $apcPermisison);
+					$svc.Core.SaveChanges();
+				}
+			}
 		}
 
 		$r = $entity;
