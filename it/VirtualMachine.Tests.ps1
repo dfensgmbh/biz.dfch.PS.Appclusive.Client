@@ -25,7 +25,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 	. "$here\Order.ps1"
 	
 	$entityPrefix = "TestItem-";
-	$usedEntitySets = @("CartItems", "CatalogueItems", "Products", "Catalogues", "Carts");
+	$usedEntitySets = @("CartItems", "CatalogueItems", "Products", "Catalogues", "Carts" );
 	#gets the id of tenant Managed Customer Tenant
 	$tenant = Get-ApcTenant -Name "Managed Customer Tenant" -svc $svc;
 	$tenantId = $tenant.Id.toString();
@@ -185,8 +185,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 			$name = $entityPrefix + "Folder-{0}" -f [guid]::NewGuid().ToString();
 			$parentId = (Get-ApcTenant -Current).NodeId;
 			$folder = New-ApcFolder -name $name -ParentId $parentId -svc $svc;
-			$par = "biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id:" + $folder.Id;
-			Write-Host ($par | out-string);
+			
 			#ACT create new cart item
 			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $parameters;
 			$cartItemId = $cartItem.Id;
@@ -201,7 +200,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 				Name = $orderName;
 				Description = "Arbitrary Description";
 				Requester = (Get-ApcUser -Current).Id;
-				Parameters = '{\"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id\":\"' + $folder.Id + '\"}'; #"{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}"
+				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + ($folder.Id).toString() + '"}'; #"{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}"
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
