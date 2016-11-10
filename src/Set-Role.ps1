@@ -286,7 +286,10 @@ Process
 		# assert, that specified permissions do not contain duplicates
 		Contract-Assert($Permissions.Count -eq ($Permissions | Select -Unique).Count) "Duplicates found in specified Permissions";
 
+		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
 		$permissionEntities = New-Object System.Collections.ArrayList;
+		$permissionsCanBeAdded = $true;
+		$permissionsCanBeRemoved = $true;
 		
 		foreach($permissionName in $Permissions)
 		{
@@ -294,32 +297,34 @@ Process
 			$apcPermission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
 			Contract-Assert($apcPermission) ("Permissions with Name '{0}' not found." -f $permissionName);
 			
+			# assert, that every specified permission can be added/removed
+			if (!$originalPermissions)
+			{
+				$permissionsCanBeRemoved = $false;
+			}
+			elseif ($originalPermissions.Name.Contains($permissionName))
+			{
+				$permissionsCanBeAdded = $false;
+			}
+			else 
+			{
+				$permissionsCanBeRemoved = $false;
+			}
+			
 			$null = $permissionEntities.Add($apcPermission);
-		}
-		
-		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
-		
-		# assert, that every specified permission can be added/removed
-		if ($originalPermissions.Count -eq 0)
-		{
-			$diff = Compare-Object -ReferenceObject @() -DifferenceObject $Permissions -PassThru;
-		}
-		else 
-		{
-			$diff = Compare-Object -ReferenceObject $originalPermissions.Name -DifferenceObject $Permissions -PassThru;
 		}
 		
 		foreach($apcPermission in $permissionEntities)
 		{
 			if($PSBoundParameters.ContainsKey("RemovePermissions"))
 			{
-				Contract-Assert($diff.Count -eq 0) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
-				$svc.Core.RemoveLink($entity, 'Permissions', $apcPermission);
+				Contract-Assert($permissionsCanBeRemoved) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
+				$svc.Core.DeleteLink($entity, 'Permissions', $apcPermission);
 				$svc.Core.SaveChanges();
 			}
 			else
 			{
-				Contract-Assert($diff.Count -eq $Permissions.Count) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
+				Contract-Assert($permissionsCanBeAdded) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
 				$svc.Core.AddLink($entity, 'Permissions', $apcPermission);
 				$svc.Core.SaveChanges();
 			}
