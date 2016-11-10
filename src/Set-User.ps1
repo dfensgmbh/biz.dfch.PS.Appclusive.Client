@@ -11,7 +11,7 @@ By updating a User entry you can specify, if you want to update the Mail address
 
 
 .OUTPUTS
-default
+[biz.dfch.CS.Appclusive.Api.Core.User]
 
 
 .EXAMPLE
