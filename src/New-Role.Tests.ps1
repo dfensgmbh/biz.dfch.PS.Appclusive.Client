@@ -26,7 +26,7 @@ Describe "New-Role" -Tags "New-Role" {
 			$svc = Enter-ApcServer;
 			
 			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
-			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default;
+			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.ToString();
 		}
 		
 		AfterAll {
@@ -79,6 +79,8 @@ Describe "New-Role" -Tags "New-Role" {
 			
 			# Assert
 			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
 			$result.Description | Should Be $description;
 		}
 
@@ -90,11 +92,12 @@ Describe "New-Role" -Tags "New-Role" {
 			$result = New-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc;
 			$result | Should Not Be $null;
 			
+			$svc = Enter-Apc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -gt 0 | Should Be $true;
+			$resultPermissions.Count -eq 2 | Should Be $true;
 		}
 	}
 }
