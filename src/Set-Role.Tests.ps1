@@ -217,7 +217,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -gt 0 | Should Be $true;
+			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
 		}
 		
 		It "Set-RoleWithPermissions-ShouldAddSpecifiedPermissions" -Test {
