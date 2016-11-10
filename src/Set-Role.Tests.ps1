@@ -241,7 +241,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
 		}
 		
-		It "Set-RoleWithDuplicatePermissions-ShouldThrowContractException" -Test {
+		It "Set-RoleWithDuplicatesInPermissions-ShouldThrowContractException" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
 			
@@ -249,6 +249,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
+			# Assert
 			Push-ChangeTracker -Svc $svc;
 			{ Set-Role -Id $result.Id -Permissions $permissions -svc $svc } | Should ThrowErrorId "Contract";
 			Pop-ChangeTracker -Svc $svc;
