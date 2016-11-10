@@ -318,13 +318,13 @@ Process
 		{
 			if($PSBoundParameters.ContainsKey("RemovePermissions"))
 			{
-				Contract-Assert($permissionsCanBeRemoved) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
+				Contract-Assert($permissionsCanBeRemoved) "One or more of the specified permissions cannot be removed as they are not linked to the corresponding role";
 				$svc.Core.DeleteLink($entity, 'Permissions', $apcPermission);
 				$svc.Core.SaveChanges();
 			}
 			else
 			{
-				Contract-Assert($permissionsCanBeAdded) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
+				Contract-Assert($permissionsCanBeAdded) "One or more of the specified permissions cannot be added as they are already linked to the corresponding role.";
 				$svc.Core.AddLink($entity, 'Permissions', $apcPermission);
 				$svc.Core.SaveChanges();
 			}
