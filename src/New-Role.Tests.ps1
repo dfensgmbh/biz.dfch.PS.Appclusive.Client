@@ -11,6 +11,7 @@ Describe "New-Role" -Tags "New-Role" {
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-Role.ps1"
 	. "$here\Set-Role.ps1"
+	. "$here\Get-Tenant.ps1"
 
 	$entityPrefix = "New-Role";
 	$usedEntitySets = @("Roles");
