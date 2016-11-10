@@ -39,6 +39,13 @@ Describe "New-Role" -Tags "New-Role" {
 		 
 				foreach ($entity in $entities)
 				{
+					$permissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
+				
+					if ($permissions)
+					{
+						Set-Role -Id $entity.Id -svc $svc -Permissions $permissions.Name -RemovePermissions;
+					}
+				
 					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
 				}
 			}
