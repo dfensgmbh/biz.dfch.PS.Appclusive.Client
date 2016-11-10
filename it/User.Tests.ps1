@@ -203,9 +203,7 @@ Describe "User.Tests" -Tags "User.Tests" {
 			$user1 | Should Not Be $null;
 			$user1.Id | Should Not Be 0;
 			$user2 | Should Be $null;
-		}
-		
-		
+		}	
 	}
 }
 
