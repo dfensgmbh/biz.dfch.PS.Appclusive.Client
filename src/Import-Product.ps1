@@ -126,9 +126,10 @@ function RecursivelyImportProducts([Type] $entityKindType, [System.Collections.A
         $importedEntityKinds = New-Object System.Collections.ArrayList($null);
     }
     
+    Log-Info ("Importing Ek: '{0}'" -f ($entityKindType.FullName));
     # import EntityKind (incl. all stuff)
     $null = Import-EntityKind $entityKindType;
-
+    
     # remember we imported it.
     $importedEntityKinds.Add($entityKindType);
 
@@ -139,9 +140,11 @@ function RecursivelyImportProducts([Type] $entityKindType, [System.Collections.A
     foreach ($provide in $provides)
     {
         $children = RequiresInterface $possibleImports $provide.Name $importedEntityKinds;
-        
+        Log-Info ("Checking Interface: '{0}'" -f $provide);
+
         foreach ($child in $children)
         {
+            Log-Info ("Importing Ek: '{0}'" -f $child);
             $null = RecursivelyImportProducts $child $importedEntityKinds;
         }
     }
@@ -157,15 +160,30 @@ function Import-EntityKind([Type] $entityType)
     $entityKind = CreateOrGetEntityKind $entityType.FullName;
     
     $entityKind.Parameters = $instance.GetStateMachine().ToString();
-    $svc.Core.UpdateObject($entityKind);
+    $null = $svc.Core.UpdateObject($entityKind);
     $null = $svc.Core.SaveChanges();
 
+    Log-Info ".. Importing DataTypes";
     $null = Import-DataType -FQCN $entityType.FullName -svc $svc -RecreateIfExist -Confirm:$false;
-
-    $connectors = CreateOrUpdateConnectors $entityKind $entityType;
+           
+    $null = $Svc.Core.SaveChanges();
+    
+    Log-Info ".. Importing Connectors";
+    $nul = CreateOrUpdateConnectors $entityKind $entityType;
+    $null = $Svc.Core.SaveChanges();
+    
+    Log-Info ".. Importing ProductAttribute";
     $null = HandleAppclusiveProductAttribute $entityKind $entityType;
+    $null = $Svc.Core.SaveChanges();
+    
+    Log-Info ".. Importing Icon";
     $null = HandleIconAttribute $entityKind $entityType;
-    $null = CreatePermissionsForEntityKindStateTransisitons $instance $entityType;
+    $null = $Svc.Core.SaveChanges();
+    
+    Log-Info ".. Importing Permissions";
+    $null = CreatePermissionsForEntityKindStateTransisitons $instance $entityKind;
+    $null = $Svc.Core.SaveChanges();
+
 }
 
 function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind, [Type] $entityKindType)
@@ -174,7 +192,8 @@ function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $
     $shouldConnectors = $entityKindType.GetCustomAttributes([biz.dfch.CS.Appclusive.Public.Configuration.InterfaceBaseAttribute], $true);
     
     $finalConnectors = New-Object System.Collections.ArrayList($null);
-
+    
+    Log-Info "... Adding Connectors";
     foreach ($shouldConnector in $shouldConnectors)
     {
         $interface = GetInterfaceIdByName $shouldConnector.Name;
@@ -192,17 +211,24 @@ function CreateOrUpdateConnectors([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $
         }
 
         $existingConnector.Multiplicity = $shouldConnector.Multiplicity;
-        $svc.Core.UpdateObject($existingConnector);
+        $null = $svc.Core.UpdateObject($existingConnector);
         $null = $finalConnectors.Add($existingConnector);
     }
 
+    
+    Log-Info "... Removing Connectors";
     foreach ($existingConnector in $existingConnectors)
     {
         $match = $finalConnectors | where { $_.InterfaceId -eq $existingConnector.InterfaceId -and $_.ConnectionType -eq $existingConnector.ConnectionType };
 
         if (-not $match)
         {
-            $null = $svc.Core.DeleteObject($existingConnector);
+            # Write-Host ($existingConnector | out-string);
+            # TODO FIX:
+            #
+            #      "lang":"en-US","value":"[ActivityID: 00000000-0000-0000-0000-000000000000] Assertion failed: EntityKindManager.GetEntityKindId<TEntity>()"
+            #
+            # $null = $svc.Core.DeleteObject($existingConnector);
         }
     }
     
@@ -217,29 +243,38 @@ function CreatePermission([string] $PermissionName, $Svc)
 
     if (-not $permission)
     {
+        Log-Info $PermissionName;
+
         $permission = New-Object biz.dfch.CS.Appclusive.Api.Core.Permission;
-		$Svc.Core.AddToPermissions($permission);
+		$null = $Svc.Core.AddToPermissions($permission);
+        
 		$permission.Name = $PermissionName;
 		$permission.Description = $PermissionName;
 
 		$Svc.Core.UpdateObject($permission);        
-        $result = $Svc.Core.SaveChanges();
+        $null = $Svc.Core.SaveChanges();
+
+        Log-Info " Created";
+    }
+    else
+    {
+        Log-Info ("{0} already exists" -f $PermissionName);
     }
 }
 
-function CreatePermissionsForEntityKindStateTransisitons([biz.dfch.CS.Appclusive.Public.Configuration.IEntityKindBaseDto] $instance, [type] $entityKindType)
+function CreatePermissionsForEntityKindStateTransisitons([biz.dfch.CS.Appclusive.Public.Configuration.IEntityKindBaseDto] $instance, [biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entityKind)
 {
-    CreatePermission -PermissionName ("{0}:*" -f $instance.GetType().FullName) -Svc $svc;
+    $null = CreatePermission -PermissionName ("{0}:*" -f $entityKind.Name) -Svc $svc;
 
     foreach ($transition in $instance.GetStateMachine())
     {
-        CreatePermission -PermissionName ("{0}:{1}" -f $instance.GetType().FullName,$transition.Transition) -Svc $svc;
+        $null = CreatePermission -PermissionName ("{0}:{1}" -f $entityKind.Name, $transition.Transition) -Svc $svc;
     }
 }
 
 function CreateOrGetEntityKind([Type] $entityType)
 {
-    $entityKind = Get-EntityKind -Version $entityType.FullName -svc $svc;
+    $entityKind = $svc.Core.EntityKinds.AddQueryOption('$filter', "Version eq '{0}'" -f $entityType.FullName) | Select -First 1;
 
     if (-not $entityKind)
     {
@@ -247,10 +282,11 @@ function CreateOrGetEntityKind([Type] $entityType)
 		$null = $svc.Core.AddToEntityKinds($entityKind);
 
         $entityKind.Name = ("{0}.{1}" -f $entityType.Namespace.Substring(0, $entityType.Namespace.LastIndexOf(".")), $entityType.Name);
-        $entityKind.Version = $entityType.FullName;
-        $null = $svc.Core.SaveChanges();
+        $entityKind.Version = $entityType.FullName;   
+         
+        $svc.Core.UpdateObject($entityKind);    
+        $null = $Svc.Core.SaveChanges();
     }
-
 
     return $entityKind;
 }
@@ -302,7 +338,7 @@ function HandleIconAttribute([biz.dfch.CS.Appclusive.Api.Core.EntityKind] $entit
         $name = ("Icon-{0}" -f $IconAttribute.Type);
         $value = ("picto-{0}" -f $IconAttribute.Name);
 
-        $null = Set-KeyNameValue -Key $key -Name $name -Value $value -svc $svc -CreateIfNotExist;
+        # $null = Set-ApcKeyNameValue -Key $key -Name $name -Value $value -svc $svc -CreateIfNotExist;
     }
 }
 
