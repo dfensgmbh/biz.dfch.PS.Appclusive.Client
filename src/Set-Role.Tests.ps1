@@ -237,7 +237,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 		
 		It "Set-RoleWithDuplicatesInSpecifiedPermissions-ShouldThrowContractException" -Test {
 			# Arrange
-			$permissions = @("Apc:AcesCanRead","Apc:AcesCanRead");
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate","Apc:AcesCanRead");
 			
 			# Act
 			
