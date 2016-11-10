@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.9.1.20161024'
+ModuleVersion = '4.10.0.20161110'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -195,6 +195,10 @@ NestedModules = @(
 	'New-Folder.ps1'
 	,
 	'Get-Folder.ps1'
+	,
+	'Import-Product.ps1'
+	,
+	'Import-DataType.ps1'
 )
 
 # Functions to export from this module
@@ -237,15 +241,13 @@ FileList = @(
 	,
 	'Import-Module.ps1'
 	,
-        'biz.dfch.CS.Appclusive.Api.dll'
+    'biz.dfch.CS.Appclusive.Api.dll'
 	,
 	'biz.dfch.CS.Appclusive.Public.dll'
 	,
-        'Newtonsoft.Json.dll'
+    'Newtonsoft.Json.dll'
 	,
-        'System.Net.Http.Formatting.dll'
-	,
-        'System.Web.Http.dll'
+    'System.Net.Http.Formatting.dll'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
@@ -266,15 +268,29 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20160927
-# FEATURES
-
-* Upgrade Appclusive Core API to 4.11.0
-* Upgrade Appclusive Public to 3.19.0
-
+        ReleaseNotes = '20161110
 # BUGFIXES
 
-* disabled PSScriptAnalyser warnings'
+New-User
+* Changed ExternalId and ExternalType input parameters to mandatory
+
+Set-User
+* Changed ExternalId and ExternalType input parameters to mandatory
+* Validation added to input parameters
+* Tid default value changed to current tenant Id
+* Unhandled input parameter removed
+
+# FEATURES
+
+* Registered CMDLets Import-Product and Import-DataType
+* Upgrade Appclusive Public to version 3.23.0
+
+EntityBagConverter
+
+* added [EntityBagConverter] as a type accelerator via Import-Module.ps1
+
+# NOTES
+* Removed dependency to System.Web.Http.dll'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
