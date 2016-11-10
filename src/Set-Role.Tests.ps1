@@ -253,10 +253,21 @@ Describe "Set-Role" -Tags "Set-Role" {
 			Push-ChangeTracker -Svc $svc;
 			{ Set-Role -Id $result.Id -Permissions $permissions -svc $svc } | Should ThrowErrorId "Contract";
 			Pop-ChangeTracker -Svc $svc;
+		}
+		
+		It "Set-RoleWithAlreadyMappedPermissions-ShouldThrowContractException" -Test {
+			# Arrange
+			$originalPermissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$permissionsToBeAdded = @("Apc:AcesCanCreate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -Permissions $originalPermissions -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
 			
 			# Assert
-			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -gt 0 | Should Be $true;
+			Push-ChangeTracker -Svc $svc;
+			{ Set-Role -Id $result.Id -Permissions $permissionsToBeAdded -svc $svc } | Should ThrowErrorId "Contract";
+			Pop-ChangeTracker -Svc $svc;
 		}
 		
 		It "Set-RoleWithPermissionsToRemove-ShouldRemoveSpecifiedPermissions" -Test {
