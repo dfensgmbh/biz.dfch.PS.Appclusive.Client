@@ -193,6 +193,7 @@ Begin
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 	
 	$entitySetName = 'Roles';
+	$permissionsPropertyName = 'Permissions';
 	
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
@@ -283,47 +284,36 @@ Process
 			{
 				if($PSBoundParameters.ContainsKey('First'))
 				{
-					$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression).AddQueryOption('$expand', "Permissions") | Select;
+					$response = $svc.Core.$entitySetName.AddQueryOption('$top', $First).AddQueryOption('$filter', $filterExpression) | Select;
 				}
 				else
 				{
-					$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression).AddQueryOption('$expand', "Permissions") | Select;
+					$response = $svc.Core.$entitySetName.AddQueryOption('$filter', $filterExpression) | Select;
 				}
 				
-				$listOfPermissions = New-Object System.Collections.ArrayList;
+				$permissionResult = New-Object System.Collections.ArrayList;
 				
-				foreach ($item in $response)
+				foreach ($role in $response)
 				{
-					$permissionsOfRole = New-Object System.Collections.ArrayList;
-					
-					while($true) 
+					$rolePermissions = New-Object System.Collections.ArrayList;
+					$rolePermissionsFromDb = $svc.Core.LoadProperty($role, $permissionsPropertyName) | Select;
+					if ($rolePermissionsFromDb)
 					{
-						foreach($permission in $item.Permissions)
-						{
-							$null = $permissionsOfRole.Add($permission);
-						}
-						
-						$continuation = $item.Permissions.Continuation;
-						if ($continuation -eq $null)
-						{
-							break;
-						}
-						
-						$item.Permissions = $svc.core.Execute($continuation);
+						$rolePermissions.AddRange($rolePermissionsFromDb);
 					}
 					
 					# If only one role was found, permissions of this role
 					if ($response.Count -eq 1)
 					{
-						$listOfPermissions.AddRange($permissionsOfRole);
+						$permissionResult.AddRange($rolePermissions);
 					}
 					# If there is more than one role, a list of lists with permissions gets returned
 					else 
 					{
-						$null = $listOfPermissions.Add($permissionsOfRole.ToArray());
+						$null = $permissionResult.Add($rolePermissions.ToArray());
 					}
 				}
-				$response = $listOfPermissions.ToArray();
+				$response = $permissionResult.ToArray();
 			}
 			else 
 			{
