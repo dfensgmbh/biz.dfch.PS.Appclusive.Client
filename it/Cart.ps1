@@ -29,15 +29,15 @@ function Create-CartItem
 	}
 	$cartItem.Quantity = $Quantity;
 	$cartItem.Parameters = $Parameters;
-	Write-Host ($cartItem | out-string);
+	
 	#ACT create cart item
 	$svc.Core.AddToCartItems($cartItem);
 	$result = $svc.Core.SaveChanges();
-	Write-Host ($cartItem | out-string);
+	
 	#get cart item
 	$query = "Name eq '{0}'" -f $Name;
 	$loadedCartItem = $svc.Core.CartItems.AddQueryOption('$filter', $query) | Select;
-	Write-Host ($loadedCartItem | out-string);
+	
 	#ASSERT cart item
 	$bin = $result.StatusCode | Should Be 201;
 	$bin = $loadedCartItem | Should Not Be $null;

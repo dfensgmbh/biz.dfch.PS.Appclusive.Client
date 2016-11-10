@@ -26,7 +26,9 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 	
 	$entityPrefix = "TestItem-";
 	$usedEntitySets = @("CartItems", "CatalogueItems", "Products", "Catalogues", "Carts");
-	$tenantId = (Get-ApcTenant -Name "Managed Customer Tenant").Id;
+	#gets the id of tenant Managed Customer Tenant
+	$tenant = Get-ApcTenant -Name "Managed Customer Tenant" -svc $svc;
+	$tenantId = $tenant.Id.toString();
 
 	Context "#CLOUDTCL--VMTests" {
 	
@@ -52,7 +54,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
                 }
             }
         }
-		
+		<#
 		It "CreateVM-inRoot" -Test {
 			#ARRANGE
 			 
@@ -126,7 +128,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
 		}
-		
+		#>
 		It "CreateVM-inFolder" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
@@ -179,7 +181,12 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 				}
 			}';
 			
-			
+			#ACT create folder
+			$name = $entityPrefix + "Folder-{0}" -f [guid]::NewGuid().ToString();
+			$parentId = (Get-ApcTenant -Current).NodeId;
+			$folder = New-ApcFolder -name $name -ParentId $parentId -svc $svc;
+			$par = "biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id:" + $folder.Id;
+			Write-Host ($par | out-string);
 			#ACT create new cart item
 			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $parameters;
 			$cartItemId = $cartItem.Id;
@@ -194,7 +201,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 				Name = $orderName;
 				Description = "Arbitrary Description";
 				Requester = (Get-ApcUser -Current).Id;
-				Parameters = '{ nodeid:}';
+				Parameters = '{\"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id\":\"' + $folder.Id + '\"}'; #"{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}"
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
