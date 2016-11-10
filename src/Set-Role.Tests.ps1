@@ -11,6 +11,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-Tenant.ps1"
 	. "$here\Get-Role.ps1"
+	. "$here\Push-ChangeTracker.ps1"
+	. "$here\Pop-ChangeTracker.ps1"
 
 	$entityPrefix = "Set-Role";
 	$mailaddress = "arbitrary@example.com";
@@ -209,8 +211,9 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result | Should Not Be $null;
 			$result.Id -gt 0 | Should Be $true
 			
-			$svc = Enter-ApcServer;
+			Push-ChangeTracker -Svc $svc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
@@ -224,12 +227,14 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
-			
-			$svc = Enter-ApcServer;
+
+			Push-ChangeTracker -Svc $svc;			
 			$result = Set-Role -Id $result.Id -Permissions $permissions -svc $svc;
+			Pop-ChangeTracker -Svc $svc;
 			
-			$svc = Enter-ApcServer;
+			Push-ChangeTracker -Svc $svc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
@@ -244,8 +249,9 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
-			$svc = Enter-ApcServer;
+			Push-ChangeTracker -Svc $svc;
 			{ Set-Role -Id $result.Id -Permissions $permissions -svc $svc } | Should ThrowErrorId "Contract";
+			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
@@ -261,11 +267,13 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
-			$svc = Enter-ApcServer;
+			Push-ChangeTracker -Svc $svc;
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissionsRemove -svc $svc -CreateIfNotExist -RemovePermissions;
-
-			$svc = Enter-ApcServer;
+			Pop-ChangeTracker -Svc $svc;
+			
+			Push-ChangeTracker -Svc $svc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
@@ -284,9 +292,9 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			{ Set-Role -Id $result.Id -Permissions $notExistingPermissions -svc $svc -RemovePermissions; } | Should ThrowErrorId "Contract";
 			
-			
-			$svc = Enter-ApcServer;
+			Push-ChangeTracker -Svc $svc;
 			$resultingPermissions = Get-Role -Id $result.Id -svc $svc -ExpandPermissions;
+			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultingPermissions | Should Not Be $null;
