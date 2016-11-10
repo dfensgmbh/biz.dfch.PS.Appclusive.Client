@@ -15,8 +15,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 	$entityPrefix = "Set-Role";
 	$mailaddress = "arbitrary@example.com";
 	$newMailaddress = "new@example.com";
-	$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
-	$newRoleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Distribution.value__;
+	$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.ToString();
+	$newRoleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Distribution.ToString();
 	$usedEntitySets = @("Roles");
 	
 
