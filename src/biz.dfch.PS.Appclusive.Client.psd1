@@ -284,7 +284,7 @@ PrivateData = @{
 New Cmdlets
 * Get-Role
 * Set-Role
-* New-Role
+* New-Role'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
