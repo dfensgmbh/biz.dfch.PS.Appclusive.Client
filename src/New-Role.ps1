@@ -101,28 +101,27 @@ See module manifest for dependencies and further requirements.
 )]
 Param 
 (
-	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 0)]
 	[ValidateNotNullOrEmpty()]
 	[Alias('n')]
 	[string] $Name
 	,
-	# Specifies the name to modify
 	[Parameter(Mandatory = $true, Position = 1)]
-	[long] $RoleType
+	[ValidateSet('Default', 'Security', 'Distribution', 'BuiltIn', 'External')]
+	[string] $RoleType
 	,
 	# Specifies the name to modify
-	[Parameter(Mandatory = $false, Position = 2)]
+	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
 	[string] $MailAddress
 	,
 	# Specifies the description
-	[Parameter(Mandatory = $false, Position = 3)]
+	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
 	[string] $Description
 	,
-	# Specifies the permissions which should be added
-	[Parameter(Mandatory = $false, Position = 4)]
+	# Specifies the permissions to be linked
+	[Parameter(Mandatory = $false)]
 	[string[]] $Permissions = @()
 	,
 	# Service reference to Appclusive
