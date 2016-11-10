@@ -199,6 +199,12 @@ NestedModules = @(
 	'Import-Product.ps1'
 	,
 	'Import-DataType.ps1'
+	,
+	'Get-Role.ps1'
+	,
+	'Set-Role.ps1'
+	,
+	'New-Role.ps1'
 )
 
 # Functions to export from this module
@@ -256,7 +262,7 @@ PrivateData = @{
 	PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @("dfch", "PowerShell", "Appclusive", "Automation", "OData")
+        Tags = 'dfch', 'PowerShell', 'Appclusive', 'Automation', 'OData'
 		
         # A URL to the license for this module.
         LicenseUri = 'https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/blob/master/LICENSE'
