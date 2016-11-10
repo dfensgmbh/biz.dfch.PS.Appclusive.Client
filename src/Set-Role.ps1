@@ -19,7 +19,7 @@ default
 .EXAMPLE
 Set-Role -Name "ArbitraryRole" -RoleType External -svc $svc -CreateIfNotExist;
 
-RoleType     : 4
+RoleType     : External
 MailAddress  :
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -42,7 +42,7 @@ Create a new Role entry if it does not exist.
 .EXAMPLE
 Set-Role -Name "ArbitraryName" -Description "UpdatedDescription" -NewName "UpdatedName"
 
-RoleType     : 2
+RoleType     : Distribution
 MailAddress  :
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -65,7 +65,7 @@ Update an existing Role with new Name and new Description.
 .EXAMPLE
 Set-Role -Id 42 -RoleType Distribution -MailAddress "arbitrary@example.com" -NewName "UpdatedName"
 
-RoleType     : 2
+RoleType     : Distribution
 MailAddress  : arbitrary@example.com
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -88,7 +88,7 @@ Update an existing Role with new Name and MailAddress and RoleType.
 .EXAMPLE
 Set-Role -Id 42 -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate") -CreateIfNotExist
 
-RoleType     : 2
+RoleType     : Distribution
 MailAddress  : 
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -111,7 +111,7 @@ Create/Update Role by adding specified permissions
 .EXAMPLE
 Set-Role -Id 42 -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate") -RemovePermissions
 
-RoleType     : 2
+RoleType     : Distribution
 MailAddress  : 
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111

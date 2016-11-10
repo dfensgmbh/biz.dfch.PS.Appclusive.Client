@@ -38,7 +38,7 @@ Retrieves the name of all Roles.
 .EXAMPLE
 Get-Role -Id 42
 
-RoleType     : 3
+RoleType     : BuiltIn
 MailAddress  :
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111
@@ -61,7 +61,7 @@ Retrieves the Role object with Id 42 and returns all properties of it.
 .EXAMPLE
 Get-Role -RoleType Distribution
 
-RoleType     : 2
+RoleType     : Distribution
 MailAddress  :
 Id           : 42
 Tid          : 11111111-1111-1111-1111-111111111111

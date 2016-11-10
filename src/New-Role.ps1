@@ -7,56 +7,79 @@ Creates a Role entry in Appclusive.
 .DESCRIPTION
 Creates a Role entry in Appclusive.
 
-You must specify the parameters 'Name' and 'Type' and 'Value'. If the entry already exists no update of the existing entry is performed.
+You must specify the parameters 'Name' and 'RoleType'. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
 default | json | json-pretty | xml | xml-pretty
 
 .EXAMPLE
-New-Role -Name ArbitraryName -Type ArbitraryType -Value ArbitraryValue
+New-Role -Name ArbitraryRole -RoleType External
 
-Type                   : ArbitraryType
-Value                  : ArbitraryValue
-ManagementCredentialId :
-Id                     : 180
-Tid                    : 11111111-1111-1111-1111-111111111111
-Name                   : AritraryName
-Description            :
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 22.08.2016 10:26:53 +02:00
-Modified               : 22.08.2016 10:31:00 +02:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              :
-ModifiedBy             :
+RoleType     : External
+MailAddress  :
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryRole
+Description  :
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
 
 Create a new Role entry if it not already exists.
 
 
 .EXAMPLE
-New-Role -Name ArbitraryName -Type ArbitraryType -Value ArbitraryValue -Description ArbitraryDescription -ManagementCredentialId 1
+New-Role -Name ArbitraryRole -RoleType External -Description ArbitraryDescription -MailAddress arbitrary@example.com
 
-Type                   : ArbitraryType
-Value                  : ArbitraryValue
-ManagementCredentialId : 1
-Id                     : 180
-Tid                    : 11111111-1111-1111-1111-111111111111
-Name                   : ArbitraryName
-Description            : ArbitraryDescription
-CreatedById            : 1
-ModifiedById           : 1
-Created                : 22.08.2016 10:26:53 +02:00
-Modified               : 22.08.2016 10:31:00 +02:00
-RowVersion             : {0, 0, 0, 0...}
-ManagementCredential   :
-Tenant                 :
-CreatedBy              :
-ModifiedBy             :
+RoleType     : External
+MailAddress  : arbitrary@example.com
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryRole
+Description  : ArbitraryDescription
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
 
-Create a new Role entry if it not already exists, with description, value,...
+Create a new Role entry if it not already exists, with Description and MailAddress.
+
+
+.EXAMPLE
+New-Role -Name ArbitraryRole -RoleType External -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate")
+
+RoleType     : External
+MailAddress  : 
+Id           : 42
+Tid          : 11111111-1111-1111-1111-111111111111
+Name         : ArbitraryRole
+Description  : 
+CreatedById  : 1
+ModifiedById : 1
+Created      : 23.08.2016 11:08:14 +02:00
+Modified     : 23.08.2016 11:08:14 +02:00
+RowVersion   :
+Permissions  : {}
+Users        : {}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+Create a new Role entry if it not already exists, with specified Permissions
 
 
 .LINK
