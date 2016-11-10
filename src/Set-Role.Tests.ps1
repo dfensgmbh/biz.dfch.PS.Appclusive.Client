@@ -289,28 +289,20 @@ Describe "Set-Role" -Tags "Set-Role" {
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -gt 0 | Should Be $true;
 			$resultPermissions.Count -eq 2 | Should Be $true;
 		}
 		
 		It "Set-RoleWithPermissionsToRemoveWhichAreNotPresent-ShouldThrowContractException" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
-			$notExistingPermissions = @("Apc:AcesCanUpdate");
+			$notExistingPermissions = @("Apc:AcesCanRead", "Apc:AcesCanUpdate");
 			
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
-			{ Set-Role -Id $result.Id -Permissions $notExistingPermissions -svc $svc -RemovePermissions; } | Should ThrowErrorId "Contract";
-			
-			Push-ChangeTracker -Svc $svc;
-			$resultingPermissions = Get-Role -Id $result.Id -svc $svc -ExpandPermissions;
-			Pop-ChangeTracker -Svc $svc;
-			
 			# Assert
-			$resultingPermissions | Should Not Be $null;
-			$resultingPermissions.Count -gt 0 | Should Be $true;
+			{ Set-Role -Id $result.Id -Permissions $notExistingPermissions -svc $svc -RemovePermissions; } | Should ThrowErrorId "Contract";
 		}
 	}
 }
