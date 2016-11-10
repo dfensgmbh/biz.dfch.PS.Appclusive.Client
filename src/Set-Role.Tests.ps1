@@ -11,6 +11,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-Tenant.ps1"
 	. "$here\Get-Role.ps1"
+	. "$here\Get-ModuleVariable.ps1"
 	. "$here\Push-ChangeTracker.ps1"
 	. "$here\Pop-ChangeTracker.ps1"
 
