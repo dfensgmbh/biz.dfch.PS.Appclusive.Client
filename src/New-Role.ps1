@@ -198,7 +198,7 @@ Process
 		}
 		elseif($PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -Permissions $Permissions -svc $svc -CreateIfNotExist;
+			$r = Set-Role -Name $Name -RoleType $RoleType -Permissions $Permissions -svc $svc -CreateIfNotExist;
 		}
 		else 
 		{
