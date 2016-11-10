@@ -311,7 +311,7 @@ Process
 			
 			# assert, that every specified permission can be added/removed
 			$diff = Compare-Object -ReferenceObject $originalPermissions.Name -DifferenceObject $Permissions -PassThru;
-			Contract-Assert($PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count != 0) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
+			Contract-Assert($PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -ne 0) "One or more of the specified permissions cannot be removed as they are not mapped to the corresponding role";
 			Contract-Assert(!$PSBoundParameters.ContainsKey("RemovePermissions") -xor $diff.Count -eq $Permissions.Count) "One or more of the specified permissions cannot be added as they are already mapped to the corresponding role.";
 			
 			foreach($apcPermisison in $apcPermissions)
