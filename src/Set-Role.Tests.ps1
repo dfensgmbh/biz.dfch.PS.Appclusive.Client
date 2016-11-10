@@ -11,9 +11,6 @@ Describe "Set-Role" -Tags "Set-Role" {
 	. "$here\Format-ResultAs.ps1"
 	. "$here\Get-Tenant.ps1"
 	. "$here\Get-Role.ps1"
-	. "$here\Get-ModuleVariable.ps1"
-	. "$here\Push-ChangeTracker.ps1"
-	. "$here\Pop-ChangeTracker.ps1"
 
 	$entityPrefix = "Set-Role";
 	$mailaddress = "arbitrary@example.com";
@@ -211,9 +208,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result | Should Not Be $null;
 			$result.Id -gt 0 | Should Be $true
 			
-			Push-ChangeTracker -Svc $svc;
+			$svc = Enter-Apc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
-			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
@@ -228,31 +224,25 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 
-			Push-ChangeTracker -Svc $svc;			
+			$svc = Enter-Apc;
 			$result = Set-Role -Id $result.Id -Permissions $permissions -svc $svc;
-			Pop-ChangeTracker -Svc $svc;
 			
-			Push-ChangeTracker -Svc $svc;
+			$svc = Enter-Apc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
-			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
 			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
 		}
 		
-		It "Set-RoleWithDuplicatesInPermissions-ShouldThrowContractException" -Test {
+		It "Set-RoleWithDuplicatesInSpecifiedPermissions-ShouldThrowContractException" -Test {
 			# Arrange
-			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanRead");
 			
 			# Act
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
-			$result | Should Not Be $null;
 			
 			# Assert
-			Push-ChangeTracker -Svc $svc;
-			{ Set-Role -Id $result.Id -Permissions $permissions -svc $svc } | Should ThrowErrorId "Contract";
-			Pop-ChangeTracker -Svc $svc;
+			{ Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist } | Should ThrowErrorId "Contract";
 		}
 		
 		It "Set-RoleWithAlreadyMappedPermissions-ShouldThrowContractException" -Test {
@@ -265,9 +255,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result | Should Not Be $null;
 			
 			# Assert
-			Push-ChangeTracker -Svc $svc;
+			$svc = Enter-Apc;
 			{ Set-Role -Id $result.Id -Permissions $permissionsToBeAdded -svc $svc } | Should ThrowErrorId "Contract";
-			Pop-ChangeTracker -Svc $svc;
 		}
 		
 		It "Set-RoleWithPermissionsToRemove-ShouldRemoveSpecifiedPermissions" -Test {
@@ -279,13 +268,11 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			
-			Push-ChangeTracker -Svc $svc;
+			$svc = Enter-Apc;
 			$result = Set-Role -Name $name -Permissions $permissionsToRemove -svc $svc -RemovePermissions;
-			Pop-ChangeTracker -Svc $svc;
 			
-			Push-ChangeTracker -Svc $svc;
+			$svc = Enter-Apc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
-			Pop-ChangeTracker -Svc $svc;
 			
 			# Assert
 			$resultPermissions | Should Not be $null;
