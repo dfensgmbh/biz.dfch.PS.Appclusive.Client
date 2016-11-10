@@ -17,7 +17,7 @@ default
 
 
 .EXAMPLE
-Set-Role -Name "ArbitraryRole" -RoleType 4 -svc $svc -CreateIfNotExist;
+Set-Role -Name "ArbitraryRole" -RoleType External -svc $svc -CreateIfNotExist;
 
 RoleType     : 4
 MailAddress  :
@@ -63,7 +63,7 @@ Update an existing Role with new Name and new Description.
 
 
 .EXAMPLE
-Set-Role -Id 42 -RoleType 2 -MailAddress "arbitrary@eample.com" -NewName "UpdatedName"
+Set-Role -Id 42 -RoleType Distribution -MailAddress "arbitrary@example.com" -NewName "UpdatedName"
 
 RoleType     : 2
 MailAddress  : arbitrary@example.com
@@ -120,8 +120,8 @@ Param
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 1)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'id', Position = 1)]
-	# DFTODO - enum? -> Adjust Examples and https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Abiquo.Scripts/wiki
-	[long] $RoleType
+	[ValidateSet('Default', 'Security', 'Distribution', 'BuiltIn', 'External')]
+	[string] $RoleType
 	,
 	[Parameter(Mandatory = $false)]
 	[ValidateNotNullOrEmpty()]
@@ -172,16 +172,6 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
-	
-	# RoleType param validation
-	$minRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
-	$maxRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.value__;
-	
-	if ($RoleType) 
-	{
-		Contract-Requires($minProtectionLevelValue -le $RoleType);
-		Contract-Requires($maxProtectionLevelValue -ge $RoleType);
-	}
 }
 
 Process 
