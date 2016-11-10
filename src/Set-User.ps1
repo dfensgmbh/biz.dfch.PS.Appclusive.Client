@@ -7,7 +7,7 @@ Sets or creates a User entry in Appclusive.
 .DESCRIPTION
 Sets or creates a User entry in Appclusive.
 
-By updating a User entry you can specify if you want to update the Name, Mail, ExternalId or any combination thereof.
+By updating a User entry you can specify, if you want to update the Mail address, the description or both.
 
 
 .OUTPUTS
@@ -15,14 +15,14 @@ default
 
 
 .EXAMPLE
-Set-User myName myMail myExternalId -CreateIfNotExist
+Set-User -Name ArbitraryName -Mail arbitrary@example.com -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -CreateIfNotExist
 
-ExternalId   : 27af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myMail@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : arbitrary@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myName
+Name         : ArbitraryName
 Description  : 
 CreatedById  : 1
 ModifiedById : 1
@@ -30,32 +30,54 @@ Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
 Create a new User entry if it does not exists.
 
 
 .EXAMPLE
-Set-User -Name myName -NewName myNewName -Mail myNewMail@appclusive.net -ExternalId [guid]'28af9d74-388b-46f2-90d6-a1545d89d16f'
+Set-User -Name ArbitraryName -ExternalId ArbitraryExternalId -ExternalType ArbitraryExternalType -NewMail newmail@example.com
 
-ExternalId   : 28af9d74-388b-46f2-90d6-a1545d89d16f
-ExternalType : Internal
-Mail         : myNewMail@appclusive.net
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : newmail@example.com
 Id           : 2
 Tid          : 22222222-2222-2222-2222-222222222222
-Name         : myNewName
-Description  : myDescription
+Name         : ArbitraryName
+Description  : 
 CreatedById  : 1
 ModifiedById : 1
 Created      : 15.12.2015 00:00:00 +01:00
 Modified     : 17.12.2015 00:00:00 +01:00
 RowVersion   : {0, 0, 0, 0...}
 Tenant       :
-CreatedBy    : SYSTEM
-ModifiedBy   : SYSTEM
+CreatedBy    :
+ModifiedBy   :
 
-Update an existing User with new name, Mail and ExternalId.
+Update an existing User with new Mail.
+
+
+.EXAMPLE
+Set-User -Name ArbitraryName -Mail arbitrary@example.com -NewMail newmail@example.com
+
+ExternalId   : ArbitraryExternalId
+ExternalType : ArbitraryExternalType
+Mail         : newmail@example.com
+Id           : 2
+Tid          : 22222222-2222-2222-2222-222222222222
+Name         : ArbitraryName
+Description  : 
+CreatedById  : 1
+ModifiedById : 1
+Created      : 15.12.2015 00:00:00 +01:00
+Modified     : 17.12.2015 00:00:00 +01:00
+RowVersion   : {0, 0, 0, 0...}
+Tenant       :
+CreatedBy    :
+ModifiedBy   :
+
+Update an existing User with new Mail.
 
 
 .LINK
@@ -69,7 +91,7 @@ See module manifest for dependencies and further requirements.
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $false
+    SupportsShouldProcess = $true
 	,
     ConfirmImpact = 'Low'
 	,
@@ -78,45 +100,42 @@ See module manifest for dependencies and further requirements.
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]
 Param 
 (
-	# Specifies the name to modify
-	[Parameter(Mandatory = $true, Position = 0)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Alias('n')]
+	[ValidateNotNullOrEmpty()]
 	[string] $Name
 	,
-	# Specifies the new name name
-	[Parameter(Mandatory = $false)]
-	[string] $NewName
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'email')]
+	[ValidateNotNullOrEmpty()]
+	[string] $Mail
 	,
-	# Specifies the description
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'external')]
+	[ValidateNotNullOrEmpty()]
+	[string] $ExternalId
+	,
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
+	[Parameter(Mandatory = $true, ParameterSetName = 'external')]
+	[ValidateNotNullOrEmpty()]
+	[string] $ExternalType
+	,
+	[Parameter(Mandatory = $false, ParameterSetName = 'external')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'email')]
+	[string] $NewMail
+	,
 	[Parameter(Mandatory = $false)]
 	[Alias("d")]
 	[string] $Description
 	,
-	# Specifies the key to modify
-	[Parameter(Mandatory = $false, Position = 1)]
-	[string] $Mail
-	,
-	# Specifies the new name name
-	[Parameter(Mandatory = $false, Position = 2)]
-	[guid] $ExternalId = [guid]::NewGuid()
-	,
-	# Specifies the externalType for this entity
-	[Parameter(Mandatory = $false)]
-	[string] $ExternalType = 'Internal'
-	,
 	# Specifies the tenant id for this entity
 	[Parameter(Mandatory = $false)]
-	[guid] $Tid = [guid]::Empty.ToString()
+	[guid] $Tid
 	,
 	# Specifies to create a entity if it does not exist
-	[Parameter(Mandatory = $false)]
+	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
 	[Alias("c")]
 	[switch] $CreateIfNotExist = $false
-	,
-	# Specifies to create a entity if it does not exist
-	[Parameter(Mandatory = $false)]
-	[Alias("x")]
-	[switch] $NoUpdateIfExist = $false
 	,
 	# Service reference to Appclusive
 	[Parameter(Mandatory = $false)]
@@ -153,48 +172,74 @@ Process
 	$OutputParameter = $null;
 	$AddedEntity = $null;
 
-	$FilterExpression = "(tolower(Name) eq '{0}')" -f $Name.toLower();
-	$entity = $svc.Core.Users.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
-	Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
-
-	if(!$entity) 
+	if(!$Tid)
 	{
+		$currentTenant = Get-Tenant -svc $svc -Current;
+		$Tid = $currentTenant.Id;
+	}
+	
+	# is true if entity doesn't exist and 'CreateIfNotExist' is set
+	if($PSCmdlet.ParameterSetName -eq 'create') 
+	{
+		$UserContents = @($Name, $Mail, $ExternalId, $ExternalType);
+		
+		$filterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
+		Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
+		
 		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.User;
 		$svc.Core.AddToUsers($entity);
 		$AddedEntity = $entity;
 		$entity.Name = $Name;
+		$entity.Tid = $Tid;
 		$entity.Mail = $Mail;
 		$entity.ExternalId = $ExternalId;
 		$entity.ExternalType = $ExternalType;
-		$entity.Tid = $Tid;
-		
 		$entity.Created = [System.DateTimeOffset]::Now;
 		$entity.CreatedById = 0;
 		$entity.ModifiedById = 0;
 	}
-	elseif ($NoUpdateIfExist)
+
+	# is true if entity exists and parameterset equals 'email'
+	if($PSCmdlet.ParameterSetName -eq 'email') 
 	{
-		return;
+		$UserContents = @($Mail);
+		
+		$filterExpression = "(tolower(Mail) eq '{0}')" -f $Mail.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
 	}
 	
+	if($PSCmdlet.ParameterSetName -eq 'external') 
+	{
+		$UserContents = @($ExternalId, $ExternalType);
+		
+		$filterExpression = "(tolower(ExternalId) eq '{0}' and tolower(ExternalType) eq '{1}')" -f $ExternalId.toLower(), $ExternalType.toLower();
+		$entity = $svc.Core.Users.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
+	}
+	
+	if($PSCmdlet.ParameterSetName -eq 'email' -or $PSCmdlet.ParameterSetName -eq 'external') 
+	{
+		Contract-Assert ($entity) "Entity does not exist."
+		
+		if($PSBoundParameters.ContainsKey('NewMail'))
+		{
+			$entity.Mail = $NewMail;
+		}
+	} 
+	
+
 	if($PSBoundParameters.ContainsKey('Description'))
 	{
 		$entity.Description = $Description;
 	}
-	if($PSBoundParameters.ContainsKey('Mail'))
-	{
-		$entity.Mail = $Mail;
-	}
-	if($PSBoundParameters.ContainsKey('ExternalId'))
-	{
-		$entity.ExternalId = $ExternalId;
-	}
-	if($NewName) { $entity.Name = $NewName; }
-	$svc.Core.UpdateObject($entity);
-	$r = $svc.Core.SaveChanges();
 
-	$r = $entity;
-	$OutputParameter = Format-ResultAs $r $As;
+	if($PSCmdlet.ShouldProcess($UserContents))
+	{
+		$svc.Core.UpdateObject($entity);
+		$null = $svc.Core.SaveChanges();
+		$r = $entity;
+		$OutputParameter = Format-ResultAs $r $As;
+	}
 	$fReturn = $true;
 }
 # Process
