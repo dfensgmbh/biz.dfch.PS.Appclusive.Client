@@ -157,32 +157,52 @@ Process
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 
-	$Exp = @();
-	$RoleContents = @();
+	$exp = @();
+	$roleContents = @();
 	
-	$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
-	$FilterExpression = [String]::Join(' and ', $Exp);
+	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+	$exp += ("(RoleType eq '{0}')" -f $RoleType);
+	$filterExpression = [String]::Join(' and ', $exp);
 	
-	$RoleContents += $Name;
+	$roleContents += $Name;
+	$roleContents += $RoleType;
 
-	$role = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
+	$role = $svc.Core.Roles.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top', 1) | Select;
 	Contract-Assert (!$role) 'Entity does already exist';
 	
-	if($PSCmdlet.ShouldProcess($RoleContents))
+	if($PSCmdlet.ShouldProcess($roleContents))
 	{
-		$r = Set-Role -Name $Name -RoleType $RoleType -svc $svc -CreateIfNotExist;
-		
-		if($PSBoundParameters.ContainsKey("Description"))
+		if ($PSBoundParameters.ContainsKey("Description") -And $PSBoundParameters.ContainsKey('MailAddress') -And $PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -Description $Description -svc $svc;
+			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -MailAddress $MailAddress -Permissions $Permissions -svc $svc -CreateIfNotExist;
 		}
-		if($PSBoundParameters.ContainsKey("MailAddress"))
+		elseif ($PSBoundParameters.ContainsKey("Description") -And $PSBoundParameters.ContainsKey('MailAddress'))
 		{
-			$r = Set-Role -Name $Name -MailAddress $MailAddress -svc $svc;
+			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -MailAddress $MailAddress -svc $svc -CreateIfNotExist;
 		}
-		if($PSBoundParameters.ContainsKey("Permissions"))
+		elseif ($PSBoundParameters.ContainsKey("Description") -And $PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -Permissions $Permissions -svc $svc;
+			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -Permissions $Permissions -svc $svc -CreateIfNotExist;
+		}
+		elseif ($PSBoundParameters.ContainsKey('MailAddress') -And $PSBoundParameters.ContainsKey("Permissions"))
+		{
+			$r = Set-Role -Name $Name -RoleType $RoleType -MailAddress $MailAddress -Permissions $Permissions -svc $svc -CreateIfNotExist;
+		}
+		elseif($PSBoundParameters.ContainsKey("Description"))
+		{
+			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -svc $svc -CreateIfNotExist;
+		}
+		elseif($PSBoundParameters.ContainsKey("MailAddress"))
+		{
+			$r = Set-Role -Name $Name -RoleType $RoleType -MailAddress $MailAddress -svc $svc -CreateIfNotExist;
+		}
+		elseif($PSBoundParameters.ContainsKey("Permissions"))
+		{
+			$r = Set-Role -Name $Name -Permissions $Permissions -svc $svc -CreateIfNotExist;
+		}
+		else 
+		{
+			$r = Set-Role -Name $Name -RoleType $RoleType -svc $svc -CreateIfNotExist;
 		}
 		
 		$OutputParameter = $r;
