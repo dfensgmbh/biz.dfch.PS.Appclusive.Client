@@ -233,7 +233,7 @@ Process
 		$FilterExpression = "Id eq {0}" -f $Id;
 		$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 		
-		Contract-Assert ($entity) ("Entity with Id '{0}' not found." -f $Id;);
+		Contract-Assert ($entity) ("Entity with Id '{0}' not found." -f $Id);
 	}
 	else 
 	{
@@ -241,7 +241,7 @@ Process
 		$FilterExpression = "(tolower(Name) eq '{0}' and Tid eq guid'{1}')" -f $Name.ToLower(), $currentTenant.Id;
 		$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 		
-		Contract-Assert ($CreateIfNotExist -Or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
+		Contract-Assert ($CreateIfNotExist -or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource"
 	}
 	
 	if($PSCmdlet.ParameterSetName -eq 'create') 
