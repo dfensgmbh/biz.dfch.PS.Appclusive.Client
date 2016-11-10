@@ -178,13 +178,24 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.Id | Should Be $result1.Id;
 		}
 		
-		It "Set-RoleDoesNotExist-ShouldThrowException" -Test {
+		It "Set-RoleWhichDoesNotExist-ShouldThrowException" -Test {
 			# Arrange
-			$nameNotExisting = "not-existing-role-{0}" -f [guid]::NewGuid();
+			$nonExistingRoleName = "not-existing-role-{0}" -f [guid]::NewGuid();
 			# N/A (Declared in BeforeEach)
 			
 			# Act
-			{ Set-Role -Name $nameNotExisting -RoleType $roleType -svc $svc } | Should Throw;
+			{ Set-Role -Name $nonExistingRoleName -RoleType $roleType -svc $svc } | Should Throw;
+			
+			# Assert
+		}
+		
+		It "Set-RoleByIdWhichDoesNotExist-ShouldThrowException" -Test {
+			# Arrange
+			$nonExistingRoleId = [long]::MaxValue;
+			# N/A (Declared in BeforeEach)
+			
+			# Act
+			{ Set-Role -Id $nonExistingRoleId -NewName "Arbitrary" -svc $svc } | Should Throw;
 			
 			# Assert
 		}
