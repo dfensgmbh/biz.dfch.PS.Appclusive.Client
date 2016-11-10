@@ -233,7 +233,7 @@ Process
 		$FilterExpression = "Id eq {0}L" -f $Id;
 		$entity = $svc.Core.Roles.AddQueryOption('$filter', $FilterExpression).AddQueryOption('$top',1) | Select;
 		
-		Contract-Assert ($entity) ("Entity with Id '{0}' not found." -f $Id);
+		Contract-Assert ($entity) "Entity does not exist";
 	}
 	else 
 	{
