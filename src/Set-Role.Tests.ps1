@@ -258,7 +258,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$resultPermissions.Count -gt 0 | Should Be $true;
 		}
 		
-		It "Set-RoleWithPermissionsToRemove-ShouldReturnRemoveSpecifiedPermissions" -Test {
+		It "Set-RoleWithPermissionsToRemove-ShouldRemoveSpecifiedPermissions" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate", "Apc:AcesCanUpdate");
 			$permissionsRemove = @("Apc:AcesCanCreate");
@@ -268,7 +268,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result | Should Not Be $null;
 			
 			Push-ChangeTracker -Svc $svc;
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissionsRemove -svc $svc -CreateIfNotExist -RemovePermissions;
+			$result = Set-Role -Name $name -Permissions $permissionsRemove -svc $svc -RemovePermissions;
 			Pop-ChangeTracker -Svc $svc;
 			
 			Push-ChangeTracker -Svc $svc;
