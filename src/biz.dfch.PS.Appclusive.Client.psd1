@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.11.0.20161110'
+ModuleVersion = '4.11.1.20161110'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -284,7 +284,7 @@ PrivateData = @{
 New Cmdlets
 * Get-Role
 * Set-Role
-* New-Role
+* New-Role'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
