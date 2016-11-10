@@ -18,8 +18,6 @@ Describe "Set-Role" -Tags "Set-Role" {
 	$entityPrefix = "Set-Role";
 	$mailaddress = "arbitrary@example.com";
 	$newMailaddress = "new@example.com";
-	$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.ToString();
-	$newRoleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Distribution.ToString();
 	$usedEntitySets = @("Roles");
 	
 
@@ -33,6 +31,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$svc = Enter-ApcServer;
 			
 			$name = "{0}-{1}" -f $entityPrefix, [guid]::NewGuid().toString();
+			$roleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.ToString();
+			$newRoleType = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Distribution.ToString();
 		}
 		
 		AfterAll {
