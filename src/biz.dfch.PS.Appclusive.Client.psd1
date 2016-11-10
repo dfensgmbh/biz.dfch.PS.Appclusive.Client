@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '4.10.0.20161110'
+ModuleVersion = '4.11.0.20161110'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -277,26 +277,14 @@ PrivateData = @{
         ReleaseNotes = '20161110
 # BUGFIXES
 
-New-User
-* Changed ExternalId and ExternalType input parameters to mandatory
-
-Set-User
-* Changed ExternalId and ExternalType input parameters to mandatory
-* Validation added to input parameters
-* Tid default value changed to current tenant Id
-* Unhandled input parameter removed
+* Tags in .psd1 adjusted to support PoSH v3
 
 # FEATURES
 
-* Registered CMDLets Import-Product and Import-DataType
-* Upgrade Appclusive Public to version 3.23.0
-
-EntityBagConverter
-
-* added [EntityBagConverter] as a type accelerator via Import-Module.ps1
-
-# NOTES
-* Removed dependency to System.Web.Http.dll'
+New Cmdlets
+* Get-Role
+* Set-Role
+* New-Role
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
