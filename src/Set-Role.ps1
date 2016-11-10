@@ -119,6 +119,7 @@ Param
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'create', Position = 1)]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name', Position = 1)]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id', Position = 1)]
 	# DFTODO - enum? -> Adjust Examples and https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Abiquo.Scripts/wiki
 	[long] $RoleType
 	,
@@ -176,13 +177,10 @@ Begin
 	$minRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::Default.value__;
 	$maxRoleTypeValue = [biz.dfch.CS.Appclusive.Public.Security.RoleTypeEnum]::External.value__;
 	
-	Contract-Requires($minProtectionLevelValue -le $RoleType);
-	Contract-Requires($maxProtectionLevelValue -ge $RoleType);
-	
-	if ($NewRoleType) 
+	if ($RoleType) 
 	{
-		Contract-Requires($minProtectionLevelValue -le $NewRoleType);
-		Contract-Requires($maxProtectionLevelValue -ge $NewRoleType);
+		Contract-Requires($minProtectionLevelValue -le $RoleType);
+		Contract-Requires($maxProtectionLevelValue -ge $RoleType);
 	}
 }
 
