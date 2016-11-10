@@ -320,7 +320,7 @@ Process
 					# If there is more than one role, a list of lists with permissions gets returned
 					else 
 					{
-						$listOfPermissions.Add($permissionsOfRole.ToArray());
+						$null = $listOfPermissions.Add($permissionsOfRole.ToArray());
 					}
 				}
 				$response = $listOfPermissions.ToArray();
