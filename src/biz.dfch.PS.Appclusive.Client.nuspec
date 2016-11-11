@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>biz.dfch.PS.Appclusive.Client</id>
-    <version>4.11.1</version>
+    <version>4.11.2</version>
     <title>biz.dfch.PS.Appclusive.Client</title>
     <authors>d-fens GmbH</authors>
     <owners>Ronald Rink</owners>
@@ -27,17 +27,11 @@ Third party (and Microsoft) DLLs are not part of this Apache 2.0 licensed projec
 See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detailed description on how to use the Cmdlets in this module.
 </description>
     <summary>This Microsoft PowerShell module contains Cmdlets to perform various base actions and utilties/convenience functions with the our open-source based automation framework "Appclusive".</summary>
-    <releaseNotes>20161110
+    <releaseNotes>20161111
 # BUGFIXES
 
-* Tags in .psd1 adjusted to support PoSH v3
-
-# FEATURES
-
-New Cmdlets
-* Get-Role
-* Set-Role
-* New-Role
+Set-Role Cmdlet
+* Avoid console output of HTTP response when adding/removing permission
 	</releaseNotes>
     <copyright>(c) 2015-2016 d-fens GmbH</copyright>
     <language>en-US</language>
