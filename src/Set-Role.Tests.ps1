@@ -213,6 +213,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
 			$result.Id -gt 0 | Should Be $true
 			
 			$svc = Enter-Apc;
@@ -230,7 +232,9 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
-
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
+			
 			$svc = Enter-Apc;
 			$result = Set-Role -Id $result.Id -Permissions $permissions -svc $svc;
 			
@@ -260,6 +264,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $originalPermissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
 			
 			# Assert
 			$svc = Enter-Apc;
@@ -274,6 +280,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
 			
 			$svc = Enter-Apc;
 			$result = Set-Role -Name $name -Permissions $permissionsToRemove -svc $svc -RemovePermissions;
@@ -294,6 +302,8 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
 			
 			# Assert
 			{ Set-Role -Id $result.Id -Permissions $notExistingPermissions -svc $svc -RemovePermissions; } | Should ThrowErrorId "Contract";
