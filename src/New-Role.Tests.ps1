@@ -92,6 +92,8 @@ Describe "New-Role" -Tags "New-Role" {
 			# Act
 			$result = New-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc;
 			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
 			
 			$svc = Enter-Apc;
 			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
