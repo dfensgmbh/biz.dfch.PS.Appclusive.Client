@@ -91,6 +91,8 @@ function Create-CatalogueItem {
 		$ValidUntil = [DateTimeOffset]::Now.AddDays(365)
 		,
 		$EndOfLife = [DateTimeOffset]::Now.AddDays(365)
+		,
+		$Parameters
 	)
 	
 	#add parameters
@@ -103,6 +105,9 @@ function Create-CatalogueItem {
 	$newCatalogueItem.ValidFrom = $validFrom;
 	$newCatalogueItem.ValidUntil = $validUntil;
 	$newCatalogueItem.EndOfLife = $endOfLife;
+	if($Parameters){
+		$newCatalogueItem.Parameters = $Parameters;
+	}
 	
 	#create catalogueItem
 	$svc.Core.AddToCatalogueItems($newCatalogueItem);
@@ -124,6 +129,9 @@ function Create-CatalogueItem {
 	$bin = $catalogueItem.ValidFrom | Should Be $validFrom;
 	$bin = $catalogueItem.ValidUntil | Should Be $validUntil;
 	$bin = $catalogueItem.EndOfLife | Should Be $endOfLife;
+	if($Parameters){
+		$bin = $catalogueItem.Parameters | Should Be $Parameters;
+	}
 	
 	return $catalogueItem;
 
