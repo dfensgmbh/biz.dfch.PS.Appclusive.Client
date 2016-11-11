@@ -328,6 +328,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
 			$cartItems.Count | Should Be 1;
 			$cartItems[0].Id | Should Be $cartItemId;
+			Write-Host ($cartItems[0].Parameters | out-string)
 			
 			#ACT create order
 			$orderParameters = @{
