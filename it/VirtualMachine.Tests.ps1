@@ -29,6 +29,66 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 	#gets the id of tenant Managed Customer Tenant
 	$tenant = Get-ApcTenant -Name "Managed Customer Tenant" -svc $svc;
 	$tenantId = $tenant.Id.toString();
+	
+	$vmName = $entityPrefix + "VM";
+	$OS = @("SPMI-2015.6","SPMI-2015.3","SPMI-2015.4","SPMI-2015.5",""); #2012R2, 2008R2, Rhel6.8, Rhel7.2 and noOS
+	
+	function Get-Parameters{
+		Param
+		(
+			$Name = $entityPrefix + "VM"
+			,
+			$OpSystem = "SPMI-2015.6"
+		)
+		
+		$parameters = '{
+			"biz":{
+				"dfch":{
+					"Appclusive":{
+						"Products":{
+							"Infrastructure":{
+								"VirtualMachine":{
+									"Name":"' + $Name + '",
+									"Description":"",
+									"OperatingSystem":"' + $OpSystem + '",
+									"Hostname":"' + $Name + '",
+									"BackupProfile":{"Name":"no_backup"},
+									"StorageProfile":{"Name":"economy_singlesided"},
+									"Storage":{"DiskCollection":{"Disk00":{"Name":"System","Description":"Boot Disk","SizeGB":60,
+									"StorageProfile":"economy_singlesided"}}},
+									"Network":{
+										"NicCollection":{
+											"Nic00":{
+												"NetworkId":"https://cloud-api.media.int/v1/cimi/2/networks/5b98b6df-8a8e-48b4-a33a-b09d4a0c0475","Address":"0.0.0.0"
+											}
+										}
+									},
+									"Cpu":{"Count":4,
+									"Speed":1.6,
+									"Reservation":0},
+									"Memory":{
+										"Size":4096,
+										"Reservation":0
+									}
+								},
+								"VirtualMachineExtensions":{
+									"Cimi":{
+										"TemplateId":"SPMT-2015.1",
+										"OperatingSystemPassword":"Test1234",
+										"Availability":"high",
+										"HostGroup":"none",
+										"HostingCell":"cell_a"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}';
+		
+		return $parameters
+	}
 
 	Context "#CLOUDTCL--VMTests" {
 	
@@ -54,132 +114,47 @@ Describe "VM.Tests" -Tags "VM.Tests" {
                 }
             }
         }
-		<#
-		It "CreateVM-inRoot" -Test {
+		
+		It "CreateVM-differentOSs" -Test {
 			#ARRANGE
-			 
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
 			$cartItemName = $entityPrefix + "cartItem-{0}" -f [guid]::NewGuid().ToString();
 			$catalogueItemId = (Get-ApcCatalogueItem -Name Virtualmachine).Id;
-			$tenantId = "ad8f50df-2a5d-4ea5-9fcc-05882f16a9fe";
-			$parameters = '{
-				"biz":{
-					"dfch":{
-						"Appclusive":{
-							"Products":{
-								"Infrastructure":{
-									"VirtualMachine":{
-										"Name":"vm1",
-										"Description":"",
-										"OperatingSystem":"SPMI-2015.6",
-										"Hostname":"vm1",
-										"BackupProfile":{"Name":"no_backup"},
-										"StorageProfile":{"Name":"economy_singlesided"},
-										"Storage":{"DiskCollection":{"Disk00":{"Name":"System","Description":"Boot Disk","SizeGB":60,
-										"StorageProfile":"economy_singlesided"}}},
-										"Network":{
-											"NicCollection":{
-												"Nic00":{
-													"NetworkId":"https://cloud-api.media.int/v1/cimi/2/networks/5b98b6df-8a8e-48b4-a33a-b09d4a0c0475","Address":"0.0.0.0"
-												}
-											}
-										},
-										"Cpu":{"Count":4,
-										"Speed":1.6,
-										"Reservation":0},
-										"Memory":{
-											"Size":4096,
-											"Reservation":0
-										}
-									},
-									"VirtualMachineExtensions":{
-										"Cimi":{
-											"TemplateId":"SPMT-2015.1",
-											"OperatingSystemPassword":"password",
-											"Availability":"high",
-											"HostGroup":"none",
-											"HostingCell":"cell_a"
-										}
-									}
-								}
-							}
-						}
-					}
+			
+			for ($i = 0; $i -lt $OS.Length; $i++){
+				$parameters = Get-Parameters -Name ($vmName + $i) -OpSystem $OS[$i];
+				
+				#ACT create new cart item
+				$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $parameters;
+				$cartItemId = $cartItem.Id;
+				$cartId = $cartItem.CartId;
+				
+				#ASSERT check that the cart Id of the cart Item belongs to a created Cart
+				$carts = $svc.Core.Carts | Select;
+				$carts.Id -Contains $cartId | Should Be $true;
+				
+				#ACT create order
+				$orderParameters = @{
+					Name = $orderName;
+					Description = "Arbitrary Description";
+					Requester = (Get-ApcUser -Current).Id;
+					Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}';
 				}
-			}';
-			
-			
-			#ACT create new cart item
-			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $parameters;
-			$cartItemId = $cartItem.Id;
-			$cartId = $cartItem.CartId;
-			
-			#ASSERT check that the cart Id of the cart Item belongs to a created Cart
-			$carts = $svc.Core.Carts | Select;
-			$carts.Id -Contains $cartId | Should Be $true;
-			
-			#ACT create order
-			$orderParameters = @{
-				Name = $orderName;
-				Description = "Arbitrary Description";
-				Requester = (Get-ApcUser -Current).Id;
-				Parameters = '{}';
+				
+				$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters ); 
+				
+				Start-Sleep -s 20
 			}
 			
-			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
+			#ASSERT
+			
 		}
-		#>
+		<#
 		It "CreateVM-inFolder" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
 			$cartItemName = $entityPrefix + "cartItem-{0}" -f [guid]::NewGuid().ToString();
 			$catalogueItemId = (Get-ApcCatalogueItem -Name Virtualmachine).Id;
-			$tenantId = "ad8f50df-2a5d-4ea5-9fcc-05882f16a9fe";
-			$parameters = '{
-				"biz":{
-					"dfch":{
-						"Appclusive":{
-							"Products":{
-								"Infrastructure":{
-									"VirtualMachine":{
-										"Name":"vm1",
-										"Description":"",
-										"OperatingSystem":"SPMI-2015.6",
-										"Hostname":"vm1",
-										"BackupProfile":{"Name":"no_backup"},
-										"StorageProfile":{"Name":"economy_singlesided"},
-										"Storage":{"DiskCollection":{"Disk00":{"Name":"System","Description":"Boot Disk","SizeGB":60,
-										"StorageProfile":"economy_singlesided"}}},
-										"Network":{
-											"NicCollection":{
-												"Nic00":{
-													"NetworkId":"https://cloud-api.media.int/v1/cimi/2/networks/5b98b6df-8a8e-48b4-a33a-b09d4a0c0475","Address":"0.0.0.0"
-												}
-											}
-										},
-										"Cpu":{"Count":4,
-										"Speed":1.6,
-										"Reservation":0},
-										"Memory":{
-											"Size":4096,
-											"Reservation":0
-										}
-									},
-									"VirtualMachineExtensions":{
-										"Cimi":{
-											"TemplateId":"SPMT-2015.1",
-											"OperatingSystemPassword":"password",
-											"Availability":"high",
-											"HostGroup":"none",
-											"HostingCell":"cell_a"
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}';
 			
 			#ACT create folder
 			$name = $entityPrefix + "Folder-{0}" -f [guid]::NewGuid().ToString();
@@ -200,10 +175,10 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 				Name = $orderName;
 				Description = "Arbitrary Description";
 				Requester = (Get-ApcUser -Current).Id;
-				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + ($folder.Id).toString() + '"}'; #"{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}"
+				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + ($folder.Id).toString() + '"}';
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
-		}
+		}#>
 	}
 }
