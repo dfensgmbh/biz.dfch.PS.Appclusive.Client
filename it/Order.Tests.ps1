@@ -50,7 +50,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
                 }
             }
         }
-		
+		<#
 		It "PlaceOrderWithoutCart-ShouldFail" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order";
@@ -291,7 +291,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$orderJobRefreshed = Get-ApcJob -id $orderJob.Id
 			$orderJobRefreshed.Status | Should Be "Cancelled";
 		}
-		
+		#>
 		It "Order-OverwriteParameters" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
@@ -302,6 +302,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			
 			$productParameters = '{"A":"OLD", "B":"OLD"}';
 			$catalogueItemParameters = '{"A":"NEW", "C":"OLD"}';
+			$cartItemParameters = '{"D":"NEW"}';
 			
 			#ACT create catalogue
 			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
@@ -314,9 +315,9 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			#ACT create catalogue item
 			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId -Parameters $catalogueItemParameters;
 			$catalogueItemId = $newCatalogueItem.Id;
-			
+			Write-Host ($newCatalogueItem | out-string);
 			#ACT create new cart item
-			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId;
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $cartItemParameters;
 			$cartItemId = $cartItem.Id;
 			$cartId = $cartItem.CartId;
 			
@@ -328,7 +329,6 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
 			$cartItems.Count | Should Be 1;
 			$cartItems[0].Id | Should Be $cartItemId;
-			Write-Host ($cartItems[0].Parameters | out-string)
 			
 			#ACT create order
 			$orderParameters = @{
@@ -339,6 +339,21 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
+			
+			#get order
+			$query = "Name eq '{0}'" -f $orderName;
+			$order = $svc.Core.Orders.AddQueryOption('$filter', $query) | Select;
+			
+			#get order Items
+			$query = "OrderId eq {0}" -f $order.Id;
+			$orderItems = $svc.Core.OrderItems.AddQueryOption('$filter', $query) | Select;
+			
+			#ASSERT order Items - they should be as many as the Cart Items in the Cart
+			$orderItems.Count | Should Be $cartItems.Count;
+			$orderItems.Name -contains $catalogueItemName1;
+			$orderItems.Name -contains $catalogueItemName2;
+			Write-Host ($orderItems | out-string);
+			Write-Host ($orderItems.Parameters | out-string);
 			
 			Start-Sleep -s 5;
 			
