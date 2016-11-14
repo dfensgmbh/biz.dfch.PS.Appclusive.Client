@@ -17,6 +17,10 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
         Import-Module $moduleName;
 
         $svc = Enter-ApcServer;
+		
+		$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
+		$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
+		$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
     }
 
 	Context "Set-KeyNameValue" {
@@ -26,9 +30,6 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithCreateIfNotExist-ShouldReturnNewEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
@@ -47,9 +48,6 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithoutCreateIfNotExist-ShouldReturnNull" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
 			# Act
@@ -61,11 +59,8 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithNewValue-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
 			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
 			$NewName = "NewName-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -85,14 +80,11 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue -Confirm:$false;
 		}
-
+		
 		It "Set-KeyNameValueWithNewName-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
 			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
 			$NewName = "NewName-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -115,11 +107,8 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithNewKey-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
 			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
 			$NewName = "NewName-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -142,11 +131,8 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithNewKeyNameValue-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
 			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
 			$NewName = "NewName-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			
@@ -169,11 +155,8 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithNewKeyNameValueDescription-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
 			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
 			$NewName = "NewName-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
 			$NewDescription = "NewDescription-{0}" -f [guid]::NewGuid().ToString();
@@ -197,9 +180,6 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 
 		It "Set-KeyNameValueWithDuplicate-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
-			$Key = "Key-{0}" -f [guid]::NewGuid().ToString();
-			$Name = "Name-{0}" -f [guid]::NewGuid().ToString();
-			$Value = "Value-{0}" -f [guid]::NewGuid().ToString();
 			$NewValue = "NewValue-{0}" -f [guid]::NewGuid().ToString();
 			
 			$null = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value;
@@ -209,6 +189,26 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 			$result = Set-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue -NewValue $Value;
 
 			# Assert
+			$result.Value | Should Be $Value;
+			
+			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
+		}
+		
+		It "Set-KeyNameValueWithKeyAndNameAndValueLengthGreaterThan500" -Test {
+			# Arrange
+			# 510 Characters
+			$Key = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. S";
+			
+			$Name = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. S";
+			
+			$Value = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. S";
+			
+			# Act
+			$result = Set-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -CreateIfNotExist;
+
+			# Assert
+			$result.Key | Should Be $Key;
+			$result.Name | Should Be $Name;
 			$result.Value | Should Be $Value;
 			
 			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
