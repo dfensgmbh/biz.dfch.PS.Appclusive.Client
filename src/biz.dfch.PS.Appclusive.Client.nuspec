@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>biz.dfch.PS.Appclusive.Client</id>
-    <version>4.11.2</version>
+    <version>5.0.0</version>
     <title>biz.dfch.PS.Appclusive.Client</title>
     <authors>d-fens GmbH</authors>
     <owners>Ronald Rink</owners>
@@ -27,11 +27,26 @@ Third party (and Microsoft) DLLs are not part of this Apache 2.0 licensed projec
 See https://github.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/wiki for a detailed description on how to use the Cmdlets in this module.
 </description>
     <summary>This Microsoft PowerShell module contains Cmdlets to perform various base actions and utilties/convenience functions with the our open-source based automation framework "Appclusive".</summary>
-    <releaseNotes>20161111
+    <releaseNotes>20161114
 # BUGFIXES
+KeyNameValue Cmdlets
+* Handle maximum URL length by cutting Key/Name/Value, if longer than 475 characters and by creating filter expression using startswith
 
-Set-Role Cmdlet
-* Avoid console output of HTTP response when adding/removing permission
+Module Manifest
+* biz.dfch.PS.Appclusive.Client.dll entry removed from FileList
+
+Set-SessionTenant Cmdlet
+* Tenant lookup after setting TenantId and TenantHeaderName
+* Tenant lookup based on ExternalId
+
+# FEATURES
+* PowerShellVersion set to 5.0
+* Upgrade Appclusive Public to version 3.24.0
+
+Set-Role
+* RemovePermissions switch removed
+* Permissions parameter renamed to PermissionsToAdd
+* String array parameter for PermissionsToRemove added
 	</releaseNotes>
     <copyright>(c) 2015-2016 d-fens GmbH</copyright>
     <language>en-US</language>

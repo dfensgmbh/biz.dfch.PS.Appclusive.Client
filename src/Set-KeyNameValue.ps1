@@ -150,6 +150,8 @@ Begin
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
+	
+	$MaxPropertyLength = 475;
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
@@ -164,7 +166,6 @@ Process
 # Return values are always and only returned via OutputParameter.
 $OutputParameter = $null;
 $AddedEntity = $null;
-$MaxPropertyLength = 475;
 
 try 
 {
