@@ -40,7 +40,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			$true | Should Be $true;
 		}
 		
-		It "SetSessionTenantWithInvalidId-ThrowsContractException" -Test {
+		It "SetSessionTenantWithInvalidId-ThrowsException" -Test {
 		
 			# Arrange
 			$tenantId = [Guid]::NewGuid()
@@ -52,7 +52,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			# N/A
 		}
 		
-		It "SetSessionTenantWithValidId-Throws" -Test {
+		It "SetSessionTenantWithValidId-Succeeds" -Test {
 		
 			# Arrange
 			$tenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM.ToString();
@@ -76,7 +76,6 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			# Assert
 			$result | Should Be $null;
 		}
-		
 	}
 }
 
