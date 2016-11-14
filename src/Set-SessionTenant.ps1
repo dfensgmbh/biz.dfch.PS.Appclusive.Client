@@ -111,8 +111,8 @@ Process
 
 	if($PSCmdlet.ParameterSetName -eq 'id')
 	{
-		$tenant = Get-Tenant -svc $svc -Id $Id;
-		Contract-Assert (!!$tenant) "Tenant not found"
+		$tenant = Get-Tenant -svc $svc -ExternalId $Id;
+		Contract-Assert (!!$tenant) "Tenant not found";
 
 		foreach($key in $svc.Keys) 
 		{ 
