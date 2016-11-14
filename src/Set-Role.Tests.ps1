@@ -46,7 +46,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 				
 					if ($permissions)
 					{
-						Set-Role -Id $entity.Id -svc $svc -Permissions $permissions.Name -RemovePermissions;
+						Set-Role -Id $entity.Id -svc $svc -PermissionsToRemove $permissions.Name;
 					}
 				
 					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
@@ -206,26 +206,26 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Assert
 		}
 		
-		It "Set-RoleWithPermissions-ShouldCreateEntityWithSpecifiedPermissions" -Test {
+		It "Set-RoleWithPermissionsToAddAndCreateIfNotExist-ShouldCreateEntityWithSpecifiedPermissions" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate");
 			
 			# Act
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $permissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.RoleType | Should Be $roleType;
 			$result.Id -gt 0 | Should Be $true
 			
 			$svc = Enter-Apc;
-			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			$resultingPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
 			
 			# Assert
-			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
+			$resultingPermissions | Should Not be $null;
+			$resultingPermissions.Count -eq $permissions.Count | Should Be $true;
 		}
 		
-		It "Set-RoleWithPermissions-ShouldAddSpecifiedPermissions" -Test {
+		It "Set-RoleWithPermissionsToAdd-ShouldAddSpecifiedPermissions" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
 			
@@ -236,77 +236,111 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.RoleType | Should Be $roleType;
 			
 			$svc = Enter-Apc;
-			$result = Set-Role -Id $result.Id -Permissions $permissions -svc $svc;
+			$result = Set-Role -Id $result.Id -PermissionsToAdd $permissions -svc $svc;
 			
 			$svc = Enter-Apc;
-			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			$resultingPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
 			
 			# Assert
-			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -eq $permissions.Count | Should Be $true;
+			$resultingPermissions | Should Not be $null;
+			$resultingPermissions.Count -eq $permissions.Count | Should Be $true;
 		}
 		
-		It "Set-RoleWithDuplicatesInSpecifiedPermissions-ShouldThrowContractException" -Test {
+		It "Set-RoleWithDuplicatesInPermissionsToAdd-ShouldThrowContractException" -Test {
 			# Arrange
 			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate","Apc:AcesCanRead");
 			
 			# Act
 			
 			# Assert
-			{ Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist } | Should ThrowErrorId "Contract";
+			{ Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $permissions -svc $svc -CreateIfNotExist } | Should ThrowErrorId "Contract";
 		}
 		
-		It "Set-RoleWithAlreadyMappedPermissions-ShouldThrowContractException" -Test {
+		It "Set-RoleWithDuplicatesInPermissionsToRemove-ShouldThrowContractException" -Test {
 			# Arrange
-			$originalPermissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
-			$permissionsToBeAdded = @("Apc:AcesCanCreate");
+			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate","Apc:AcesCanRead");
 			
 			# Act
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $originalPermissions -svc $svc -CreateIfNotExist;
+			
+			# Assert
+			{ Set-Role -Name $name -RoleType $roleType -PermissionsToRemove $permissions -svc $svc } | Should ThrowErrorId "Contract";
+		}
+		
+		It "Set-RoleByAddingAlreadyLinkedPermissions-ShouldAddNonLinkedPermissions" -Test {
+			# Arrange
+			$originalPermissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$newPermissions = @("Apc:AcesCanCreate", "Apc:AcesCanUpdate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $originalPermissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.RoleType | Should Be $roleType;
 			
+			$svc = Enter-Apc;
+			$result = Set-Role -Id $result.Id -PermissionsToAdd $newPermissions -svc $svc;
+			
 			# Assert
 			$svc = Enter-Apc;
-			{ Set-Role -Id $result.Id -Permissions $permissionsToBeAdded -svc $svc } | Should ThrowErrorId "Contract";
+			$resultingPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			
+			$resultingPermissions | Should Not be $null;
+			$resultingPermissions.Count -eq 3 | Should Be $true;
+			$resultingPermissions.Name.Contains($originalPermissions[0]) | Should Be $true;
+			$resultingPermissions.Name.Contains($originalPermissions[1]) | Should Be $true;
+			$resultingPermissions.Name.Contains($newPermissions[1]) | Should Be $true;
 		}
 		
 		It "Set-RoleWithPermissionsToRemove-ShouldRemoveSpecifiedPermissions" -Test {
 			# Arrange
-			$permissions = @("Apc:AcesCanRead", "Apc:AcesCanCreate", "Apc:AcesCanUpdate");
+			$permissionsToAdd = @("Apc:AcesCanRead", "Apc:AcesCanCreate", "Apc:AcesCanUpdate");
 			$permissionsToRemove = @("Apc:AcesCanCreate");
 			
 			# Act
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $permissionsToAdd -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.RoleType | Should Be $roleType;
 			
 			$svc = Enter-Apc;
-			$result = Set-Role -Name $name -Permissions $permissionsToRemove -svc $svc -RemovePermissions;
-			
-			$svc = Enter-Apc;
-			$resultPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			$result = Set-Role -Name $name -PermissionsToRemove $permissionsToRemove -svc $svc;
 			
 			# Assert
-			$resultPermissions | Should Not be $null;
-			$resultPermissions.Count -eq 2 | Should Be $true;
+			$svc = Enter-Apc;
+			$resultingPermissions = Get-Role -Id $result.Id -ExpandPermissions -svc $svc;
+			
+			$resultingPermissions | Should Not be $null;
+			$resultingPermissions.Count -eq 2 | Should Be $true;
 		}
 		
-		It "Set-RoleWithPermissionsToRemoveWhichAreNotPresent-ShouldThrowContractException" -Test {
+		It "Set-RoleWithNonLinkedPermissionsToRemove-ShouldThrowContractException" -Test {
 			# Arrange
-			$permissions = @("Apc:AcesCanRead","Apc:AcesCanCreate");
-			$notExistingPermissions = @("Apc:AcesCanRead", "Apc:AcesCanUpdate");
+			$permissionsToAdd = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$nonLinkedPermissions = @("Apc:AcesCanRead", "Apc:AcesCanUpdate");
 			
 			# Act
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $permissions -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $permissionsToAdd -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.RoleType | Should Be $roleType;
 			
 			# Assert
-			{ Set-Role -Id $result.Id -Permissions $notExistingPermissions -svc $svc -RemovePermissions; } | Should ThrowErrorId "Contract";
+			{ Set-Role -Id $result.Id -PermissionsToRemove $nonLinkedPermissions -svc $svc; } | Should ThrowErrorId "Contract";
+		}
+		
+		It "Set-RoleWithSamePermissionInPermissionsToAddAndPermissionsToRemove-ShouldThrowContractException" -Test {
+			# Arrange
+			$permissionsToAdd = @("Apc:AcesCanRead","Apc:AcesCanCreate");
+			$permissionsToRemove = @("Apc:AcesCanRead", "Apc:AcesCanUpdate");
+			
+			# Act
+			$result = Set-Role -Name $name -RoleType $roleType -svc $svc -CreateIfNotExist;
+			$result | Should Not Be $null;
+			$result.Name | Should Be $name;
+			$result.RoleType | Should Be $roleType;
+			
+			# Assert
+			{ Set-Role -Id $result.Id -PermissionsToAdd $permissionsToAdd -PermissionsToRemove $nonLinkedPermissions -svc $svc; } | Should ThrowErrorId "Contract";
 		}
 	}
 }

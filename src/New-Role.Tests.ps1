@@ -44,7 +44,7 @@ Describe "New-Role" -Tags "New-Role" {
 				
 					if ($permissions)
 					{
-						Set-Role -Id $entity.Id -svc $svc -Permissions $permissions.Name -RemovePermissions;
+						Set-Role -Id $entity.Id -svc $svc -PermissionsToRemove $permissions.Name;
 					}
 				
 					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;

@@ -7,7 +7,7 @@ Creates a Role entry in Appclusive.
 .DESCRIPTION
 Creates a Role entry in Appclusive.
 
-You must specify the parameters 'Name' and 'RoleType'. If the entry already exists no update of the existing entry is performed.
+You must specify the parameters Name, RoleType and Permissions. If the entry already exists no update of the existing entry is performed.
 
 
 .OUTPUTS
@@ -60,7 +60,7 @@ Create a new Role entry if it not already exists, with Description and MailAddre
 
 
 .EXAMPLE
-New-Role -Name ArbitraryRole -RoleType External -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate")
+New-Role -Name ArbitraryRole -RoleType External -PermissionsToAdd @("Apc:NodesCanRead","Apc:NodesCanCreate")
 
 RoleType     : External
 MailAddress  : 
@@ -79,7 +79,7 @@ Tenant       :
 CreatedBy    :
 ModifiedBy   :
 
-Create a new Role entry if it not already exists, with specified Permissions
+Create a new Role entry with specified Permissions, if it not already exists.
 
 
 .LINK
@@ -174,7 +174,7 @@ Process
 	{
 		if ($PSBoundParameters.ContainsKey("Description") -And $PSBoundParameters.ContainsKey('MailAddress') -And $PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -MailAddress $MailAddress -Permissions $Permissions -svc $svc -CreateIfNotExist;
+			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -MailAddress $MailAddress -PermissionsToAdd $Permissions -svc $svc -CreateIfNotExist;
 		}
 		elseif ($PSBoundParameters.ContainsKey("Description") -And $PSBoundParameters.ContainsKey('MailAddress'))
 		{
@@ -182,11 +182,11 @@ Process
 		}
 		elseif ($PSBoundParameters.ContainsKey("Description") -And $PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -Permissions $Permissions -svc $svc -CreateIfNotExist;
+			$r = Set-Role -Name $Name -RoleType $RoleType -Description $Description -PermissionsToAdd $Permissions -svc $svc -CreateIfNotExist;
 		}
 		elseif ($PSBoundParameters.ContainsKey('MailAddress') -And $PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -RoleType $RoleType -MailAddress $MailAddress -Permissions $Permissions -svc $svc -CreateIfNotExist;
+			$r = Set-Role -Name $Name -RoleType $RoleType -MailAddress $MailAddress -PermissionsToAdd $Permissions -svc $svc -CreateIfNotExist;
 		}
 		elseif($PSBoundParameters.ContainsKey("Description"))
 		{
@@ -198,7 +198,7 @@ Process
 		}
 		elseif($PSBoundParameters.ContainsKey("Permissions"))
 		{
-			$r = Set-Role -Name $Name -RoleType $RoleType -Permissions $Permissions -svc $svc -CreateIfNotExist;
+			$r = Set-Role -Name $Name -RoleType $RoleType -PermissionsToAdd $Permissions -svc $svc -CreateIfNotExist;
 		}
 		else 
 		{

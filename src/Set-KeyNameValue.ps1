@@ -150,6 +150,8 @@ Begin
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
+	
+	$MaxPropertyLength = 475;
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet"
@@ -169,19 +171,37 @@ try
 {
 	$Exp = @();
 	$KeyNameValueContents = @();
-	if($Key) 
+	if($Key.Length -lt $MaxPropertyLength) 
 	{ 
 		$Exp += ("(tolower(Key) eq '{0}')" -f $Key.ToLower());
 		$KeyNameValueContents += $Key;
 	}
-	if($Name) 
+	else
+	{
+		$shortenedKey = $Key.substring(0,$MaxPropertyLength);
+		$Exp += ("(startswith(tolower(Key), '{0}'))" -f $shortenedKey.ToLower());
+		$KeyNameValueContents += $Key;
+	}
+	if($Name.Length -lt $MaxPropertyLength) 
 	{ 
 		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
 		$KeyNameValueContents += $Name;
 	}
-	if($Value) 
+	else
+	{
+		$shortenedName = $Name.substring(0,$MaxPropertyLength);
+		$Exp += ("(startswith(tolower(Name), '{0}'))" -f $shortenedName.ToLower());
+		$KeyNameValueContents += $Name;
+	}
+	if($Value.Length -lt $MaxPropertyLength) 
 	{ 
 		$Exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
+		$KeyNameValueContents += $Value;
+	}
+	else
+	{
+		$shortenedValue = $Value.substring(0,$MaxPropertyLength);
+		$Exp += ("(startswith(tolower(Value), '{0}'))" -f $shortenedValue.ToLower());
 		$KeyNameValueContents += $Value;
 	}
 	$FilterExpression = [String]::Join(' and ', $Exp);

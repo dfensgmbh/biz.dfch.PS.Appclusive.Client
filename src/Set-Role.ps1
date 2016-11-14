@@ -8,7 +8,7 @@ Sets or creates a Role entry in Appclusive.
 Sets or creates a Role entry in Appclusive.
 
 By updating an Role entry you can specify, if you want to update the 
-Description, MailAddress, Name, RoleType or any combination thereof. 
+Description, MailAddress, Name, RoleType, PermissionsToAdd, PermissionsToRemove or any combination thereof. 
 For updating Name or RoleType you need to use the Argument '-NewName'/'-NewRoleType'
 
 
@@ -86,7 +86,7 @@ Update an existing Role with new Name and MailAddress and RoleType.
 
 
 .EXAMPLE
-Set-Role -Id 42 -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate") -CreateIfNotExist
+Set-Role -Id 42 -PermissionsToAdd @("Apc:NodesCanRead","Apc:NodesCanCreate") -CreateIfNotExist
 
 RoleType     : Distribution
 MailAddress  : 
@@ -109,7 +109,7 @@ Create/Update Role by adding specified permissions
 
 
 .EXAMPLE
-Set-Role -Id 42 -Permissions @("Apc:NodesCanRead","Apc:NodesCanCreate") -RemovePermissions
+Set-Role -Id 42 -PermissionsToRemove @("Apc:NodesCanRead","Apc:NodesCanCreate")
 
 RoleType     : Distribution
 MailAddress  : 
@@ -177,17 +177,18 @@ Param
 	,
 	# Specifies the permissions which should be added/removed
 	[Parameter(Mandatory = $false)]
-	[string[]] $Permissions = @()
+	[Alias('add')]
+	[string[]] $PermissionsToAdd = @()
+	,
+	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
+	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
+	[Alias('remove')]
+	[string[]] $PermissionsToRemove = @()
 	,
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
 	[ValidateNotNullOrEmpty()]
 	[string] $NewName
-	,
-	# Specifies to remove the specified permissions
-	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
-	[Parameter(Mandatory = $false, ParameterSetName = 'name')]
-	[switch] $RemovePermissions = $false
 	,
 	# Specifies to create a entity if it does not exist
 	[Parameter(Mandatory = $true, ParameterSetName = 'create')]
@@ -216,6 +217,12 @@ Begin
 
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
+	
+	if ($PSBoundParameters.ContainsKey('PermissionsToAdd') -and $PSBoundParameters.ContainsKey('PermissionsToRemove'))
+	{
+		$commonPermissionEntries = Compare-Object $PermissionsToAdd $PermissionsToRemove -PassThru -IncludeEqual -ExcludeDifferent;
+		Contract-Assert($commonPermissionEntries.Count -eq 0) "Same permission name(s) found in 'PermissionsToAdd' and 'PermissionsToRemove'";
+	}
 }
 
 Process 
@@ -280,55 +287,66 @@ Process
 	$svc.Core.UpdateObject($entity);
 	$null = $svc.Core.SaveChanges();
 
+	$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
 
-	if($PSBoundParameters.ContainsKey('Permissions'))
+	if($PSBoundParameters.ContainsKey('PermissionsToAdd'))
 	{
 		# assert, that specified permissions do not contain duplicates
-		Contract-Assert($Permissions.Count -eq ($Permissions | Select -Unique).Count) "Duplicates found in specified Permissions";
+		Contract-Assert($PermissionsToAdd.Count -eq ($PermissionsToAdd | Select -Unique).Count) "Duplicates found in PermissionsToAdd";
 
-		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
-		$permissionEntities = New-Object System.Collections.ArrayList;
-		$permissionsCanBeAdded = $true;
+		$permissionEntitiesToBeAdded = New-Object System.Collections.ArrayList;
+				
+		foreach($permissionName in $PermissionsToAdd)
+		{
+			$query = "Name eq '{0}'" -f $permissionName;
+			$apcPermission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
+			Contract-Assert($apcPermission) ("Permissions with Name '{0}' not found." -f $permissionName);
+
+			if (!$originalPermissions -or !$originalPermissions.Name.Contains($permissionName))
+			{
+				$null = $permissionEntitiesToBeAdded.Add($apcPermission);
+			}
+		}
+	}
+	
+
+	if($PSBoundParameters.ContainsKey('PermissionsToRemove'))
+	{
+		# assert, that specified permissions do not contain duplicates
+		Contract-Assert($PermissionsToRemove.Count -eq ($PermissionsToRemove | Select -Unique).Count) "Duplicates found in PermissionsToAdd";
+		
+		$permissionEntitiesToBeRemoved = New-Object System.Collections.ArrayList;
 		$permissionsCanBeRemoved = $true;
 		
-		foreach($permissionName in $Permissions)
+		foreach($permissionName in $PermissionsToRemove)
 		{
 			$query = "Name eq '{0}'" -f $permissionName;
 			$apcPermission = $svc.Core.Permissions.AddQueryOption('$filter', $query).AddQueryOption('$top', 1) | Select;
 			Contract-Assert($apcPermission) ("Permissions with Name '{0}' not found." -f $permissionName);
 			
-			# assert, that every specified permission can be added/removed
-			if (!$originalPermissions)
+			# check, if every specified permission can be removed
+			if (!$originalPermissions -or !$originalPermissions.Name.Contains($permissionName))
 			{
 				$permissionsCanBeRemoved = $false;
-			}
-			elseif ($originalPermissions.Name.Contains($permissionName))
-			{
-				$permissionsCanBeAdded = $false;
-			}
-			else 
-			{
-				$permissionsCanBeRemoved = $false;
+				continue;
 			}
 			
-			$null = $permissionEntities.Add($apcPermission);
+			$null = $permissionEntitiesToBeRemoved.Add($apcPermission);
 		}
 		
-		foreach($apcPermission in $permissionEntities)
-		{
-			if($PSBoundParameters.ContainsKey("RemovePermissions"))
-			{
-				Contract-Assert($permissionsCanBeRemoved) "One or more of the specified permissions cannot be removed as they are not linked to the corresponding role";
-				$svc.Core.DeleteLink($entity, 'Permissions', $apcPermission);
-				$null = $svc.Core.SaveChanges();
-			}
-			else
-			{
-				Contract-Assert($permissionsCanBeAdded) "One or more of the specified permissions cannot be added as they are already linked to the corresponding role.";
-				$svc.Core.AddLink($entity, 'Permissions', $apcPermission);
-				$null = $svc.Core.SaveChanges();
-			}
-		}
+		Contract-Assert($permissionsCanBeRemoved) "One or more of the specified permissions cannot be removed as they are not linked to the corresponding role";
+	}
+		
+	foreach($apcPermission in $permissionEntitiesToBeAdded)
+	{
+		$svc.Core.AddLink($entity, 'Permissions', $apcPermission);
+		$null = $svc.Core.SaveChanges();
+	}
+	
+	foreach($apcPermission in $permissionEntitiesToBeRemoved)
+	{
+		$svc.Core.DeleteLink($entity, 'Permissions', $apcPermission);
+		$null = $svc.Core.SaveChanges();
 	}
 
 	$r = $entity;
