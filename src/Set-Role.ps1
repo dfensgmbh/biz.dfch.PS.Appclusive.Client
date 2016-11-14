@@ -287,13 +287,13 @@ Process
 	$svc.Core.UpdateObject($entity);
 	$null = $svc.Core.SaveChanges();
 
+	$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
 
-	if($PSBoundParameters.ContainsKey('Permissions'))
+	if($PSBoundParameters.ContainsKey('PermissionsToAdd'))
 	{
 		# assert, that specified permissions do not contain duplicates
-		Contract-Assert($Permissions.Count -eq ($Permissions | Select -Unique).Count) "Duplicates found in specified Permissions";
+		Contract-Assert($PermissionsToAdd.Count -eq ($PermissionsToAdd | Select -Unique).Count) "Duplicates found in PermissionsToAdd";
 
-		$originalPermissions = Get-Role -Id $entity.Id -svc $svc -ExpandPermissions;
 		$permissionEntitiesToBeAdded = New-Object System.Collections.ArrayList;
 				
 		foreach($permissionName in $PermissionsToAdd)
@@ -307,6 +307,13 @@ Process
 				$null = $permissionEntitiesToBeAdded.Add($apcPermission);
 			}
 		}
+	}
+	
+
+	if($PSBoundParameters.ContainsKey('PermissionsToRemove'))
+	{
+		# assert, that specified permissions do not contain duplicates
+		Contract-Assert($PermissionsToRemove.Count -eq ($PermissionsToRemove | Select -Unique).Count) "Duplicates found in PermissionsToAdd";
 		
 		$permissionEntitiesToBeRemoved = New-Object System.Collections.ArrayList;
 		$permissionsCanBeRemoved = $true;
@@ -328,18 +335,18 @@ Process
 		}
 		
 		Contract-Assert($permissionsCanBeRemoved) "One or more of the specified permissions cannot be removed as they are not linked to the corresponding role";
+	}
 		
-		foreach($apcPermission in $permissionEntitiesToBeAdded)
-		{
-			$svc.Core.AddLink($entity, 'Permissions', $apcPermission);
-			$null = $svc.Core.SaveChanges();
-		}
-		
-		foreach($apcPermission in $permissionEntitiesToBeRemoved)
-		{
-			$svc.Core.DeleteLink($entity, 'Permissions', $apcPermission);
-			$null = $svc.Core.SaveChanges();
-		}
+	foreach($apcPermission in $permissionEntitiesToBeAdded)
+	{
+		$svc.Core.AddLink($entity, 'Permissions', $apcPermission);
+		$null = $svc.Core.SaveChanges();
+	}
+	
+	foreach($apcPermission in $permissionEntitiesToBeRemoved)
+	{
+		$svc.Core.DeleteLink($entity, 'Permissions', $apcPermission);
+		$null = $svc.Core.SaveChanges();
 	}
 
 	$r = $entity;

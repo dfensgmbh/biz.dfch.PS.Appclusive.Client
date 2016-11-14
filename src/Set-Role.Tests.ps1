@@ -253,7 +253,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			
 			# Assert
-			{ Set-Role -Name $name -RoleType $roleType -PermissionToAdd $permissions -svc $svc -CreateIfNotExist } | Should ThrowErrorId "Contract";
+			{ Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $permissions -svc $svc -CreateIfNotExist } | Should ThrowErrorId "Contract";
 		}
 		
 		It "Set-RoleWithDuplicatesInPermissionsToRemove-ShouldThrowContractException" -Test {
@@ -263,7 +263,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			# Act
 			
 			# Assert
-			{ Set-Role -Name $name -RoleType $roleType -PermissionToRemove $permissions -svc $svc } | Should ThrowErrorId "Contract";
+			{ Set-Role -Name $name -RoleType $roleType -PermissionsToRemove $permissions -svc $svc } | Should ThrowErrorId "Contract";
 		}
 		
 		It "Set-RoleByAddingAlreadyLinkedPermissions-ShouldAddNonLinkedPermissions" -Test {
@@ -272,7 +272,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$newPermissions = @("Apc:AcesCanCreate", "Apc:AcesCanUpdate");
 			
 			# Act
-			$result = Set-Role -Name $name -RoleType $roleType -Permissions $originalPermissions -svc $svc -CreateIfNotExist;
+			$result = Set-Role -Name $name -RoleType $roleType -PermissionsToAdd $originalPermissions -svc $svc -CreateIfNotExist;
 			$result | Should Not Be $null;
 			$result.Name | Should Be $name;
 			$result.RoleType | Should Be $roleType;
@@ -340,7 +340,7 @@ Describe "Set-Role" -Tags "Set-Role" {
 			$result.RoleType | Should Be $roleType;
 			
 			# Assert
-			{ Set-Role -Id $result.Id -PermissionToAdd $permissionsToAdd -PermissionsToRemove $nonLinkedPermissions -svc $svc; } | Should ThrowErrorId "Contract";
+			{ Set-Role -Id $result.Id -PermissionsToAdd $permissionsToAdd -PermissionsToRemove $nonLinkedPermissions -svc $svc; } | Should ThrowErrorId "Contract";
 		}
 	}
 }
