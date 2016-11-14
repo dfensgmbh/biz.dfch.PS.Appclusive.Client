@@ -46,7 +46,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			$tenantId = [Guid]::NewGuid()
 			
 			# Act
-			{ $result = Set-SessionTenant $tenantId -svc $svc; } | Should ThrowErrorId Contract;
+			{ $result = Set-SessionTenant $tenantId -svc $svc; } | Should Throw;
 			
 			# Assert
 			# N/A
@@ -62,7 +62,7 @@ Describe "Set-SessionTenant.Tests" -Tags "Set-SessionTenant.Tests" {
 			
 			# Assert
 			$result | Should Not Be $null;
-			$result.Id | Should Be $tenantId;
+			$result.ExternalId | Should Be $tenantId;
 		}
 		
 		It "SetSessionTenantClear-Succeeds" -Test {
