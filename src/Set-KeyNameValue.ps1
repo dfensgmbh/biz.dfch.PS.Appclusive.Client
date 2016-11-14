@@ -164,24 +164,43 @@ Process
 # Return values are always and only returned via OutputParameter.
 $OutputParameter = $null;
 $AddedEntity = $null;
+$MaxPropertyLength = 475;
 
 try 
 {
 	$Exp = @();
 	$KeyNameValueContents = @();
-	if($Key) 
+	if($Key.Length -lt $MaxPropertyLength) 
 	{ 
 		$Exp += ("(tolower(Key) eq '{0}')" -f $Key.ToLower());
 		$KeyNameValueContents += $Key;
 	}
-	if($Name) 
+	else
+	{
+		$shortenedKey = $Key.substring(0,$MaxPropertyLength);
+		$Exp += ("(startswith(tolower(Key), '{0}'))" -f $shortenedKey.ToLower());
+		$KeyNameValueContents += $Key;
+	}
+	if($Name.Length -lt $MaxPropertyLength) 
 	{ 
 		$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
 		$KeyNameValueContents += $Name;
 	}
-	if($Value) 
+	else
+	{
+		$shortenedName = $Name.substring(0,$MaxPropertyLength);
+		$Exp += ("(startswith(tolower(Name), '{0}'))" -f $shortenedName.ToLower());
+		$KeyNameValueContents += $Name;
+	}
+	if($Value.Length -lt $MaxPropertyLength) 
 	{ 
 		$Exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
+		$KeyNameValueContents += $Value;
+	}
+	else
+	{
+		$shortenedValue = $Value.substring(0,$MaxPropertyLength);
+		$Exp += ("(startswith(tolower(Value), '{0}'))" -f $shortenedValue.ToLower());
 		$KeyNameValueContents += $Value;
 	}
 	$FilterExpression = [String]::Join(' and ', $Exp);
