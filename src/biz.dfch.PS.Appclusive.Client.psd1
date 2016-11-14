@@ -26,7 +26,7 @@ Copyright = '(c) 2014-2016 d-fens GmbH. Distributed under Apache 2.0 license.'
 Description = 'PowerShell module for the Appclusive Framework and Middleware'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '3.0'
+PowerShellVersion = '5.0'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''
