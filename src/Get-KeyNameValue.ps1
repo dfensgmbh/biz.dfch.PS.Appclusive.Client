@@ -368,21 +368,41 @@ try
 	} 
 	else 
 	{
+		$MaxPropertyLength = 475;
+	
 		$Exp = @();
-		if($Key) 
+		if($Key.Length -lt $MaxPropertyLength) 
 		{ 
-			$Key = $Key.ToLower();
-			$Exp += ("(tolower(Key) eq '{0}')" -f $Key);
+			$Exp += ("(tolower(Key) eq '{0}')" -f $Key.ToLower());
+			$KeyNameValueContents += $Key;
 		}
-		if($Name) 
-		{ 
-			$Name = $Name.ToLower();
-			$Exp += ("(tolower(Name) eq '{0}')" -f $Name);
+		else
+		{
+			$shortenedKey = $Key.substring(0,$MaxPropertyLength);
+			$Exp += ("(startswith(tolower(Key), '{0}'))" -f $shortenedKey.ToLower());
+			$KeyNameValueContents += $Key;
 		}
-		if($Value) 
+		if($Name.Length -lt $MaxPropertyLength) 
 		{ 
-			$Value = $Value.ToLower();
-			$Exp += ("(tolower(Value) eq '{0}')" -f $Value);
+			$Exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
+			$KeyNameValueContents += $Name;
+		}
+		else
+		{
+			$shortenedName = $Name.substring(0,$MaxPropertyLength);
+			$Exp += ("(startswith(tolower(Name), '{0}'))" -f $shortenedName.ToLower());
+			$KeyNameValueContents += $Name;
+		}
+		if($Value.Length -lt $MaxPropertyLength) 
+		{ 
+			$Exp += ("(tolower(Value) eq '{0}')" -f $Value.ToLower());
+			$KeyNameValueContents += $Value;
+		}
+		else
+		{
+			$shortenedValue = $Value.substring(0,$MaxPropertyLength);
+			$Exp += ("(startswith(tolower(Value), '{0}'))" -f $shortenedValue.ToLower());
+			$KeyNameValueContents += $Value;
 		}
 		$FilterExpression = [String]::Join(' and ', $Exp);
 
