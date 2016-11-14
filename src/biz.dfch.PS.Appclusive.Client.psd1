@@ -233,8 +233,6 @@ FileList = @(
 	,
 	'README.md'
 	,
-	'biz.dfch.PS.Appclusive.Client.dll'
-	,
 	'biz.dfch.PS.Appclusive.Client.xml'
 	,
 	'Microsoft.Data.Edm.dll'
