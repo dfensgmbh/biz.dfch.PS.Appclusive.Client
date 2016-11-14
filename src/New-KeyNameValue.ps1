@@ -157,15 +157,7 @@ try
 		}
 		$OutputParameter = $r;
 	}
-	# $r = $knv;
-	# switch($As) 
-	# {
-		# 'xml' { $OutputParameter = (ConvertTo-Xml -InputObject $r).OuterXml; }
-		# 'xml-pretty' { $OutputParameter = Format-Xml -String (ConvertTo-Xml -InputObject $r).OuterXml; }
-		# 'json' { $OutputParameter = ConvertTo-Json -InputObject $r -Compress; }
-		# 'json-pretty' { $OutputParameter = ConvertTo-Json -InputObject $r; }
-		# Default { $OutputParameter = $r; }
-	# }
+
 	$fReturn = $true;
 
 }
