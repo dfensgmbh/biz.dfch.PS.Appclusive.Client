@@ -122,8 +122,8 @@ Set-Role Cmdlet
     <file src="..\packages\Microsoft.Data.Services.Client.5.6.4\lib\net40\Microsoft.Data.Services.Client.dll" target="tools\Microsoft.Data.Services.Client.dll" />
     <file src="..\packages\System.Spatial.5.6.4\lib\net40\System.Spatial.dll" target="tools\System.Spatial.dll" />
     <file src="..\packages\biz.dfch.CS.Appclusive.Api.4.11.0\lib\biz.dfch.CS.Appclusive.Api.dll" target="tools\biz.dfch.CS.Appclusive.Api.dll" />
-	<file src="..\packages\biz.dfch.CS.Appclusive.Public.3.23.0\lib\biz.dfch.CS.Appclusive.Public.dll" target="tools\biz.dfch.CS.Appclusive.Public.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.23.0\lib\Newtonsoft.Json.dll" target="tools\Newtonsoft.Json.dll" />
-    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.23.0\lib\System.Net.Http.Formatting.dll" target="tools\System.Net.Http.Formatting.dll" />
+	<file src="..\packages\biz.dfch.CS.Appclusive.Public.3.24.0\lib\biz.dfch.CS.Appclusive.Public.dll" target="tools\biz.dfch.CS.Appclusive.Public.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.24.0\lib\Newtonsoft.Json.dll" target="tools\Newtonsoft.Json.dll" />
+    <file src="..\packages\biz.dfch.CS.Appclusive.Public.3.24.0\lib\System.Net.Http.Formatting.dll" target="tools\System.Net.Http.Formatting.dll" />
   </files>
 </package>
