@@ -81,30 +81,6 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue -Confirm:$false;
 		}
 		
-		It "Set-KeyNameValueWithEmptyNewValue-ShouldReturnUpdatedEntity" -Test {
-			# Arrange
-			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
-			$NewName = "NewName-{0}" -f [guid]::NewGuid().ToString();
-			$NewValue = "";
-			$Description = "Description-{0}" -f [guid]::NewGuid().ToString();
-			
-			$resultCreated = New-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Description $Description;
-			$resultCreated | Should Not Be $null;
-			
-			# Act
-			$result = Set-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -NewValue $NewValue -CreateIfNotExist:$false;
-
-			# Assert
-			$result | Should Not Be $null;
-			$result.Id | Should Not Be 0;
-			$result.Key | Should Be $Key;
-			$result.Name | Should Be $Name;
-			$result.Value | Should Be $NewValue;
-			$result.Description | Should Be $Description;
-
-			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue -Confirm:$false;
-		}
-
 		It "Set-KeyNameValueWithNewName-ShouldReturnUpdatedEntity" -Test {
 			# Arrange
 			$NewKey = "NewKey-{0}" -f [guid]::NewGuid().ToString();
@@ -213,6 +189,26 @@ Describe "Set-KeyNameValue" -Tags "Set-KeyNameValue" {
 			$result = Set-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $NewValue -NewValue $Value;
 
 			# Assert
+			$result.Value | Should Be $Value;
+			
+			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
+		}
+		
+		It "Set-KeyNameValueWithKeyAndNameAndValueLengthGreaterThan500" -Test {
+			# Arrange
+			# 510 Characters
+			$Key = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. S";
+			
+			$Name = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. S";
+			
+			$Value = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. S";
+			
+			# Act
+			$result = Set-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -CreateIfNotExist;
+
+			# Assert
+			$result.Key | Should Be $Key;
+			$result.Name | Should Be $Name;
 			$result.Value | Should Be $Value;
 			
 			Remove-KeyNameValue -svc $svc -Key $Key -Name $Name -Value $Value -Confirm:$false;
