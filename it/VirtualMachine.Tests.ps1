@@ -19,6 +19,7 @@ function Stop-Pester()
 Describe "VM.Tests" -Tags "VM.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
+	. "$here\$sut"
 	. "$here\CatalogueAndCatalogueItems.ps1"
 	. "$here\Product.ps1"
 	. "$here\Cart.ps1"
@@ -31,64 +32,8 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 	$tenantId = $tenant.Id.toString();
 	
 	$vmName = $entityPrefix + "VM";
-	$OS = @("SPMI-2015.6","SPMI-2015.3","SPMI-2015.4","SPMI-2015.5",""); #2012R2, 2008R2, Rhel6.8, Rhel7.2 and noOS
-	
-	function Get-Parameters{
-		Param
-		(
-			$Name = $entityPrefix + "VM"
-			,
-			$OpSystem = "SPMI-2015.6"
-		)
-		
-		$parameters = '{
-			"biz":{
-				"dfch":{
-					"Appclusive":{
-						"Products":{
-							"Infrastructure":{
-								"VirtualMachine":{
-									"Name":"' + $Name + '",
-									"Description":"",
-									"OperatingSystem":"' + $OpSystem + '",
-									"Hostname":"' + $Name + '",
-									"BackupProfile":{"Name":"no_backup"},
-									"StorageProfile":{"Name":"economy_singlesided"},
-									"Storage":{"DiskCollection":{"Disk00":{"Name":"System","Description":"Boot Disk","SizeGB":60,
-									"StorageProfile":"economy_singlesided"}}},
-									"Network":{
-										"NicCollection":{
-											"Nic00":{
-												"NetworkId":"https://cloud-api.media.int/v1/cimi/2/networks/5b98b6df-8a8e-48b4-a33a-b09d4a0c0475","Address":"0.0.0.0"
-											}
-										}
-									},
-									"Cpu":{"Count":4,
-									"Speed":1.6,
-									"Reservation":0},
-									"Memory":{
-										"Size":4096,
-										"Reservation":0
-									}
-								},
-								"VirtualMachineExtensions":{
-									"Cimi":{
-										"TemplateId":"SPMT-2015.1",
-										"OperatingSystemPassword":"Test1234",
-										"Availability":"high",
-										"HostGroup":"none",
-										"HostingCell":"cell_a"
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}';
-		
-		return $parameters
-	}
+	$OS = @("SPMI-2015.6","SPMI-2015.3","SPMI-2015.4","SPMI-2015.5"); #2012R2, 2008R2, Rhel6.8, Rhel7.2
+	$templateId = @("SPMT-2015.1", "SPMT-2015.3") #with customization, noOS
 
 	Context "#CLOUDTCL--VMTests" {
 	
@@ -114,12 +59,12 @@ Describe "VM.Tests" -Tags "VM.Tests" {
                 }
             }
         }
-		
+		<#
 		It "CreateVM-differentOSs" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
 			$cartItemName = $entityPrefix + "cartItem-{0}" -f [guid]::NewGuid().ToString();
-			$catalogueItemId = (Get-ApcCatalogueItem -Name Virtualmachine).Id;
+			$catalogueItemId = (Get-ApcCatalogueItem -Name "Virtualmachine").Id | Select -First 1;
 			
 			for ($i = 0; $i -lt $OS.Length; $i++){
 				$parameters = Get-Parameters -Name ($vmName + $i) -OpSystem $OS[$i];
@@ -149,19 +94,15 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 			#ASSERT
 			
 		}
-		<#
-		It "CreateVM-inFolder" -Test {
+		#>
+		It "CreateVM-withoutOS" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
 			$cartItemName = $entityPrefix + "cartItem-{0}" -f [guid]::NewGuid().ToString();
-			$catalogueItemId = (Get-ApcCatalogueItem -Name Virtualmachine).Id;
-			
-			#ACT create folder
-			$name = $entityPrefix + "Folder-{0}" -f [guid]::NewGuid().ToString();
-			$parentId = (Get-ApcTenant -Current).NodeId;
-			$folder = New-ApcFolder -name $name -ParentId $parentId -svc $svc;
+			$catalogueItemId = (Get-ApcCatalogueItem -Name "Virtualmachine").Id | Select -First 1;
 			
 			#ACT create new cart item
+			$parameters = Get-Parameters -Name ($vmName + "noOS") -OpSystem "" -TemplateId $templateId[1];
 			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $parameters;
 			$cartItemId = $cartItem.Id;
 			$cartId = $cartItem.CartId;
@@ -175,10 +116,10 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 				Name = $orderName;
 				Description = "Arbitrary Description";
 				Requester = (Get-ApcUser -Current).Id;
-				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + ($folder.Id).toString() + '"}';
+				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}';
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
-		}#>
+		}
 	}
 }
