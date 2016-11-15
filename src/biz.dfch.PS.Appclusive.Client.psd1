@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.0.0.20161114'
+ModuleVersion = '5.0.1.20161115'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -272,26 +272,12 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20161114
+        ReleaseNotes = '20161115
 # BUGFIXES
-KeyNameValue Cmdlets
-* Handle maximum URL length by cutting Key/Name/Value, if longer than 475 characters and by creating filter expression using startswith
-
-Module Manifest
-* biz.dfch.PS.Appclusive.Client.dll entry removed from FileList
 
 Set-SessionTenant Cmdlet
-* Tenant lookup after setting TenantId and TenantHeaderName
-* Tenant lookup based on ExternalId
 
-# FEATURES
-* PowerShellVersion set to 5.0
-* Upgrade Appclusive Public to version 3.24.0
-
-Set-Role
-* RemovePermissions switch removed
-* Permissions parameter renamed to PermissionsToAdd
-* String array parameter for PermissionsToRemove added'
+* Changed type of Id parameter from GUID to string to support type of ExternalId'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
