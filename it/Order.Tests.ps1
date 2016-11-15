@@ -50,7 +50,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
                 }
             }
         }
-		<#
+		
 		It "PlaceOrderWithoutCart-ShouldFail" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order";
@@ -291,7 +291,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$orderJobRefreshed = Get-ApcJob -id $orderJob.Id
 			$orderJobRefreshed.Status | Should Be "Cancelled";
 		}
-		#>
+		
 		It "Order-OverwriteParameters" -Test {
 			#ARRANGE
 			$catalogueName = $entityPrefix + "Catalogue";
@@ -315,7 +315,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			#ACT create catalogue item
 			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId -Parameters $catalogueItemParameters;
 			$catalogueItemId = $newCatalogueItem.Id;
-			Write-Host ($newCatalogueItem | out-string);
+			
 			#ACT create new cart item
 			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $cartItemParameters;
 			$cartItemId = $cartItem.Id;
@@ -329,7 +329,7 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
 			$cartItems.Count | Should Be 1;
 			$cartItems[0].Id | Should Be $cartItemId;
-			
+						
 			#ACT create order
 			$orderParameters = @{
 				Name = $orderName;
@@ -352,18 +352,19 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$orderItems.Count | Should Be $cartItems.Count;
 			$orderItems.Name -contains $catalogueItemName1;
 			$orderItems.Name -contains $catalogueItemName2;
-			Write-Host ($orderItems | out-string);
-			Write-Host ($orderItems.Parameters | out-string);
 			
-			Start-Sleep -s 5;
+			$cartItem = $orderItems.Parameters | ConvertFrom-Json;
+			$reshapedParameteres =  $cartItem.Parameters | ConvertFrom-Json;
 			
-			#ASSERT get the cart and check that it is deleted
-			$query = "Id eq {0}" -f $cartId;
-			$cart = $svc.Core.Carts.AddQueryOption('$filter', $query) | Select;
-			$cart | Should Be $null;
+			#ASSERT parameters
+			$reshapedParameteres.A | Should be "NEW";
+			$reshapedParameteres.B | Should be "OLD";
+			$reshapedParameteres.C | Should be "OLD";
+			$reshapedParameteres.D | Should be "NEW";
 		}
 	}
 }
+
 
 #
 # Copyright 2015 d-fens GmbH
