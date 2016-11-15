@@ -84,7 +84,7 @@ function Create-CatalogueItem {
 		,
 		$ProductId
 		,
-		$Parameters = '{}'
+		$Parameters
 		,
 		$ValidFrom = [DateTimeOffset]::Now
 		,
@@ -99,7 +99,9 @@ function Create-CatalogueItem {
 	$newCatalogueItem.Description = $description;
 	$newCatalogueItem.CatalogueId = $catalogueId;
 	$newCatalogueItem.ProductId = $productId;
-	$newCatalogueItem.Parameters = $parameters;
+	if($Parameters){
+		$newCatalogueItem.Parameters = $parameters;
+	}
 	$newCatalogueItem.ValidFrom = $validFrom;
 	$newCatalogueItem.ValidUntil = $validUntil;
 	$newCatalogueItem.EndOfLife = $endOfLife;
@@ -120,7 +122,9 @@ function Create-CatalogueItem {
 	$bin = $catalogueItem.Description | Should Be $description;
 	$bin = $catalogueItem.CatalogueId | Should Be $catalogueId;
 	$bin = $catalogueItem.ProductId | Should Be $productId;
-	$bin = $catalogueItem.Parameters | Should Be $parameters;
+	if($Parameters){
+		$bin = $catalogueItem.Parameters | Should Be $parameters;
+	}
 	$bin = $catalogueItem.ValidFrom | Should Be $validFrom;
 	$bin = $catalogueItem.ValidUntil | Should Be $validUntil;
 	$bin = $catalogueItem.EndOfLife | Should Be $endOfLife;

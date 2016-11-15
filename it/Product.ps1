@@ -18,6 +18,8 @@ function Create-Product {
 		$ValidUntil =[DateTimeOffset]::Now.AddDays(365)
 		,
 		$EndOfLife = [DateTimeOffset]::Now.AddDays(365)
+		,
+		$Parameters
 	)
 	
 	#add parameters
@@ -30,6 +32,9 @@ function Create-Product {
 	$newProduct.ValidFrom = $ValidFrom;
 	$newProduct.ValidUntil = $ValidUntil;
 	$newProduct.EndOfLife = $EndOfLife;
+	if ($Parameters){
+		$newProduct.Parameters = $Parameters
+	}
 	
 	#ACT create product
 	$svc.Core.AddToProducts($newProduct);
@@ -51,6 +56,9 @@ function Create-Product {
 	$bin = $product.ValidFrom |Should Be $ValidFrom;
 	$bin = $product.ValidUntil |Should Be $ValidUntil;
 	$bin = $product.EndOfLife |Should Be $EndOfLife;
+	if ($Parameters){
+		$bin = $product.Parameters | Should Be $Parameters;
+	}
 
 	return $product;
 }
