@@ -70,7 +70,8 @@ PARAM
 	[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'id')]
 	[Alias("Tid")]
 	[Alias("TenantId")]
-	[guid] $Id
+	[ValidateNotNullOrEmpty()]
+	[string] $Id
 	,
 	[ValidateSet('Biz-Dfch-Tenant-Id', 'Tenant-Id')]
 	[Parameter(Mandatory = $false, ParameterSetName = 'id')]
