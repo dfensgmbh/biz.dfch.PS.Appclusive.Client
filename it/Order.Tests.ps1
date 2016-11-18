@@ -291,8 +291,80 @@ Describe "Order.Tests" -Tags "Order.Tests" {
 			$orderJobRefreshed = Get-ApcJob -id $orderJob.Id
 			$orderJobRefreshed.Status | Should Be "Cancelled";
 		}
+		
+		It "Order-OverwriteParameters" -Test {
+			#ARRANGE
+			$catalogueName = $entityPrefix + "Catalogue";
+			$productName = $entityPrefix + "Product";
+			$catalogueItemName = $entityPrefix + "CatalogueItem";
+			$cartItemName = $entityPrefix + "CartItem";
+			$orderName = $entityPrefix + "Order";
+			
+			$productParameters = '{"A":"OLD", "B":"OLD"}';
+			$catalogueItemParameters = '{"A":"NEW", "C":"OLD"}';
+			$cartItemParameters = '{"D":"NEW"}';
+			
+			#ACT create catalogue
+			$newCatalogue = Create-Catalogue -svc $svc -name $catalogueName;
+			$catalogueId = $newCatalogue.Id;
+			
+			#ACT create product
+			$newProduct = Create-Product -svc $svc -name $productName -Parameters $productParameters;
+			$productId = $newProduct.Id;
+			
+			#ACT create catalogue item
+			$newCatalogueItem = Create-CatalogueItem -svc $svc -name $catalogueItemName -catalogueId $catalogueId -productId $productId -Parameters $catalogueItemParameters;
+			$catalogueItemId = $newCatalogueItem.Id;
+			
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $cartItemParameters;
+			$cartItemId = $cartItem.Id;
+			$cartId = $cartItem.CartId;
+			
+			#get cart
+			$query = "Id eq {0}" -f $cartId;
+			$cart = $svc.Core.Carts.AddQueryOption('$filter', $query) | Select;
+			
+			#ASSERT cart
+			$cartItems = $svc.Core.LoadProperty($cart, 'CartItems') | Select;
+			$cartItems.Count | Should Be 1;
+			$cartItems[0].Id | Should Be $cartItemId;
+						
+			#ACT create order
+			$orderParameters = @{
+				Name = $orderName;
+				Description = "Arbitrary Description";
+				Requester = (Get-ApcUser -Current).Id;
+				Parameters = '{}';
+			}
+			
+			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
+			
+			#get order
+			$query = "Name eq '{0}'" -f $orderName;
+			$order = $svc.Core.Orders.AddQueryOption('$filter', $query) | Select;
+			
+			#get order Items
+			$query = "OrderId eq {0}" -f $order.Id;
+			$orderItems = $svc.Core.OrderItems.AddQueryOption('$filter', $query) | Select;
+			
+			#ASSERT order Items - they should be as many as the Cart Items in the Cart
+			$orderItems.Count | Should Be $cartItems.Count;
+			$orderItems.Name -contains $catalogueItemName1;
+			$orderItems.Name -contains $catalogueItemName2;
+			
+			$cartItem = $orderItems.Parameters | ConvertFrom-Json;
+			$reshapedParameteres =  $cartItem.Parameters | ConvertFrom-Json;
+			
+			#ASSERT parameters
+			$reshapedParameteres.A | Should be "NEW";
+			$reshapedParameteres.B | Should be "OLD";
+			$reshapedParameteres.C | Should be "OLD";
+			$reshapedParameteres.D | Should be "NEW";
+		}
 	}
 }
+
 
 #
 # Copyright 2015 d-fens GmbH
