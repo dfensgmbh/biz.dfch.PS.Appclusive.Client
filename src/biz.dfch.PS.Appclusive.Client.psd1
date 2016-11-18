@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.0.1.20161115'
+ModuleVersion = '5.0.2.20161118'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -272,12 +272,11 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20161115
+        ReleaseNotes = '20161118
 # BUGFIXES
 
-Set-SessionTenant Cmdlet
-
-* Changed type of Id parameter from GUID to string to support type of ExternalId'
+New-Role
+* FilterExpression extended with current tenant Id'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
