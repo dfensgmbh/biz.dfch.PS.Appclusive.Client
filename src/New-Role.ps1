@@ -156,17 +156,21 @@ Process
 	[Boolean] $fReturn = $false;
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
+	
+	$currentTenant = Get-Tenant -svc $svc -Current;
 
 	$exp = @();
 	$roleContents = @();
 	
 	$exp += ("(tolower(Name) eq '{0}')" -f $Name.ToLower());
 	$exp += ("(RoleType eq '{0}')" -f $RoleType);
+	$exp += ("(Tid eq guid'{0}')" -f $currentTenant.Id);
 	$filterExpression = [String]::Join(' and ', $exp);
 	
 	$roleContents += $Name;
 	$roleContents += $RoleType;
-
+	$roleContents += $currentTenant.Id;
+	
 	$role = $svc.Core.Roles.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top', 1) | Select;
 	Contract-Assert (!$role) 'Entity does already exist';
 	
