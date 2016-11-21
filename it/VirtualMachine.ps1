@@ -8,7 +8,11 @@ function Get-Parameters{
 		,
 		$Hostname = $Name
 		,
+		$CpuReservation = "0"
+		,
 		$MemorySize = "4096"
+		,
+		$MemoryReservation = "0"
 		,
 		$TemplateId = "SPMT-2015.1"
 	)
@@ -35,12 +39,14 @@ function Get-Parameters{
 										}
 									}
 								},
-								"Cpu":{"Count":4,
-								"Speed":1.6,
-								"Reservation":0},
+								"Cpu":{
+									"Count":4,
+									"Speed":1.6,
+									"Reservation":' + $CpuReservation + '
+								},
 								"Memory":{
 									"Size":' + $MemorySize + ',
-									"Reservation":0
+									"Reservation":' + $MemoryReservation + '
 								}
 							},
 							"VirtualMachineExtensions":{

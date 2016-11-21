@@ -25,7 +25,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 	. "$here\Cart.ps1"
 	. "$here\Order.ps1"
 	
-	$entityPrefix = "TestItem-";
+	$entityPrefix = "TestItem";
 	$usedEntitySets = @("CartItems", "CatalogueItems", "Products", "Catalogues", "Carts" );
 	#gets the id of tenant Managed Customer Tenant
 	$tenant = Get-ApcTenant -Name "Managed Customer Tenant" -svc $svc;
@@ -33,7 +33,9 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 	
 	$vmName = $entityPrefix + "VM";
 	$OS = @("SPMI-2015.6","SPMI-2015.3","SPMI-2015.4","SPMI-2015.5"); #2012R2, 2008R2, Rhel6.8, Rhel7.2
-	$templateId = @("SPMT-2015.1", "SPMT-2015.3") #with customization, noOS
+	$templateId = @("SPMT-2015.1", "SPMT-2015.3"); #with customization, noOS
+	$memory = @("512", "393216"); #lowest, highest available memory size
+	$folderId = "4927";
 
 	Context "#CLOUDTCL--VMTests" {
 	
@@ -59,7 +61,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
                 }
             }
         }
-		<#
+		
 		It "CreateVM-differentOSs" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
@@ -83,7 +85,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 					Name = $orderName;
 					Description = "Arbitrary Description";
 					Requester = (Get-ApcUser -Current).Id;
-					Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}';
+					Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + $folderId +'"}';
 				}
 				
 				$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters ); 
@@ -94,7 +96,7 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 			#ASSERT
 			
 		}
-		#>
+		
 		It "CreateVM-withoutOS" -Test {
 			#ARRANGE
 			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
@@ -116,10 +118,40 @@ Describe "VM.Tests" -Tags "VM.Tests" {
 				Name = $orderName;
 				Description = "Arbitrary Description";
 				Requester = (Get-ApcUser -Current).Id;
-				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"4927"}';
+				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + $folderId +'"}';
 			}
 			
 			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters );
+		}
+		
+		It "CreateVM-minMemorySizes" -Test {
+			#ARRANGE
+			$orderName = $entityPrefix + "Order-{0}" -f [guid]::NewGuid().ToString();
+			$cartItemName = $entityPrefix + "cartItem-{0}" -f [guid]::NewGuid().ToString();
+			$catalogueItemId = (Get-ApcCatalogueItem -Name "Virtualmachine").Id | Select -First 1;
+			$testName = "minMem";
+			
+			$parameters = Get-Parameters -Name ($vmName + $testName) -OpSystem $OS[0] -MemorySize $memory[0];
+			
+			#ACT create new cart item
+			$cartItem = Create-CartItem -svc $svc -Name $cartItemName -CatalogueItemId $catalogueItemId -Parameters $parameters;
+			$cartItemId = $cartItem.Id;
+			$cartId = $cartItem.CartId;
+			
+			#ASSERT check that the cart Id of the cart Item belongs to a created Cart
+			$carts = $svc.Core.Carts | Select;
+			$carts.Id -Contains $cartId | Should Be $true;
+			
+			#ACT create order
+			$orderParameters = @{
+				Name = $orderName;
+				Description = "Arbitrary Description";
+				Requester = (Get-ApcUser -Current).Id;
+				Parameters = '{"biz.dfch.CS.Appclusive.Core.OdataServices.Core.Node.Id":"' + $folderId +'"}';
+			}
+			
+			$createOrder = $svc.Core.InvokeEntitySetActionWithSingleResult("Orders", "Create",  [biz.dfch.CS.Appclusive.Api.Core.Order], $orderParameters ); 
+
 		}
 	}
 }
