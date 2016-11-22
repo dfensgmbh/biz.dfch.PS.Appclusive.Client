@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.0.2.20161118'
+ModuleVersion = '5.1.0.20161122'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -272,11 +272,10 @@ PrivateData = @{
         IconUri = 'https://raw.githubusercontent.com/dfensgmbh/biz.dfch.PS.Appclusive.Client/master/logo-32x32.png'
 		
         # ReleaseNotes of this module
-        ReleaseNotes = '20161118
-# BUGFIXES
+        ReleaseNotes = '20161122
+# FEATURES
 
-New-Role
-* FilterExpression extended with current tenant Id'
+* Upgrade biz.dfch.CS.Applusive.Public to 3.25.2'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
