@@ -23,6 +23,7 @@ d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
   1. `<version>`
   2. `<release notes>`
   3. version of `biz.dfch.CS.Appclusive.Api` (See at the bottom of the nuspec file)
+  3. version of `biz.dfch.CS.Appclusive.Public` (See at the bottom of the nuspec file)
 1. Update version of `biz.dfch.CS.Appclusive.Api` in `packages.config`
 1. Update `ModuleVersion` in `biz.dfch.PS.Appclusive.Client.psd1` 
 1. Push changes to origin
