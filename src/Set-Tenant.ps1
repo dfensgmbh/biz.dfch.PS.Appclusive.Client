@@ -142,9 +142,9 @@ See module manifest for dependencies and further requirements.
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $false
+	SupportsShouldProcess = $false
 	,
-    ConfirmImpact = 'Low'
+	ConfirmImpact = 'Low'
 	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/Appclusive/Client/Set-Tenant/'
 )]
@@ -186,8 +186,6 @@ Begin
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. svc '{0}'. Name '{1}'." -f ($svc -is [Object]), $Name) -fac 1;
 
-	$customerIdPropertyName = "Customer";
-	
 	# Parameter validation
 	Contract-Requires ($svc.Core -is [biz.dfch.CS.Appclusive.Api.Core.Core]) "Connect to the server before using the Cmdlet";
 }
@@ -200,7 +198,6 @@ Process
 	[Boolean] $fReturn = $false;
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
-	$AddedEntity = $null;
 	
 	# Get Tenant
 	$filterExpression = "Id eq guid'{0}'" -f $Id;
@@ -244,7 +241,7 @@ Process
 	
 	$null = $svc.Core.SaveChanges();
 
-	# WORKAROUND - detatch entity to reload with CustomerId
+	# WORKAROUND - detach entity to reload with CustomerId
 	$svc.core.Detach($entity);
 	$entity = $svc.Core.Tenants.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
 	
