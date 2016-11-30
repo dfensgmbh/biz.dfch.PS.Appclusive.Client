@@ -1,4 +1,3 @@
-
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -12,30 +11,11 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 	. "$here\Get-Tenant.ps1"
 	. "$here\Set-Tenant.ps1"
 	
+	$entityPrefix = "Set-Tenant";
+	$usedEntitySets = @("ContractMappings", "Customers");
 	
 	BeforeAll {
-		$svc = Enter-ApcServer;
-		$entityPrefix = "ContractMappingTest";
-	
-		$contractMappingName = "{0}-ContractMappingTest" -f $entityPrefix;
-		$externalType = "ExternalType";
-		$externalId = "ExternalId";
-		$validFrom = Get-Date;
-		$validUntil = Get-Date;
-		$validUntil = $validUntil.AddDays(90);
-		$Tid = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM;
-		
-		# Create new ContractMapping
-		$entity = New-Object biz.dfch.CS.Appclusive.Api.Core.ContractMapping;
-		$entity.Name = $contractMappingName;
-		$entity.ExternalType = $externalType;
-		$entity.ExternalId = $externalId;
-		$entity.IsPrimary = $true;
-		$entity.ValidFrom = $validFrom;
-		$entity.ValidUntil = $validUntil;
-		$entity.CustomerId = 1
-		$svc.Core.AddToContractMappings($entity);
-		$svc.Core.SaveChanges();
+		# N/A
 	}
 	
     BeforeEach {
@@ -44,17 +24,46 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
         Import-Module $moduleName;
 
         $svc = Enter-ApcServer;
+		
+		$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM;
+		
+		$contractMappingName = "{0}-ContractMapping-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+		$externalType = "ExternalType";
+		$externalId = [guid]::NewGuid().ToString();
+		$validFrom = [System.DateTimeOffset]::MinValue;
+		$validUntil = [System.DateTimeOffset]::MaxValue;
+		
+		# Create Customer
+		$testCustomer = New-Object biz.dfch.CS.Appclusive.Api.Core.Customer;
+		$testCustomer.Name = $contractMappingName;
+		$svc.Core.AddToCustomers($testCustomer);
+		$null = $svc.Core.SaveChanges();
+		
+		# Create ContractMapping
+		$contractMapping = New-Object biz.dfch.CS.Appclusive.Api.Core.ContractMapping;
+		$contractMapping.Name = $contractMappingName;
+		$contractMapping.ExternalType = $externalType;
+		$contractMapping.ExternalId = $externalId;
+		$contractMapping.IsPrimary = $true;
+		$contractMapping.ValidFrom = $validFrom;
+		$contractMapping.ValidUntil = $validUntil;
+		$contractMapping.CustomerId = $testCustomer.Id;
+		$svc.Core.AddToContractMappings($contractMapping);
+		$null = $svc.Core.SaveChanges();
     }
 	
 	AfterAll {
 		$svc = Enter-ApcServer;
 		$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
-		
-		$entities = $svc.Core.ContractMappings.AddQueryOption('$filter', $entityFilter) | Select;
- 
-		foreach ($entity in $entities)
+
+		foreach ($entitySet in $usedEntitySets)
 		{
-			Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName ContractMappings -Confirm:$false;
+			$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+	 
+			foreach ($entity in $entities)
+			{
+				Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+			}
 		}
 	}
 
@@ -80,50 +89,37 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 		
 		It "SetTenant-UpdateWithContractIdSucceeds" -Test {
 			# Arrange
-			$contractFilter = "Name eq '{0}'" -f $contractMappingName;
-			$contractMapping = $svc.Core.ContractMappings.AddQueryOption('$filter', $contractFilter) | Select;
 
-			$customerId = 1;
-			$customerFilter = "Id eq {0}" -f $customerId;
-			$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerFilter) | Select;
-			
 			# Act
-			$result = Set-Tenant -Id $Tid -ContractMappingExternalId $contractMapping[0].ExternalId -svc $svc;
+			$result = Set-Tenant -Id $systemTenantId -ContractMappingExternalId $contractMapping.ExternalId -svc $svc;
 			
 			# Assert
 			$result | Should Not Be $null;
-			$result.Id | Should Be $Tid;
-			$result.CustomerId | Should Be $customer.Id;
+			$result.Id | Should Be $systemTenantId;
+			$result.CustomerId | Should Be $testCustomer.Id;
 		}
 		
 		It "SetTenant-UpdateWithCustomerIdSucceeds" -Test {
 			# Arrange
-			$customerId = 1;
-			$customerFilter = "Id eq {0}" -f $customerId;
-			$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerFilter) | Select;
 			
 			# Act
-			$result = Set-Tenant -Id $Tid -CustomerId $customer.Id -svc $svc;
+			$result = Set-Tenant -Id $systemTenantId -CustomerId $testCustomer.Id -svc $svc;
 			
 			# Assert
 			$result | Should Not Be $null;
-			$result.CustomerId | Should Be $customer.Id;
+			$result.CustomerId | Should Be $testCustomer.Id;
 		}
 		
 		It "SetTenant-UpdateWithCustomerIdSucceeds" -Test {
 			# Arrange
-			$customerId = 1;
-			$customerFilter = "Id eq {0}" -f $customerId;
-			$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerFilter) | Select;
 			
 			# Act
-			$result = Set-Tenant -Id $Tid -CustomerName $customer.Name -svc $svc;
+			$result = Set-Tenant -Id $systemTenantId -CustomerName $testCustomer.Name -svc $svc;
 			
 			# Assert
 			$result | Should Not Be $null;
-			$result.CustomerId | Should Be $customer.Id;
-		}
-#>		
+			$result.CustomerId | Should Be $testCustomer.Id;
+		}		
 	}
 }
 
