@@ -1,4 +1,4 @@
-# includes tests for CLOUDTCL-
+# includes tests for CLOUDTCL-2362
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
@@ -150,7 +150,7 @@ Describe "User.Tests" -Tags "User.Tests" {
 			$user2 | Should Be $null;
 		}
 		
-		It "User-CreateWithSameExternalTypeAndId-ShouldFail" -Test {
+		It "User-CreateWithSameExternalTypeAndId-ShouldSucceed" -Test {
 			# Arrange
 			$name1 = $entityPrefix + "User1-{0}" -f [guid]::NewGuid().ToString();
 			$mail1 = "test@example.com";
@@ -171,39 +171,9 @@ Describe "User.Tests" -Tags "User.Tests" {
 			
 			$user1 | Should Not Be $null;
 			$user1.Id | Should Not Be 0;
-			$user2 | Should Be $null;
+			$user2 | Should Not Be $null;
+			$user2.Id | Should Not Be 0;
 		}
-		
-		It "User-UpdateWithSameExternalTypeAndId-ShouldFail" -Test {
-			# Arrange
-			$name1 = $entityPrefix + "User1-{0}" -f [guid]::NewGuid().ToString();
-			$mail1 = "test@example.com";
-			$externalId1 = [guid]::NewGuid();
-			$externalType1 = "Internal";
-			$name2 = $entityPrefix + "User2-{0}" -f [guid]::NewGuid().ToString();
-			$mail2 = "test@example.com";
-			$externalId2 = [guid]::NewGuid();
-			$externalType2 = "API Broker";
-			
-			# Act - create user1
-			Push-ApcChangeTracker -Svc $svc;
-			$user1 = New-ApcUser -Svc $svc -Name $name1 -Mail $mail1 -ExternalId $externalId1 -ExternalType $externalType1;
-			Pop-ApcChangeTracker -Svc $svc;
-			
-			# Act - create user2
-			Push-ApcChangeTracker -Svc $svc;
-			$user2 = New-ApcUser -Svc $svc -Name $name2 -Mail $mail2 -ExternalId $externalId2 -ExternalType $externalType2;
-			Pop-ApcChangeTracker -Svc $svc;
-			
-			# Act - update user2
-			Push-ApcChangeTracker -Svc $svc;
-			$user2 = Set-ApcUser -Svc $svc -Name $name2 -ExternalId $externalId1 -ExternalType $externalType1;
-			Pop-ApcChangeTracker -Svc $svc;
-			
-			$user1 | Should Not Be $null;
-			$user1.Id | Should Not Be 0;
-			$user2 | Should Be $null;
-		}	
 	}
 }
 
