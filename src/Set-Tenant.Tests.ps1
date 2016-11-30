@@ -114,7 +114,7 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 			# Arrange
 			$customerId = 1;
 			$customerFilter = "Id eq {0}" -f $customerId;
-			$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerFilter);
+			$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerFilter) | Select;
 			
 			# Act
 			$result = Set-Tenant -Id $Tid -CustomerName $customer.Name -svc $svc;
