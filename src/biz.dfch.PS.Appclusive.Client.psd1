@@ -205,6 +205,8 @@ NestedModules = @(
 	'Set-Role.ps1'
 	,
 	'New-Role.ps1'
+	,
+	'Set-Tenant.ps1'
 )
 
 # Functions to export from this module
