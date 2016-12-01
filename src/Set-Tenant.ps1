@@ -164,6 +164,7 @@ Param
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'contractMappingId', Position = 1)]
 	[ValidateNotNullOrEmpty()]
+	[Alias('contractId')]
 	[string] $ContractMappingExternalId
 	,
 	# Service reference to Appclusive
@@ -201,50 +202,48 @@ Process
 	
 	# Get Tenant
 	$filterExpression = "Id eq guid'{0}'" -f $Id;
-	$entity = $svc.Core.Tenants.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
+	$entity = $svc.Core.Tenants.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top', 1) | Select;
 		
 	Contract-Assert ($entity) "Entity does not exist";
 	
 	if($PSCmdlet.ParameterSetName -eq 'contractMappingId') 
 	{
-		$contractMappingQueryFilter = "ExternalId eq '{0}'" -f $ContractMappingExternalId;
-		$contractMapping = $svc.Core.ContractMappings.AddQueryOption('$filter', $contractMappingQueryFilter) | Select;
+		$filterExpression = "ExternalId eq '{0}'" -f $ContractMappingExternalId;
+		$contractMapping = $svc.Core.ContractMappings.AddQueryOption('$filter', $filterExpression) | Select;
 
 		Contract-Assert($contractMapping);
 		Contract-Assert(1 -eq $contractMapping.Count) "More than one ContractMapping with specified ExternalId found";
 		
-		$customerQueryFilter = "Id eq {0}" -f $contractMapping.CustomerId;
-		$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerQueryFilter) | Select;
-		
+		$filterExpression = "Id eq {0}" -f $contractMapping.CustomerId;
+		$customer = $svc.Core.Customers.AddQueryOption('$filter', $filterExpression) | Select;
 		Contract-Assert($customer);
 		
 		$svc.Core.AddLink($customer, 'Tenants', $entity);
 	}
 	elseif($PSCmdlet.ParameterSetName -eq 'customerId')
 	{
-		$customerQueryFilter = "Id eq {0}" -f $CustomerId;
-		$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerQueryFilter) | Select;
+		$filterExpression = "Id eq {0}" -f $CustomerId;
+		$customer = $svc.Core.Customers.AddQueryOption('$filter', $filterExpression) | Select;
 		Contract-Assert($customer);
 		
 		$svc.Core.AddLink($customer, 'Tenants', $entity);
 	}
 	elseif($PSCmdlet.ParameterSetName -eq 'customerName')
 	{
-		$customerQueryFilter = "Name eq '{0}'" -f $CustomerName;
-		$customer = $svc.Core.Customers.AddQueryOption('$filter', $customerQueryFilter) | Select;
+		$filterExpression = "Name eq '{0}'" -f $CustomerName;
+		$customer = $svc.Core.Customers.AddQueryOption('$filter', $filterExpression) | Select;
 
 		Contract-Assert($customer);
-		Contract-Assert(1 -eq $customer.Count) "More than one ContractMapping with specified ExternalId found";
+		Contract-Assert(1 -eq $customer.Count) "More than one Customer with specified Name found";
 		
 		$svc.Core.AddLink($customer, 'Tenants', $entity);
 	}
 	
 	$null = $svc.Core.SaveChanges();
 
-	# WORKAROUND - detach entity to reload with CustomerId
+	# WORKAROUND - detach entity to force reload with CustomerId
 	$svc.core.Detach($entity);
-	$entity = $svc.Core.Tenants.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top',1) | Select;
-	
+	$entity = $svc.Core.Tenants.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top', 1) | Select;
 	
 	$r = $entity;
 	$OutputParameter = Format-ResultAs $r $As;
@@ -260,7 +259,7 @@ End
 	return $OutputParameter;
 }
 
-} # function
+}
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-Tenant; } 
 
