@@ -189,6 +189,7 @@ Process
 		$entity.CustomerId = $customer.Id;
 	}
 	
+	$svc.Core.UpdateObject($entity);
 	$null = $svc.Core.SaveChanges();
 
 	$r = $entity;

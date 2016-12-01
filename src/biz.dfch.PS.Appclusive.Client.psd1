@@ -8,7 +8,7 @@
 RootModule = 'biz.dfch.PS.Appclusive.Client.psm1'
 
 # Version number of this module.
-ModuleVersion = '5.2.0.20161201'
+ModuleVersion = '5.2.1.20161201'
 
 # ID used to uniquely identify this module
 GUID = '110e9ca0-df4a-404b-9a47-aa616cf7ee63'
@@ -277,10 +277,9 @@ PrivateData = @{
 		
         # ReleaseNotes of this module
         ReleaseNotes = '20161201
-# FEATURES
+# BUGFIXES
 
-* Set-Customer Cmdlet
-* Set-Tenant Cmdlet'
+* Set-Tenant fixed by adding $svc.Core.UpdateObject($entity) call'
     } 
 	
 	"MODULEVAR" = "biz_dfch_PS_Appclusive_Client"
