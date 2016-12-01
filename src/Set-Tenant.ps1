@@ -105,7 +105,7 @@ Param
 	[Guid] $Id
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'customerId', Position = 1)]
-	[ValidateRange(1,[long]::MaxValue)]
+	[ValidateRange(1, [long]::MaxValue)]
 	[long] $CustomerId
 	,
 	[Parameter(Mandatory = $true, ParameterSetName = 'customerName', Position = 1)]
