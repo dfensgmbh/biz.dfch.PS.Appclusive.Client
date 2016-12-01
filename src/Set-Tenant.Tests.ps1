@@ -14,45 +14,8 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 	$entityPrefix = "Set-Tenant";
 	$usedEntitySets = @("ContractMappings", "Customers");
 	
-	BeforeAll {
-		# N/A
-	}
-	
-    BeforeEach {
-        $moduleName = 'biz.dfch.PS.Appclusive.Client';
-        Remove-Module $moduleName -ErrorAction:SilentlyContinue;
-        Import-Module $moduleName;
-
-        $svc = Enter-ApcServer;
-		
-		$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM;
-		
-		$contractMappingName = "{0}-ContractMapping-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
-		$externalType = "ExternalType";
-		$externalId = [guid]::NewGuid().ToString();
-		$validFrom = [System.DateTimeOffset]::MinValue;
-		$validUntil = [System.DateTimeOffset]::MaxValue;
-		
-		# Create Customer
-		$testCustomer = New-Object biz.dfch.CS.Appclusive.Api.Core.Customer;
-		$testCustomer.Name = $contractMappingName;
-		$svc.Core.AddToCustomers($testCustomer);
-		$null = $svc.Core.SaveChanges();
-		
-		# Create ContractMapping
-		$contractMapping = New-Object biz.dfch.CS.Appclusive.Api.Core.ContractMapping;
-		$contractMapping.Name = $contractMappingName;
-		$contractMapping.ExternalType = $externalType;
-		$contractMapping.ExternalId = $externalId;
-		$contractMapping.IsPrimary = $true;
-		$contractMapping.ValidFrom = $validFrom;
-		$contractMapping.ValidUntil = $validUntil;
-		$contractMapping.CustomerId = $testCustomer.Id;
-		$svc.Core.AddToContractMappings($contractMapping);
-		$null = $svc.Core.SaveChanges();
-    }
-	
 	AfterAll {
+		# Cleanup
 		$svc = Enter-ApcServer;
 		$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
 
@@ -73,21 +36,96 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 		# N/A
 		
 		BeforeEach {
-			$error.Clear();
+			$moduleName = 'biz.dfch.PS.Appclusive.Client';
+			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
+			Import-Module $moduleName;
+
+			$svc = Enter-ApcServer;
+			
+			$systemTenantId = [biz.dfch.CS.Appclusive.Public.Constants]::TENANT_GUID_SYSTEM;
+			
+			$contractMappingName = "{0}-ContractMapping-{1}" -f $entityPrefix, [guid]::NewGuid().ToString();
+			$contractMappingExternalType = "ExternalType";
+			$contractMappingExternalId = [guid]::NewGuid().ToString();
+			$validFrom = [System.DateTimeOffset]::MinValue;
+			$validUntil = [System.DateTimeOffset]::MaxValue;
+			
+			# Create Customer
+			$testCustomer = New-Object biz.dfch.CS.Appclusive.Api.Core.Customer;
+			$testCustomer.Name = $contractMappingName;
+			$svc.Core.AddToCustomers($testCustomer);
+			$null = $svc.Core.SaveChanges();
+			
+			# Create ContractMapping
+			$contractMapping = New-Object biz.dfch.CS.Appclusive.Api.Core.ContractMapping;
+			$contractMapping.Name = $contractMappingName;
+			$contractMapping.ExternalType = $contractMappingExternalType;
+			$contractMapping.ExternalId = $contractMappingExternalId;
+			$contractMapping.IsPrimary = $true;
+			$contractMapping.ValidFrom = $validFrom;
+			$contractMapping.ValidUntil = $validUntil;
+			$contractMapping.CustomerId = $testCustomer.Id;
+			$svc.Core.AddToContractMappings($contractMapping);
+			$null = $svc.Core.SaveChanges();
 		}
 		
 		AfterEach {
-			if(0 -ne $error.Count)
-			{
-				Write-Warning ($error | Out-String);
-			}
+			# Revert connection between testCustomer and SYSTEM tenant
+			$systemTenant = Get-Tenant -Id $systemTenantId -svc $svc;
+			$systemTenant.CustomerId = $null;
+			$svc.Core.UpdateObject($systemTenant);
+			$null = $svc.Core.SaveChanges();
 		}
 		
 		It "Warmup" -Test {
 			$true | Should Be $true;
 		}
 		
-		It "SetTenant-UpdateWithContractIdSucceeds" -Test {
+		It "Set-TenantWithInvalidCustomerId-ShouldThrowArgumentException" -Test {
+			# Arrange
+			# N/A
+				
+			# Act
+			{ Set-Tenant -CustomerId 0 -svc $svc } | Should Throw 'argument';
+
+			# Assert
+			# N/A
+		}
+		
+		It "Set-TenantWithEmptyCustomerName-ShouldThrowArgumentException" -Test {
+			# Arrange
+			# N/A
+				
+			# Act
+			{ Set-Tenant -CustomerName "" -svc $svc } | Should Throw 'argument';
+
+			# Assert
+			# N/A
+		}
+		
+		It "Set-TenantWithEmptyContractMappingExternalId-ShouldThrowArgumentException" -Test {
+			# Arrange
+			# N/A
+				
+			# Act
+			{ Set-Tenant -ContractMappingExternalId "" -svc $svc } | Should Throw 'argument';
+
+			# Assert
+			# N/A
+		}
+		
+		It "Set-TenantWithIdOfNonExistingTenant-ShouldThrowContractException" -Test {
+			# Arrange
+			$nonExistingTenantId = [guid]::NewGuid();
+			
+			# Act
+			{ Set-Tenant -Id $nonExistingTenantId -CustomerId $testCustomer.Id -svc $svc } | Should ThrowErrorId 'Contract';
+			
+			# Assert
+			# N/A
+		}
+		
+		It "SetTenant-UpdateWithContractMappingExternalIdSucceeds" -Test {
 			# Arrange
 
 			# Act
@@ -110,7 +148,7 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 			$result.CustomerId | Should Be $testCustomer.Id;
 		}
 		
-		It "SetTenant-UpdateWithCustomerIdSucceeds" -Test {
+		It "SetTenant-UpdateWithCustomerNameSucceeds" -Test {
 			# Arrange
 			
 			# Act
