@@ -168,7 +168,7 @@ Process
 		$customer = $svc.Core.Customers.AddQueryOption('$filter', $filterExpression) | Select;
 		Contract-Assert($customer);
 		
-		$svc.Core.AddLink($customer, 'Tenants', $entity);
+		$entity.CustomerId = $customer.Id;
 	}
 	elseif($PSCmdlet.ParameterSetName -eq 'customerId')
 	{
@@ -176,7 +176,7 @@ Process
 		$customer = $svc.Core.Customers.AddQueryOption('$filter', $filterExpression) | Select;
 		Contract-Assert($customer);
 		
-		$svc.Core.AddLink($customer, 'Tenants', $entity);
+		$entity.CustomerId = $customer.Id;
 	}
 	elseif($PSCmdlet.ParameterSetName -eq 'customerName')
 	{
@@ -186,15 +186,11 @@ Process
 		Contract-Assert($customer);
 		Contract-Assert(1 -eq $customer.Count) "More than one Customer with specified Name found";
 		
-		$svc.Core.AddLink($customer, 'Tenants', $entity);
+		$entity.CustomerId = $customer.Id;
 	}
 	
 	$null = $svc.Core.SaveChanges();
 
-	# WORKAROUND - detach entity to force reload with CustomerId
-	$svc.core.Detach($entity);
-	$entity = $svc.Core.Tenants.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top', 1) | Select;
-	
 	$r = $entity;
 	$OutputParameter = Format-ResultAs $r $As;
 	$fReturn = $true;
