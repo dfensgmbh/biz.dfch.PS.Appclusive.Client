@@ -1,15 +1,14 @@
 function Set-Tenant {
 <#
 .SYNOPSIS
-Sets or creates a Tenant entry in Appclusive.
+Connects a Tenant entry with a Customer entry in Appclusive.
 
 
 .DESCRIPTION
-Sets or creates a Tenant entry in Appclusive.
+Connects a Tenant entry with a Customer entry in Appclusive.
 
-By updating an Tenant entry you can specify, if you want to update the 
-Description, MailAddress, Name, TenantType, PermissionsToAdd, PermissionsToRemove or any combination thereof. 
-For updating Name or TenantType you need to use the Argument '-NewName'/'-NewTenantType'
+By connecting a Tenant entry with a Customer you can specify the Customer 
+by Name, Id or by the ContractMapping ExternalId.
 
 
 .OUTPUTS
@@ -17,118 +16,69 @@ default
 
 
 .EXAMPLE
-Set-Tenant -Name "ArbitraryTenant" -TenantType External -svc $svc -CreateIfNotExist;
+Set-Tenant -Id 'deaddead-dead-dead-dead-deaddeaddead' -CustomerId 42 -svc $svc;
 
-TenantType     : External
-MailAddress  :
-Id           : 42
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : ArbitraryTenant
-Description  :
+Id           : deaddead-dead-dead-dead-deaddeaddead
+Name         : Arbitrary Tenant
+Description  : Arbitrary Tenant
+ExternalId   : deaddead-dead-dead-dead-deaddeaddead
+ExternalType : External
 CreatedById  : 1
 ModifiedById : 1
-Created      : 23.08.2016 11:08:14 +02:00
-Modified     : 23.08.2016 11:08:14 +02:00
-RowVersion   :
-Permissions  : {}
-Users        : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
+Created      : 01.12.2016 09:00:00 +00:00
+Modified     : 01.12.2016 13:57:53 +00:00
+RowVersion   : {0, 0, 0, 0...}
+ParentId     : 11111111-1111-1111-1111-111111111111
+CustomerId   : 42
+Parent       :
+Customer     :
+Children     : {}
 
-Create a new Tenant entry if it does not exist.
+Connect a Tenant entry with the specified Customer.
 
 
 .EXAMPLE
-Set-Tenant -Name "ArbitraryName" -Description "UpdatedDescription" -NewName "UpdatedName"
+Set-Tenant -Id 'deaddead-dead-dead-dead-deaddeaddead' -CustomerName 'Arbitrary Customer' -svc $svc;
 
-TenantType     : Distribution
-MailAddress  :
-Id           : 42
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : UpdatedName
-Description  : UpdatedDescription
+Id           : deaddead-dead-dead-dead-deaddeaddead
+Name         : Arbitrary Tenant
+Description  : Arbitrary Tenant
+ExternalId   : deaddead-dead-dead-dead-deaddeaddead
+ExternalType : External
 CreatedById  : 1
 ModifiedById : 1
-Created      : 23.08.2016 11:08:14 +02:00
-Modified     : 23.08.2016 11:08:14 +02:00
-RowVersion   :
-Permissions  : {}
-Users        : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
+Created      : 01.12.2016 09:00:00 +00:00
+Modified     : 01.12.2016 13:57:53 +00:00
+RowVersion   : {0, 0, 0, 0...}
+ParentId     : 11111111-1111-1111-1111-111111111111
+CustomerId   : 42
+Parent       :
+Customer     :
+Children     : {}
 
-Update an existing Tenant with new Name and new Description.
+Connect a Tenant entry with the specified Customer.
 
 
 .EXAMPLE
-Set-Tenant -Id 42 -TenantType Distribution -MailAddress "arbitrary@example.com" -NewName "UpdatedName"
+Set-Tenant -Id 'deaddead-dead-dead-dead-deaddeaddead' -ContractMappingExternalId 'Arbitrary Contract' -svc $svc;
 
-TenantType     : Distribution
-MailAddress  : arbitrary@example.com
-Id           : 42
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : UpdatedName
-Description  : 
+Id           : deaddead-dead-dead-dead-deaddeaddead
+Name         : Arbitrary Tenant
+Description  : Arbitrary Tenant
+ExternalId   : deaddead-dead-dead-dead-deaddeaddead
+ExternalType : External
 CreatedById  : 1
 ModifiedById : 1
-Created      : 23.08.2016 11:08:14 +02:00
-Modified     : 23.08.2016 11:08:14 +02:00
-RowVersion   :
-Permissions  : {}
-Users        : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
+Created      : 01.12.2016 09:00:00 +00:00
+Modified     : 01.12.2016 13:57:53 +00:00
+RowVersion   : {0, 0, 0, 0...}
+ParentId     : 11111111-1111-1111-1111-111111111111
+CustomerId   : 42
+Parent       :
+Customer     :
+Children     : {}
 
-Update an existing Tenant with new Name and MailAddress and TenantType.
-
-
-.EXAMPLE
-Set-Tenant -Id 42 -PermissionsToAdd @("Apc:NodesCanRead","Apc:NodesCanCreate") -CreateIfNotExist
-
-TenantType     : Distribution
-MailAddress  : 
-Id           : 42
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : ArbitraryName
-Description  : 
-CreatedById  : 1
-ModifiedById : 1
-Created      : 23.08.2016 11:08:14 +02:00
-Modified     : 23.08.2016 11:08:14 +02:00
-RowVersion   :
-Permissions  : {}
-Users        : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
-
-Create/Update Tenant by adding specified permissions
-
-
-.EXAMPLE
-Set-Tenant -Id 42 -PermissionsToRemove @("Apc:NodesCanRead","Apc:NodesCanCreate")
-
-TenantType     : Distribution
-MailAddress  : 
-Id           : 42
-Tid          : 11111111-1111-1111-1111-111111111111
-Name         : ArbitraryName
-Description  : 
-CreatedById  : 1
-ModifiedById : 1
-Created      : 23.08.2016 11:08:14 +02:00
-Modified     : 23.08.2016 11:08:14 +02:00
-RowVersion   :
-Permissions  : {}
-Users        : {}
-Tenant       :
-CreatedBy    :
-ModifiedBy   :
-
-Update an existing Tenant by removing the specified permissions
+Connect a Tenant entry with the Customer of the specified ContractMapping.
 
 
 .LINK
