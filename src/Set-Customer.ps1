@@ -23,8 +23,8 @@ Name             : ArbitraryName
 Description      : ArbitraryDescription
 CreatedById      : 1
 ModifiedById     : 1
-Created          : 30.11.2016 12:00:00 +02:00
-Modified         : 30.11.2016 12:00:00 +02:00
+Created          : 30.11.2016 12:00:00 +00:00
+Modified         : 30.11.2016 12:00:00 +00:00
 RowVersion       :
 ContractMappings : {}
 Tenants          : {}
@@ -44,8 +44,8 @@ Name             : AnotherName
 Description      : AnotherDescription
 CreatedById      : 1
 ModifiedById     : 1
-Created          : 30.11.2016 12:00:00 +02:00
-Modified         : 30.11.2016 12:01:00 +02:00
+Created          : 30.11.2016 12:00:00 +00:00
+Modified         : 30.11.2016 12:01:00 +00:00
 RowVersion       :
 ContractMappings : {}
 Tenants          : {}
@@ -127,7 +127,6 @@ Param
 	[string] $As = 'default'
 )
 
-# Begin
 Begin 
 {
 	trap { Log-Exception $_; break; }
@@ -162,7 +161,7 @@ Process
 		$filterExpression = "(tolower(Name) eq '{0}' and Tid eq guid'{1}')" -f $Name.ToLower(), $currentTenant.Id;
 		$entity = $svc.Core.Customers.AddQueryOption('$filter', $filterExpression).AddQueryOption('$top', 1) | Select;
 		
-		Contract-Assert ($CreateIfNotExist -or $entity) "Entity does not exist. Use '-CreateIfNotExist' to create the resource";
+		Contract-Assert (!$entity) "Entity does already exist";
 	}
 	
 	if($CreateIfNotExist -and !$entity) 
