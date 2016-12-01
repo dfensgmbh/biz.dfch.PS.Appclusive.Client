@@ -14,22 +14,6 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 	$entityPrefix = "Set-Tenant";
 	$usedEntitySets = @("ContractMappings", "Customers");
 	
-	AfterAll {
-		# Cleanup
-		$svc = Enter-ApcServer;
-		$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
-
-		foreach ($entitySet in $usedEntitySets)
-		{
-			$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
-	 
-			foreach ($entity in $entities)
-			{
-				Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
-			}
-		}
-	}
-
 	Context "Set-Tenant.Tests" {
 	
 		# Context wide constants
@@ -75,6 +59,22 @@ Describe "Set-Tenant.Tests" -Tags "Set-Tenant.Tests" {
 			$systemTenant.CustomerId = $null;
 			$svc.Core.UpdateObject($systemTenant);
 			$null = $svc.Core.SaveChanges();
+		}
+		
+		AfterAll {
+			# Cleanup
+			$svc = Enter-ApcServer;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+		 
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
 		}
 		
 		It "Warmup" -Test {
