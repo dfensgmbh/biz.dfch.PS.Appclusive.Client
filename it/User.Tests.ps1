@@ -1,3 +1,5 @@
+# includes tests for CLOUDTCL-2362
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
@@ -19,25 +21,158 @@ Describe "User.Tests" -Tags "User.Tests" {
 	
 	. "$here\$sut"
 	
+	$entityPrefix = "TestItem-";
+	$usedEntitySets = @("Users");
+	
 	Context "#CLOUDTCL-1882-UserTests" {
 		
 		BeforeEach {
 			$moduleName = 'biz.dfch.PS.Appclusive.Client';
 			Remove-Module $moduleName -ErrorAction:SilentlyContinue;
 			Import-Module $moduleName;
-			$svc = Enter-ApcServer;
+			$svc = Enter-Appclusive;
 		}
 		
-		It "TestName" -Test {
+		AfterEach {
+			$svc = Enter-Appclusive;
+			$entityFilter = "startswith(Name, '{0}')" -f $entityPrefix;
+
+			foreach ($entitySet in $usedEntitySets)
+			{
+				$entities = $svc.Core.$entitySet.AddQueryOption('$filter', $entityFilter) | Select;
+
+				foreach ($entity in $entities)
+				{
+					Remove-ApcEntity -svc $svc -Id $entity.Id -EntitySetName $entitySet -Confirm:$false;
+				}
+			}
+		}
+		
+		It "User-CreateGetDelete-ShouldSucceed" -Test {
 			# Arrange
+			$name = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$mail = "test@example.com";
 			
+			# Act - create user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -Mail $mail -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
 			
-			# Act
+			# Act - get user
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
 			
+			# Act - remove user
+			Push-ApcChangeTracker -Svc $svc;
+			$null = Remove-ApcEntity -svc $svc -Id $user.Id -EntitySetName "Users" -Confirm:$false;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get user
+			Push-ApcChangeTracker -Svc $svc;
+			$deletedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
 			
 			# Assert	
+			$user | Should Not Be $null;
+			$user.Id | Should Not Be 0;
+			$user.Name | Should Be $name;
+			$user.Mail | Should Be $mail;
 			
+			$loadedUser | Should Not Be $null;
+			$loadedUser.Id | Should Be $user.Id;
+			$loadedUser.Name | Should Be $name;
+			$loadedUser.Mail | Should Be $mail;
 			
+			$deletedUser | Should Be $null;
+		}
+		
+		It "User-Update-ShouldSucceed" -Test {
+			# Arrange
+			$name = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$description = "User description";
+			$mail = "test@example.com";
+			$newName = $name + "Updated";
+			$newDescription = $description + "Updated";
+			$newMail = "test@updated.com";
+			
+			# Act - create user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -Description $description -Mail $mail -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get user
+			Push-ApcChangeTracker -Svc $svc;
+			$loadedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - update user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -NewName $newName -Description $newDescription -Mail $newMail;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - get updated user
+			Push-ApcChangeTracker -Svc $svc;
+			$updatedUser = Get-ApcUser -Svc $svc -Id $user.Id;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Assert	
+			$loadedUser | Should Not Be $null;
+			$loadedUser.Id | Should Not Be 0;
+			$loadedUser.Name | Should Be $name;
+			$loadedUser.Description | Should Be $description;
+			$loadedUser.Mail | Should Be $mail;
+			
+			$updatedUser | Should Not Be $null;
+			$updatedUser.Id | Should Be $loadedUser.Id;
+			$updatedUser.Name | Should Be $newName;
+			$updatedUser.Description | Should Be $newDescription;
+			$updatedUser.Mail | Should Be $newMail;
+		}
+		
+		It "User-CreateDuplicate-ShouldFail" -Test {
+			# Arrange
+			$name = $entityPrefix + "User-{0}" -f [guid]::NewGuid().ToString();
+			$mail = "test@example.com";
+			
+			# Act - create user
+			Push-ApcChangeTracker -Svc $svc;
+			$user = Set-ApcUser -Svc $svc -Name $name -Mail $mail -CreateIfNotExist;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create second user with same parameters
+			Push-ApcChangeTracker -Svc $svc;
+			{ $user2 = New-ApcUser -Svc $svc -Name $name -Mail $mail; } | Should ThrowErrorId Contract-Requires;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			$user | Should Not Be $null;
+			$user.Id | Should Not Be 0;
+			$user2 | Should Be $null;
+		}
+		
+		It "User-CreateWithSameExternalTypeAndId-ShouldSucceed" -Test {
+			# Arrange
+			$name1 = $entityPrefix + "User1-{0}" -f [guid]::NewGuid().ToString();
+			$mail1 = "test@example.com";
+			$externalId = [guid]::NewGuid();
+			$externalType = "Internal";
+			$name2 = $entityPrefix + "User2-{0}" -f [guid]::NewGuid().ToString();
+			$mail2 = "test@example.com";
+			
+			# Act - create user1
+			Push-ApcChangeTracker -Svc $svc;
+			$user1 = New-ApcUser -Svc $svc -Name $name1 -Mail $mail1 -ExternalId $externalId -ExternalType $externalType;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			# Act - create user2
+			Push-ApcChangeTracker -Svc $svc;
+			$user2 = New-ApcUser -Svc $svc -Name $name2 -Mail $mail2 -ExternalId $externalId -ExternalType $externalType;
+			Pop-ApcChangeTracker -Svc $svc;
+			
+			$user1 | Should Not Be $null;
+			$user1.Id | Should Not Be 0;
+			$user2 | Should Not Be $null;
+			$user2.Id | Should Not Be 0;
 		}
 	}
 }
