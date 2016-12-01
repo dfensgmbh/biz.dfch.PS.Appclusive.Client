@@ -206,6 +206,8 @@ NestedModules = @(
 	,
 	'New-Role.ps1'
 	,
+	'Set-Tenant.ps1'
+	,
 	'Set-Customer.ps1'
 )
 
